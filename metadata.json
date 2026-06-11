@@ -1,0 +1,6 @@
+{
+  "name": "CoachTrack MY",
+  "description": "CoachTrack MY is a Malaysia-centric AI-powered fitness and trainer management platform for trainers, coaches, operators, and trainees.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
