@@ -16,6 +16,7 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { MalaysianFoodItem, NutritionLog, WorkoutLog, BookingSession, TrainerProfile, TraineeProfile, PrescribedWorkout } from '../types';
+import { dbService } from '../lib/dbService';
 
 interface TraineeDashboardProps {
   traineeUserId: string;
@@ -86,34 +87,27 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
 
   const fetchTraineeData = async () => {
     try {
-      const resProfile = await fetch(`/api/trainees/${traineeUserId}`);
-      const dataProfile = await resProfile.json();
+      const dataProfile = await dbService.getTraineeProfile(traineeUserId);
+      if (!dataProfile) return;
       setTraineeMeta(dataProfile);
 
-      const resWorkouts = await fetch(`/api/workouts?traineeId=${dataProfile.id}`);
-      const dataWorkouts = await resWorkouts.json();
+      const dataWorkouts = await dbService.getWorkouts({ traineeId: dataProfile.id });
       setWorkouts(dataWorkouts);
 
-      const resNutrition = await fetch(`/api/nutrition?traineeId=${dataProfile.id}`);
-      const dataNutrition = await resNutrition.json();
+      const dataNutrition = await dbService.getNutrition(dataProfile.id);
       setNutrition(dataNutrition);
 
-      const resBk = await fetch(`/api/bookings?traineeId=${dataProfile.id}`);
-      const dataBk = await resBk.json();
+      const dataBk = await dbService.getBookings({ traineeId: dataProfile.id });
       setBookings(dataBk);
 
       if (dataProfile.assignedTrainerId) {
-        const resTr = await fetch(`/api/trainers/${dataProfile.assignedTrainerId}`);
-        const dataTr = await resTr.json();
-        setTrainer(dataTr);
+        const dataTr = await dbService.getTrainerProfile(dataProfile.assignedTrainerId);
+        if (dataTr) setTrainer(dataTr);
       }
 
       // Fetch coach prescribed sessions
-      const resPW = await fetch(`/api/prescribed-workouts?traineeId=${dataProfile.id}&status=Pending`);
-      if (resPW.ok) {
-        const dataPW = await resPW.json();
-        setPrescribedWorkouts(dataPW);
-      }
+      const dataPW = await dbService.getPrescribedWorkouts(dataProfile.id, 'Pending');
+      setPrescribedWorkouts(dataPW);
     } catch (e) {
       console.error(e);
     }
@@ -143,13 +137,9 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
         notes: workoutNotes
       };
 
-      const res = await fetch('/api/workouts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const res = await dbService.createWorkoutLog(payload);
       
-      if (res.ok) {
+      if (res) {
         setShowWorkoutForm(false);
         setWorkoutNotes('');
         setExercises([{ name: '', sets: 3, reps: 10, weight: 10 }]);
@@ -192,13 +182,9 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
         notes: nutritionNotes
       };
 
-      const res = await fetch('/api/nutrition', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const res = await dbService.createNutritionLog(payload);
 
-      if (res.ok) {
+      if (res) {
         setShowNutritionForm(false);
         setCustomFoodName('');
         setSelectedFoodIndex(-1);
@@ -215,13 +201,9 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
     if (!checkingInWorkout) return;
 
     try {
-      const res = await fetch(`/api/prescribed-workouts/${checkingInWorkout.id}/checkin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes: checkInNotes })
-      });
+      const ok = await dbService.checkInPrescribedWorkout(checkingInWorkout.id);
 
-      if (res.ok) {
+      if (ok) {
         setCheckingInWorkout(null);
         setCheckInNotes('');
         fetchTraineeData();

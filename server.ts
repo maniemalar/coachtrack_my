@@ -45,8 +45,8 @@ const DEFAULT_TRAINERS: TrainerProfile[] = [
     name: 'Sarah Tan',
     discipline: 'Yoga & Pilates Instructor',
     experienceYears: 6,
-    location: 'Bangsar, Kuala Lumpur',
-    coordinates: { lat: 3.1258, lng: 101.6715 }, // bangsar
+    location: 'SS15, Subang Jaya',
+    coordinates: { lat: 3.0792, lng: 101.5950 }, // ss15 subang
     freelanceStatus: 'Freelance',
     pricePerHour: 110,
     bio: 'Dedicated to helping office workers improve flexibility, core strength, and mindfulness right here in Klang Valley. Specialized in therapeutic yoga.',

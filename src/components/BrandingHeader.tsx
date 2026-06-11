@@ -109,7 +109,7 @@ export default function BrandingHeader({
                   onClick={() => setActiveTab('payments')}
                   className={`py-1 text-sm font-semibold transition-all ${
                     activeTab === 'payments'
-                      ? 'text-teal-600 border-b-2 border-teal-600 pb-1 font-bold'
+                      ? 'text-teal-650 border-b-2 border-teal-600 pb-1 font-bold text-teal-600'
                       : 'text-slate-600 hover:text-teal-600'
                   }`}
                 >
@@ -141,6 +141,17 @@ export default function BrandingHeader({
                   Clients
                 </button>
                 <button
+                  id="tab-coaching-hub"
+                  onClick={() => setActiveTab('coaching-hub')}
+                  className={`py-1 text-sm font-semibold transition-all ${
+                    activeTab === 'coaching-hub'
+                      ? 'text-teal-600 border-b-2 border-teal-600 pb-1 font-bold'
+                      : 'text-slate-600 hover:text-teal-600'
+                  }`}
+                >
+                  Coaching Hub
+                </button>
+                <button
                   id="tab-revenue"
                   onClick={() => setActiveTab('revenue')}
                   className={`py-1 text-sm font-semibold transition-all ${
@@ -152,21 +163,6 @@ export default function BrandingHeader({
                   Payments
                 </button>
               </>
-            )}
-
-            {currentUser.role === UserRole.TRAINEE && (
-              <button
-                id="tab-chats"
-                onClick={() => setActiveTab('chats')}
-                className={`py-1 text-sm font-semibold transition-all relative ${
-                  activeTab === 'chats'
-                    ? 'text-teal-600 border-b-2 border-teal-600 pb-1 font-bold'
-                    : 'text-slate-600 hover:text-teal-600'
-                }`}
-              >
-                Feedback
-                <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-1">2</span>
-              </button>
             )}
           </nav>
         ) : (

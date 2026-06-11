@@ -22,10 +22,15 @@ import {
   Send,
   Download,
   Clock,
-  Briefcase
+  Briefcase,
+  Flame,
+  RefreshCw,
+  AlertCircle,
+  ThumbsUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TrainerProfile, TraineeProfile, WorkoutLog, NutritionLog, BookingSession, Payment, Invoice } from '../types';
+import { dbService } from '../lib/dbService';
 
 interface TrainerDashboardProps {
   trainerProfile: TrainerProfile;
@@ -43,11 +48,38 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
   // Page 2: Client Management States
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTrainee, setSelectedTrainee] = useState<TraineeProfile | null>(null);
-  const [traineeDetailTab, setTraineeDetailTab] = useState<'history' | 'body' | 'photos' | 'ai' | 'chat'>('body');
+  const [traineeDetailTab, setTraineeDetailTab] = useState<'history' | 'body' | 'photos' | 'ai' | 'chat' | 'nutrition'>('body');
+  
+  // Workspace Dynamic Chat Thread state
+  const [activeChatTrainee, setActiveChatTrainee] = useState<any>({
+    id: 'te_ahmad',
+    userId: 'u_ahmad',
+    name: 'Ahmad bin Ibrahim',
+    initials: 'AI',
+    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCm6XjkajKC1E-auUB-6Sr-GyTGI4zsoY-YEgT0MAl6pw_jL3uSF-kMR6I3SCISx-0HXh-tcAf99gfuoVVhzN1P1HU5oCZk0WWchxWKY22ATwB-APrTezY3HVTAOMGVpXNApLlt1VIzi9o8yJXJ5nQRsSmRHOuxBYfJf_533KGGsCsvrxpZ_3m5uxZ9KZr2L6dBuXJkWmoMBDY9z_YnDYNr0b8EJ3Tyw-sPE0l5vW78317CdkDStSWtXZxNwtq6QaBgqW3N2oV2two',
+    status: 'online',
+    goals: 'Weight Loss & Cardio',
+    streakCount: 5
+  });
+
+  // Additional Trainer chat workspace states
+  const [chatSearchQuery, setChatSearchQuery] = useState('');
+  const [isSearchingChat, setIsSearchingChat] = useState(false);
+  const [unreadCounts, setUnreadCounts] = useState<{ [key: string]: number }>({
+    u_ahmad: 0,
+    u_ling: 2,
+    u_faizul: 1
+  });
+  const [replyTagType, setReplyTagType] = useState<string | null>(null);
+  const [replyTagTitle, setReplyTagTitle] = useState('');
+  const [chatRightPanelTab, setChatRightPanelTab] = useState<'workouts' | 'nutrition' | 'progress' | 'gemini'>('workouts');
   
   // AI recommendations states
   const [loadingAi, setLoadingAi] = useState(false);
   const [aiRecommendation, setAiRecommendation] = useState<any | null>(null);
+  const [approvedState, setApprovedState] = useState<'idle' | 'approved' | 'edited' | 'rejected'>('idle');
+  const [aiEditMode, setAiEditMode] = useState(false);
+  const [aiNotesBuffer, setAiNotesBuffer] = useState('');
   
   // Trainer manual notes saving
   const [notesText, setNotesText] = useState('');
@@ -58,6 +90,7 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
   const [filterMonth, setFilterMonth] = useState<string>('All');
   const [filterPackage, setFilterPackage] = useState<string>('All');
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
+  const [selectedInvoiceDocMode, setSelectedInvoiceDocMode] = useState<'invoice' | 'receipt'>('invoice');
   
   // Feedback popup alerts
   const [alertBanner, setAlertBanner] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
@@ -95,6 +128,28 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
   ]);
   const [prescribeSuccess, setPrescribeSuccess] = useState(false);
 
+  // New States for redesigned Trainer Dashboard & Coaching Hub
+  const [showAddClientForm, setShowAddClientForm] = useState(false);
+  const [newClientName, setNewClientName] = useState('');
+  const [newClientGoals, setNewClientGoals] = useState('Build Muscle & Strength');
+  const [newClientAge, setNewClientAge] = useState(25);
+  const [newClientWeight, setNewClientWeight] = useState(70);
+  const [newClientHeight, setNewClientHeight] = useState(172);
+
+  const [showSendReminderForm, setShowSendReminderForm] = useState(false);
+  const [reminderClientName, setReminderClientName] = useState('Ahmad Ibrahim');
+
+  const [coachingFeed, setCoachingFeed] = useState<any[]>([
+    { id: 1, type: 'workout', text: 'Workout feedback successfully sent to Ahmad Ibrahim for HIIT Routine', time: '15 mins ago' },
+    { id: 2, type: 'nutrition', text: 'Dietary swap advice provided to Mei Ling Tan (SS15 Gym)', time: '1 hour ago' },
+    { id: 3, type: 'photo', text: 'Week 8 progress photo visual comparison reviewed', time: '3 hours ago' },
+    { id: 4, type: 'ai', text: 'AI custom metabolic optimizer recommendation approved for Faizul Razak', time: 'Yesterday' }
+  ]);
+
+  // Modals for Coaching Hub actions
+  const [selectedPhotoTrainee, setSelectedPhotoTrainee] = useState<TraineeProfile | null>(null);
+  const [photoFeedbackText, setPhotoFeedbackText] = useState('');
+
   // Billing dummy seed data for rich sorting
   const [billingList, setBillingList] = useState<any[]>([
     { id: "pay_1", traineeName: "Ahmad bin Ibrahim", traineeId: "te_ahmad", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-06-05", status: "Paid", month: "June 2026", invoiceNo: "INV-MY-0098", email: "ahmad@coachtrack.my" },
@@ -108,9 +163,9 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
   useEffect(() => {
     fetchTrainerData();
     if (chatOpen) {
-      fetchChatMessages();
+      fetchChatMessages(activeChatTrainee?.userId);
     }
-  }, [trainerProfile, chatOpen]);
+  }, [trainerProfile, chatOpen, activeChatTrainee]);
 
   // Hook to handle bottom chat auto scroll
   useEffect(() => {
@@ -129,39 +184,28 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
   const fetchTrainerData = async () => {
     try {
       // Bookings related to this instructor
-      const resBk = await fetch(`/api/bookings?trainerId=${trainerProfile.id}`);
-      const dataBk = await resBk.json();
+      const dataBk = await dbService.getBookings({ trainerId: trainerProfile.id });
       setBookings(dataBk);
 
       // Workouts logged by clients
-      const resWorkouts = await fetch(`/api/workouts?trainerId=${trainerProfile.id}`);
-      const dataWorkouts = await resWorkouts.json();
+      const dataWorkouts = await dbService.getWorkouts({ trainerId: trainerProfile.id });
       setWorkouts(dataWorkouts);
 
       // Payments from backend
-      const resPay = await fetch(`/api/payments?trainerId=${trainerProfile.id}`);
-      const dataPay = await resPay.json();
+      const dataPay = await dbService.getPayments({ trainerId: trainerProfile.id });
       setPayments(dataPay);
 
       // Get all assigned trainees
-      const resTr = await fetch(`/api/trainees?trainerId=${trainerProfile.id}`);
-      if (resTr.ok) {
-        const dataTr = await resTr.json();
+      const dataTr = await dbService.getTraineesForTrainer(trainerProfile.id);
+      if (dataTr && dataTr.length > 0) {
         setTrainees(dataTr);
-        
-        // Match base selection
-        if (dataTr.length > 0 && !selectedTrainee) {
-          // Keep defaults
-        }
       } else {
-        const resSingle = await fetch(`/api/trainees/u_ahmad`);
-        const dataSingle = await resSingle.json();
-        setTrainees([dataSingle]);
+        const dataSingle = await dbService.getTraineeProfile('u_ahmad');
+        if (dataSingle) setTrainees([dataSingle]);
       }
 
       // Populate nutrition from Ahmad bin Ibrahim
-      const resNutr = await fetch(`/api/nutrition?traineeId=te_ahmad`);
-      const dataNutr = await resNutr.json();
+      const dataNutr = await dbService.getNutrition('te_ahmad');
       setNutrition(dataNutr);
 
     } catch (e) {
@@ -169,13 +213,11 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
     }
   };
 
-  const fetchChatMessages = async () => {
+  const fetchChatMessages = async (targetUserId?: string) => {
     try {
-      const res = await fetch(`/api/chats?userA=u_sarah&userB=u_ahmad`);
-      if (res.ok) {
-        const data = await res.json();
-        setChatMessages(data);
-      }
+      const recipient = targetUserId || activeChatTrainee?.userId || 'u_ahmad';
+      const data = await dbService.getChats('u_sarah', recipient);
+      setChatMessages(data);
     } catch (err) {
       console.error(err);
     }
@@ -186,21 +228,23 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
     if (!chatInputText.trim()) return;
 
     try {
+      const targetUid = activeChatTrainee?.userId || 'u_ahmad';
       const payload = {
         senderId: 'u_sarah',
-        receiverId: 'u_ahmad',
-        message: chatInputText
+        receiverId: targetUid,
+        message: chatInputText,
+        replyToType: replyTagType || undefined,
+        replyToTitle: replyTagTitle || undefined,
+        replyToId: replyTagTitle ? `ctx_${Date.now()}` : undefined
       };
 
-      const res = await fetch('/api/chats', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const res = await dbService.createChatMessage(payload);
 
-      if (res.ok) {
+      if (res) {
         setChatInputText('');
-        fetchChatMessages();
+        setReplyTagType(null);
+        setReplyTagTitle('');
+        fetchChatMessages(targetUid);
       }
     } catch (err) {
       console.error(err);
@@ -209,12 +253,8 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
 
   const handleBookingStatus = async (bookingId: string, status: 'Approved' | 'Cancelled') => {
     try {
-      const res = await fetch(`/api/bookings/${bookingId}/status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
-      if (res.ok) {
+      const ok = await dbService.updateBookingStatus(bookingId, status);
+      if (ok) {
         triggerToast(`Booking slot successfully ${status.toLowerCase()}!`);
         fetchTrainerData();
       }
@@ -227,12 +267,8 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
     if (!workoutFeedbackText.trim()) return;
 
     try {
-      const res = await fetch(`/api/workouts/${workoutId}/reply`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feedback: workoutFeedbackText })
-      });
-      if (res.ok) {
+      const ok = await dbService.addWorkoutFeedback(workoutId, workoutFeedbackText);
+      if (ok) {
         setReplyingWorkoutId(null);
         setWorkoutFeedbackText('');
         triggerToast('Workout feedback dispatched to trainee timeline!');
@@ -247,15 +283,8 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
     if (!nutritionFeedbackText.trim()) return;
 
     try {
-      const res = await fetch(`/api/nutrition/${nutritionId}/reply`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          feedback: nutritionFeedbackText,
-          trainerId: trainerProfile.id
-        })
-      });
-      if (res.ok) {
+      const ok = await dbService.addNutritionFeedback(nutritionId, nutritionFeedbackText);
+      if (ok) {
         setReplyingNutritionId(null);
         setNutritionFeedbackText('');
         triggerToast('Dietary suggestion updated successfully!');
@@ -279,13 +308,9 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
         dueDate: invoiceDueDate
       };
 
-      const res = await fetch('/api/invoices', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const res = await dbService.createInvoice(payload);
 
-      if (res.ok) {
+      if (res) {
         const target = trainees.find(t => t.id === selectedTraineeId);
         
         // Add to billing simulation dynamically
@@ -331,13 +356,9 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
         notes: prescribeNotes
       };
 
-      const res = await fetch('/api/prescribed-workouts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const res = await dbService.createPrescribedWorkout(payload);
 
-      if (res.ok) {
+      if (res) {
         setPrescribeSuccess(true);
         triggerToast(`Routine prescribed for ${prescribeTraineeName}!`);
         setTimeout(() => {
@@ -422,6 +443,35 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
     setTimeout(() => {
       setNotesSuccess(false);
     }, 2000);
+  };
+
+  // Link any Log contextual reference directly back to chat thread
+  const linkContextToChat = async (contextRef: string, defaultPrompt: string) => {
+    if (!selectedTrainee) return;
+    try {
+      await dbService.createChatMessage({
+        senderId: 'u_sarah',
+        receiverId: selectedTrainee.userId,
+        message: `📢 Replying to ${contextRef}`
+      });
+      
+      // Update thread focus instantly
+      setActiveChatTrainee({
+        id: selectedTrainee.id,
+        userId: selectedTrainee.userId,
+        name: selectedTrainee.name,
+        avatarUrl: selectedTrainee.avatarUrl,
+        initials: selectedTrainee.name.substring(0, 2).toUpperCase(),
+        status: 'online'
+      });
+      
+      setChatOpen(true);
+      setChatInputText(defaultPrompt);
+      fetchChatMessages(selectedTrainee.userId);
+      triggerToast("Linked item context smoothly into client chat!");
+    } catch (err) {
+      console.error("Context mapping failed:", err);
+    }
   };
 
   // AI Recommendation Trigger (Gemini-supported)
@@ -538,15 +588,17 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
             </div>
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={() => {
-                setSelectedTraineeId('te_ahmad');
-                setShowInvoiceForm(true);
-              }}
-              className="bg-[#001F3F] hover:bg-slate-900 text-teal-400 font-bold text-xs py-2.5 px-4 rounded-xl flex items-center gap-1.5 transition cursor-pointer"
-            >
-              <Plus className="w-4 h-4" /> Issue Custom Invoice
-            </button>
+            {activeTab !== 'client-management' && (
+              <button
+                onClick={() => {
+                  setSelectedTraineeId('te_ahmad');
+                  setShowInvoiceForm(true);
+                }}
+                className="bg-[#001F3F] hover:bg-slate-900 text-teal-400 font-bold text-xs py-2.5 px-4 rounded-xl flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <Plus className="w-4 h-4" /> Issue Custom Invoice
+              </button>
+            )}
           </div>
         </div>
 
@@ -785,315 +837,382 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
 
         {/* PAGE ROUTING BODY */}
 
-        {/* 1. ORIGINAL DASHBOARD VIEW */}
+        {/* 1. REDESIGNED TRAINER DASHBOARD VIEW - BUSINESS COMMAND CENTER */}
         {activeTab === 'trainer-dashboard' && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
+            className="space-y-8 animate-fade-in"
           >
-            {/* Upper quick stats panel */}
-            <div className="grid md:grid-cols-3 gap-6 mb-2">
-              <div className="bg-[#001F3F] p-5 rounded-2xl text-white shadow-lg border border-slate-800/10 opacity-95 transition-all hover:scale-[1.01]">
-                <span className="text-slate-300 text-xs font-semibold uppercase tracking-wider block mb-1">Coach Monthly Verified Intake</span>
-                <div className="flex justify-between items-center">
-                  <span className="text-3xl font-black font-display text-white">RM {paidSumRevenue.toFixed(2)}</span>
-                  <p className="text-[10px] text-teal-400 font-bold bg-white/10 px-2 py-1 rounded-full flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse"></span> Sandbox Live
-                  </p>
-                </div>
+            {/* Header with Title and Date */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h3 className="text-xl font-black font-display text-slate-900 flex items-center gap-2 text-left">
+                  <Briefcase className="w-5.5 h-5.5 text-indigo-900" />
+                  <span>Trainer Command Center</span>
+                </h3>
+                <p className="text-xs text-slate-500 text-left font-sans">
+                  Real-time operational dashboard, financial intake tracker, and client hub metrics.
+                </p>
               </div>
-
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm transition-all hover:scale-[1.01]">
-                <div className="flex justify-between items-start mb-1">
-                  <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider block">Outstanding Due Balance</span>
-                  <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                    {billingList.filter(b => b.status === 'Overdue').length} Overdue
-                  </span>
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-2xl font-black text-rose-500 font-display">RM {overdueSumRevenue.toFixed(2)}</span>
-                  <span className="text-xs text-slate-400 font-medium">{billingList.filter(b => b.status !== 'Paid').length} invoices pending</span>
-                </div>
-              </div>
-
-              <div className="bg-slate-900 border border-slate-850 rounded-2xl p-5 shadow-sm text-white flex flex-col justify-between transition-all hover:scale-[1.01]">
-                <span className="text-teal-400 text-xs font-semibold uppercase tracking-wider block">Pending Booking Solicitations</span>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-2xl font-black font-display text-white">
-                    {bookings.filter(b => b.status === 'Pending').length} Request(s)
-                  </span>
-                  <span className="text-[10px] uppercase tracking-wider bg-teal-400 text-slate-900 font-black px-2.5 py-1 rounded-md">
-                    Review Slots
-                  </span>
-                </div>
+              <div className="text-2xs font-mono text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                Current State: June 2026 • Live Sandbox
               </div>
             </div>
 
-            {/* Core workout/nutrition logs review grids */}
-            <div className="grid lg:grid-cols-3 gap-8">
+            {/* A. KPI SUMMARY CARDS */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Card 1: Total Active Clients */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between text-slate-800 text-left">
+                <div>
+                  <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-1">Total Active Clients</span>
+                  <div className="flex justify-between items-baseline mt-1.5 animate-pulse">
+                    <span className="text-2xl font-black text-slate-800 font-display">
+                      {trainees.length || 6}
+                    </span>
+                    <span className="text-[10px] text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full font-bold border border-teal-200 uppercase font-sans">
+                      👥 Active
+                    </span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2 font-sans">Verified Subang Jaya trainees</p>
+              </div>
+
+              {/* Card 2: Monthly Revenue */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between text-slate-800 font-sans text-left">
+                <div>
+                  <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-1">Monthly Revenue</span>
+                  <div className="flex justify-between items-baseline mt-1.5 animate-fade-in">
+                    <span className="text-2xl font-black text-[#001F3F] font-display">
+                      RM {paidSumRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold border border-emerald-250 font-sans uppercase">
+                      ✓ Paid
+                    </span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2 font-sans">Verified completed invoices</p>
+              </div>
+
+              {/* Card 3: Pending Payments */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between text-slate-800 text-left">
+                <div>
+                  <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-1">Pending Payments</span>
+                  <div className="flex justify-between items-baseline mt-1.5">
+                    <span className="text-2xl font-black text-rose-500 font-display">
+                      RM {(pendingSumRevenue + overdueSumRevenue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-[10px] text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full font-bold border border-rose-250 text-2xs">
+                      {billingList.filteredMock ? 2 : billingList.filter(b => b.status === 'Overdue').length} Overdue
+                    </span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2">Invoiced outstanding MYR</p>
+              </div>
+
+              {/* Card 4: Upcoming Sessions Today */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between text-slate-800 text-left font-sans">
+                <div>
+                  <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-1">Upcoming Sessions Today</span>
+                  <div className="flex justify-between items-baseline mt-1.5">
+                    <span className="text-2xl font-black text-slate-800 font-display">3</span>
+                    <span className="text-[10px] text-indigo-650 bg-indigo-50 px-2 py-0.5 rounded-full font-bold border border-indigo-250 font-sans">
+                      📅 Scheduled
+                    </span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2 font-sans">Schedules locked for today</p>
+              </div>
+            </div>
+
+            {/* Quick Actions & Revenue Snapshot Grid */}
+            <div className="grid lg:grid-cols-3 gap-8 text-left">
               
-              {/* Left Column: Workouts & Food Logs Feedback Queue */}
+              {/* Left & Middle Column contents: Today's Schedule + Revenue Snapshot */}
               <div className="lg:col-span-2 space-y-8">
                 
-                {/* Completed routines log reviews */}
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
-                  <div className="flex items-center gap-2 mb-6">
-                    <Dumbbell className="w-5 h-5 text-[#001F3F]" />
-                    <h3 className="font-display font-medium text-slate-800 text-base">
-                      Trainee Logged Routines (Awaiting Coach Feedback)
-                    </h3>
+                {/* B. TODAY'S SCHEDULE */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-indigo-955" />
+                      <h3 className="font-display font-medium text-slate-909 text-sm text-slate-900">
+                        Today's Coaching Schedule
+                      </h3>
+                    </div>
+                    <span className="text-[10px] bg-emerald-50 text-emerald-800 font-semibold px-2.5 py-1 rounded-full uppercase">
+                      ● active today
+                    </span>
                   </div>
 
-                  {workouts.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-6 text-center">No trainee workouts submitted today.</p>
-                  ) : (
-                    <div className="space-y-4">
-                      {workouts.map((w) => (
-                        <div key={w.id} className="border border-slate-100 rounded-xl p-4 bg-slate-50/70">
-                          <div className="flex justify-between items-start gap-2 mb-2">
-                            <div>
-                              <span className="text-[9px] font-bold text-teal-600 block uppercase tracking-wider">Ahmad bin Ibrahim • Subang Jaya</span>
-                              <h4 className="font-bold text-slate-800 text-sm">{w.workoutType} Session Log</h4>
-                            </div>
-                            <span className="text-2xs font-extrabold text-[#001F3F] bg-[#001F3F]/5 px-2 py-0.5 rounded-lg shrink-0">⏱ {w.duration} mins</span>
-                          </div>
-
-                          <div className="grid sm:grid-cols-2 gap-2 my-2.5 text-2xs">
-                            {w.exercises.map((ex, idx) => (
-                              <div key={idx} className="bg-white px-2 py-1 rounded border border-slate-100 text-slate-600 font-medium">
-                                {ex.name}: {ex.sets}s × {ex.reps}r {ex.weight > 0 ? `@ ${ex.weight}kg` : ''}
-                              </div>
-                            ))}
-                          </div>
-
-                          {w.notes && (
-                            <p className="text-2xs text-slate-550 italic bg-white p-2 rounded border border-slate-100 mb-3">
-                              &ldquo;{w.notes}&rdquo;
-                            </p>
-                          )}
-
-                          {w.trainerFeedback ? (
-                            <div className="mt-2 bg-slate-100 border border-slate-150 text-slate-800 rounded-lg p-2.5 text-2xs">
-                              <p className="font-black mb-0.5 text-[9px] uppercase tracking-wider text-slate-500">Your Feedback Review:</p>
-                              <p className="italic">&ldquo;{w.trainerFeedback}&rdquo;</p>
-                            </div>
-                          ) : (
-                            <div className="mt-2">
-                              {replyingWorkoutId === w.id ? (
-                                <div className="space-y-2">
-                                  <textarea
-                                    value={workoutFeedbackText}
-                                    onChange={(e) => setWorkoutFeedbackText(e.target.value)}
-                                    placeholder="Provide coaching advice or alignment adjustments..."
-                                    className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs text-slate-800 focus:outline-teal-500"
-                                  />
-                                  <div className="flex gap-2 justify-end">
-                                    <button
-                                      type="button"
-                                      onClick={() => setReplyingWorkoutId(null)}
-                                      className="px-3 py-1 text-2xs font-bold text-slate-600 hover:bg-slate-100 rounded"
-                                    >
-                                      Cancel
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleWorkoutReply(w.id)}
-                                      className="bg-[#001F3F] text-teal-400 font-bold text-2xs py-1 px-3.5 rounded"
-                                    >
-                                      Send Review
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <button
-                                  onClick={() => {
-                                    setReplyingWorkoutId(w.id);
-                                    setWorkoutFeedbackText('');
-                                  }}
-                                  className="bg-slate-900 text-white hover:text-teal-400 text-[10px] font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer"
-                                >
-                                  <MessageSquare className="w-3.5 h-3.5" /> Submit Coach Review
-                                </button>
-                              )}
-                            </div>
-                          )}
+                  <div className="space-y-4 font-sans">
+                    {/* Ahmad Ibrahim */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-101 border-slate-100 rounded-xl transition duration-150 hover:bg-slate-100">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-[#001F3F]/10 text-[#001F3F] font-bold w-12 h-12 rounded-xl flex flex-col justify-center items-center shrink-0">
+                          <span className="text-[10px] tracking-tight leading-none text-slate-505 font-mono">10:00</span>
+                          <span className="text-xs uppercase font-black font-mono">AM</span>
                         </div>
-                      ))}
+                        <div>
+                          <strong className="text-slate-855 text-sm block">Ahmad Ibrahim</strong>
+                          <span className="text-[10px] text-slate-450 flex items-center gap-1 mt-0.5 font-sans">
+                            📍 SS15 Studio • Selangor
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-2 sm:mt-0 flex items-center justify-between w-full sm:w-auto gap-4 font-sans">
+                        <span className="text-2xs text-[#001F3F] bg-[#001F3F]/10 px-2.5 py-1 rounded-md font-extrabold uppercase font-sans">
+                          HIIT Core Strength
+                        </span>
+                        <span className="text-2xs font-bold text-emerald-850 bg-emerald-100/60 px-2 py-0.5 rounded font-sans">
+                          Confirmed ✓
+                        </span>
+                      </div>
                     </div>
-                  )}
+
+                    {/* Mei Ling Tan */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-100 rounded-xl transition duration-150 hover:bg-slate-100 font-sans">
+                      <div className="flex items-center gap-3 font-sans">
+                        <div className="bg-[#001F3F]/10 text-[#001F3F] font-bold w-12 h-12 rounded-xl flex flex-col justify-center items-center shrink-0 font-sans">
+                          <span className="text-[10px] tracking-tight leading-none text-slate-505 font-mono">02:30</span>
+                          <span className="text-xs uppercase font-black font-mono">PM</span>
+                        </div>
+                        <div>
+                          <strong className="text-slate-855 text-sm block font-sans font-bold">Mei Ling Tan</strong>
+                          <span className="text-[10px] text-slate-450 flex items-center gap-1 mt-0.5 font-sans">
+                            📍 Subang Gym • Selangor
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-2 sm:mt-0 flex items-center justify-between w-full sm:w-auto gap-4 font-sans">
+                        <span className="text-2xs text-[#001F3F] bg-[#001F3F]/5 px-2.5 py-1 rounded-md font-extrabold uppercase">
+                          Pilates Slimming
+                        </span>
+                        <span className="text-2xs font-bold text-emerald-850 bg-emerald-100/60 px-2 py-0.5 rounded">
+                          Confirmed ✓
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Amy Wong */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-100 rounded-xl transition duration-150 hover:bg-slate-100 font-sans">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-[#001F3F]/10 text-[#001F3F] font-bold w-12 h-12 rounded-xl flex flex-col justify-center items-center shrink-0">
+                          <span className="text-[10px] tracking-tight leading-none text-slate-505 font-mono">05:00</span>
+                          <span className="text-xs uppercase font-black font-mono">PM</span>
+                        </div>
+                        <div>
+                          <strong className="text-slate-855 text-sm block">Amy Wong</strong>
+                          <span className="text-[10px] text-slate-450 flex items-center gap-1 mt-0.5">
+                            📍 PJ Peak Performance
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-2 sm:mt-0 flex items-center justify-between w-full sm:w-auto gap-4">
+                        <span className="text-2xs text-indigo-950 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-md font-extrabold uppercase">
+                          Athletic Strength
+                        </span>
+                        <span className="text-2xs font-bold text-emerald-850 bg-emerald-100/60 px-2 py-0.5 rounded font-sans">
+                          Confirmed ✓
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Nutrition list feedback queue */}
-                <div className="bg-white border border-[#001F3F]/10 rounded-2xl p-6 shadow-sm">
-                  <div className="flex items-center gap-2 mb-6">
-                    <Utensils className="w-5 h-5 text-[#001F3F]" />
-                    <h3 className="font-display font-medium text-slate-800 text-base">
-                      Client Daily Nutritional Submissions
-                    </h3>
+                {/* D. REVENUE SNAPSHOT */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h4 className="font-display font-medium text-slate-900 text-sm">Revenue Snapshot</h4>
+                      <p className="text-[10px] text-slate-450 mt-0.5 font-sans">Malaysia Ringgit (MYR) monthly billing trajectory</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-2xs font-semibold text-slate-450">
+                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-indigo-950 rounded-full"></span> Collected</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-teal-400 rounded-full"></span> Projected</span>
+                    </div>
                   </div>
 
-                  {nutrition.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-6 text-center font-sans">No client foods logged today.</p>
-                  ) : (
-                    <div className="space-y-4">
-                      {nutrition.map((n) => (
-                        <div key={n.id} className="border border-slate-100 rounded-xl p-4 bg-slate-50/70">
-                          <div className="flex justify-between items-start gap-2 mb-2">
-                            <div>
-                              <span className="text-[9px] font-bold text-teal-600 block uppercase">Client: Ahmad Ibrahim</span>
-                              <h4 className="font-bold text-slate-800 text-sm">Meal: {n.foodName}</h4>
-                            </div>
-                            <span className="text-2xs font-extrabold text-amber-900 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-lg shrink-0">
-                              🔥 {n.calories} kcal
-                            </span>
-                          </div>
-
-                          <div className="flex gap-4 text-2xs text-slate-500 font-semibold my-2">
-                            <span>Carbs: <strong className="text-slate-800">{n.carbs}g</strong></span>
-                            <span>Protein: <strong className="text-slate-800">{n.protein}g</strong></span>
-                            <span>Fat: <strong className="text-slate-800">{n.fat}g</strong></span>
-                          </div>
-
-                          {n.notes && (
-                            <p className="text-2xs italic text-slate-550 border-l-2 border-slate-200 pl-2 mb-3">
-                              &ldquo;{n.notes}&rdquo;
-                            </p>
-                          )}
-
-                          {n.trainerFeedback ? (
-                            <div className="bg-slate-100 text-slate-800 rounded-lg p-3 text-2xs mt-2 border border-slate-150">
-                              <p className="font-black mb-0.5 text-[9px] uppercase tracking-wider text-slate-500">Dietary Recommendation:</p>
-                              <p className="italic">&ldquo;{n.trainerFeedback}&rdquo;</p>
-                            </div>
-                          ) : (
-                            <div className="mt-2">
-                              {replyingNutritionId === n.id ? (
-                                <div className="space-y-2">
-                                  <textarea
-                                    value={nutritionFeedbackText}
-                                    onChange={(e) => setNutritionFeedbackText(e.target.value)}
-                                    placeholder="Provide dietary swaps, macro advice, or hydration guidance..."
-                                    className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs text-slate-800 focus:outline-[#001F3F]"
-                                  />
-                                  <div className="flex gap-2 justify-end">
-                                    <button
-                                      type="button"
-                                      onClick={() => setReplyingNutritionId(null)}
-                                      className="px-3 py-1 text-2xs font-bold text-slate-500 hover:bg-slate-100 rounded"
-                                    >
-                                      Cancel
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleNutritionReply(n.id)}
-                                      className="bg-[#001F3F] text-teal-400 font-bold text-2xs py-1 px-3.5 rounded"
-                                    >
-                                      Send Swaps
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <button
-                                  onClick={() => {
-                                    setReplyingNutritionId(n.id);
-                                    setNutritionFeedbackText('');
-                                  }}
-                                  className="bg-slate-900 text-white hover:text-teal-400 text-[10px] font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer"
-                                >
-                                  <MessageSquare className="w-3.5 h-3.5" /> Submit Dietary Swap
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                  {/* SVG Bar Chart Area */}
+                  <div className="relative pt-6">
+                    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none h-40 border-b border-slate-100 text-[9px] font-mono text-slate-300">
+                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 2,500</div>
+                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 1,800</div>
+                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 1,200</div>
+                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 600</div>
                     </div>
-                  )}
+
+                    <div className="flex justify-between items-end h-40 pt-6 relative px-4 z-10 font-sans">
+                      <div className="flex flex-col items-center group w-12">
+                        <div className="bg-slate-300 w-6 rounded-t-md transition-all duration-300 hover:bg-slate-400 animate-pulse" style={{ height: '35px' }}></div>
+                        <span className="text-[9px] font-bold text-slate-400 mt-2 font-mono uppercase">Feb</span>
+                      </div>
+                      <div className="flex flex-col items-center group w-12">
+                        <div className="bg-slate-300 w-6 rounded-t-md transition-all duration-300 hover:bg-slate-400" style={{ height: '58px' }}></div>
+                        <span className="text-[9px] font-bold text-slate-400 mt-2 font-mono uppercase font-sans">Mar</span>
+                      </div>
+                      <div className="flex flex-col items-center group w-12">
+                        <div className="bg-indigo-950/40 w-6 rounded-t-md transition-all duration-300 hover:bg-indigo-950 animate-fade-in" style={{ height: '80px' }}></div>
+                        <span className="text-[9px] font-bold text-slate-405 mt-2 font-mono uppercase">Apr</span>
+                      </div>
+                      <div className="flex flex-col items-center group w-12">
+                        <div className="bg-indigo-950/80 w-6 rounded-t-md transition-all duration-300 hover:bg-indigo-950" style={{ height: '115px' }}></div>
+                        <span className="text-[9px] font-bold text-slate-400 mt-2 font-mono uppercase">May</span>
+                      </div>
+                      <div className="flex flex-col items-center group w-12 relative">
+                        <span className="absolute -top-7 scale-0 group-hover:scale-100 transition-all bg-slate-900 text-teal-400 text-[9px] font-black font-mono py-1 px-2 rounded -translate-x-1/2 left-1/2 shadow-xl border border-slate-800 z-50 whitespace-nowrap">
+                          RM {paidSumRevenue.toFixed(0)}
+                        </span>
+                        <div className="bg-gradient-to-t from-indigo-950 to-indigo-700 w-7 rounded-t-md transition-all duration-300 hover:brightness-110 shadow-lg border-t-2 border-indigo-400 cursor-pointer" style={{ height: '142px' }}></div>
+                        <strong className="text-[9px] font-black text-indigo-950 mt-2 font-mono uppercase">Jun</strong>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
               </div>
 
-              {/* Right Column: Sessions requests approvals & mini checklist */}
-              <div className="space-y-8">
+              {/* Right Column: E. QUICK ACTIONS & C. RECENT NOTIFICATIONS */}
+              <div className="space-y-8 text-left">
                 
-                {/* Bookings approval system */}
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
-                  <h3 className="font-display font-medium text-slate-800 text-base mb-4 flex items-center gap-1.5 border-b border-slate-100 pb-3">
-                    <Calendar className="w-5 h-5 text-teal-600" />
-                    <span>Trainee Booking Requests</span>
+                {/* E. QUICK ACTIONS */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <h3 className="font-display font-medium text-slate-900 text-sm mb-4 flex items-center gap-1.5 border-b border-slate-100 pb-3 font-sans">
+                    <Sparkles className="w-4 h-4 text-indigo-900" />
+                    <span>Business Quick Actions</span>
                   </h3>
 
-                  {bookings.filter(b => b.status === 'Pending').length === 0 ? (
-                    <p className="text-xs text-slate-400 py-6 text-center">No pending schedule confirmations.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {bookings.filter(b => b.status === 'Pending').map((b) => (
-                        <div key={b.id} className="border border-slate-100 bg-slate-50/80 p-3.5 rounded-xl text-xs text-left">
-                          <div className="flex justify-between items-center mb-1.5">
-                            <span className="font-extrabold text-slate-800">{b.traineeName}</span>
-                            <span className="text-teal-600 font-black">{b.timeSlot}</span>
-                          </div>
-                          <p className="text-slate-500 mb-2">Requested date: <strong className="text-slate-700">{b.date}</strong></p>
-                          {b.notes && <p className="text-slate-600 bg-white p-2 border border-slate-100 rounded-lg text-[10px] mb-3 leading-snug">&ldquo;{b.notes}&rdquo;</p>}
-                          
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleBookingStatus(b.id, 'Approved')}
-                              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg py-2 text-xs font-bold transition cursor-pointer"
-                            >
-                              Confirm
-                            </button>
-                            <button
-                              onClick={() => handleBookingStatus(b.id, 'Cancelled')}
-                              className="flex-1 hover:bg-rose-50 border border-slate-200 text-slate-550 rounded-lg py-2 text-xs font-semibold cursor-pointer"
-                            >
-                              Reject
-                            </button>
-                          </div>
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {/* Add Client */}
+                    <button
+                      onClick={() => {
+                        setNewClientName('');
+                        setShowAddClientForm(true);
+                      }}
+                      className="w-full text-left bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-4 py-3 rounded-xl block transition cursor-pointer border border-slate-150 relative group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center text-teal-600 font-bold text-sm shrink-0">
+                          ＋
                         </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Approved schedules block */}
-                  <div className="border-t border-slate-100 pt-4 mt-4 text-left">
-                    <h4 className="font-bold text-[10px] uppercase text-slate-400 font-sans tracking-widest mb-3">
-                      Approved Coaching Schedule
-                    </h4>
-                    {bookings.filter(b => b.status === 'Approved').length === 0 ? (
-                      <p className="text-2xs text-slate-400">No scheduled sessions secured today.</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {bookings.filter(b => b.status === 'Approved').map(b => (
-                          <div key={b.id} className="bg-slate-50 p-3 rounded-xl flex justify-between items-center border border-slate-100">
-                            <div>
-                              <span className="font-bold text-slate-800 text-xs block leading-snug">{b.traineeName}</span>
-                              <span className="text-slate-400 text-[9px]">{b.location}</span>
-                            </div>
-                            <span className="text-[#001F3F] font-black text-2xs bg-teal-400/20 px-2 py-0.5 rounded">{b.timeSlot}</span>
-                          </div>
-                        ))}
+                        <div>
+                          <p className="text-2xs text-slate-805 font-black leading-none font-sans">Add New Client</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Provision metadata & goals profiles</p>
+                        </div>
                       </div>
-                    )}
+                    </button>
+
+                    {/* Issue Invoice */}
+                    <button
+                      onClick={() => {
+                        setSelectedTraineeId(trainees[0]?.id || 'te_ahmad');
+                        setInvoiceAmount(150);
+                        setInvoiceDescription('1x Custom Personal Training Hour');
+                        setInvoiceCreatedSuccess(false);
+                        setShowInvoiceForm(true);
+                      }}
+                      className="w-full text-left bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-4 py-3 rounded-xl block transition cursor-pointer border border-slate-150 relative group"
+                    >
+                      <div className="flex items-center gap-2.5 font-sans">
+                        <div className="w-7 h-7 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-700 shrink-0">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-2xs text-slate-800 font-black leading-none font-sans">Issue Invoice</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5 font-medium font-sans">Create certified Malaysia invoice</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Send Reminder */}
+                    <button
+                      onClick={() => setShowSendReminderForm(true)}
+                      className="w-full text-left bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-4 py-3 rounded-xl block transition cursor-pointer border border-slate-150 relative group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 shrink-0">
+                          <Bell className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-2xs text-slate-800 font-black leading-none font-sans">Send Payment Reminder</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5 font-medium">SMS & WhatsApp FPX reminder</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Create Workout Plan */}
+                    <button
+                      onClick={() => {
+                        const defaultTrainee = trainees[0] || { id: 'te_ahmad', name: 'Ahmad bin Ibrahim' };
+                        setPrescribeTraineeId(defaultTrainee.id);
+                        setPrescribeTraineeName(defaultTrainee.name);
+                        setPrescribeWorkoutType('Custom Core Interval Routine');
+                        setPrescribeDuration(45);
+                        setPrescribeNotes('Prioritize vertebral safety and proper breathing cycles.');
+                        setPrescribeExercises([{ name: 'Squat Stability Lift', sets: 3, reps: 10, weight: 15 }]);
+                        setShowPrescribeForm(true);
+                      }}
+                      className="w-full text-left bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-4 py-3 rounded-xl block transition cursor-pointer border border-slate-150 relative group font-sans"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-750 shrink-0">
+                          🏋️
+                        </div>
+                        <div>
+                          <p className="text-2xs text-slate-800 font-black leading-none font-sans">Create Workout Plan</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Prescribe verified dynamic workouts</p>
+                        </div>
+                      </div>
+                    </button>
                   </div>
                 </div>
 
-                {/* Secondary Coach resources guide */}
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm text-left">
-                  <h3 className="font-bold text-xs uppercase text-slate-400 tracking-wider mb-3">My Assigned Coach Stats</h3>
-                  <div className="space-y-3 text-xs">
-                    <div className="flex justify-between border-b border-slate-50 pb-2">
-                      <span className="text-slate-500">Active Clients</span>
-                      <strong className="text-slate-800">{trainees.length} Trainees</strong>
+                {/* C. RECENT NOTIFICATIONS */}
+                <div className="bg-white border border-slate-202 rounded-2xl p-6 shadow-sm text-left font-sans">
+                  <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-50">
+                    <span className="text-2xs font-extrabold text-slate-400 tracking-wider font-sans uppercase">Operational Alerts</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                  </div>
+                  
+                  <div className="space-y-3.5 text-slate-800 font-sans">
+                    <div className="flex gap-3 text-xs leading-tight font-sans">
+                      <div className="w-7 h-7 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-700 shrink-0 text-xs">
+                        🏋️
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 text-2xs leading-snug">3 workout logs submitted today</p>
+                        <span className="text-[9px] text-[#001F3F] tracking-wide font-extrabold block mt-0.5 font-mono">AWAITING REVIEW IN HUB</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between border-b border-slate-50 pb-2">
-                      <span className="text-slate-500">Booked Hours (Month)</span>
-                      <strong className="text-slate-800">18.5 hrs</strong>
+
+                    <div className="flex gap-3 text-xs leading-tight">
+                      <div className="w-7 h-7 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-700 shrink-0 text-xs font-sans">
+                        🥦
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 text-2xs leading-snug">2 nutrition logs submitted today</p>
+                        <span className="text-[9px] text-emerald-700 tracking-wide font-extrabold block mt-0.5 font-mono">AWAITING MEAL COMMENTS</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between pb-1">
-                      <span className="text-slate-500">Client Goal Success Rate</span>
-                      <strong className="text-teal-600 font-bold">92%</strong>
+
+                    <div className="flex gap-3 text-xs leading-tight font-sans">
+                      <div className="w-7 h-7 bg-teal-50 rounded-full flex items-center justify-center text-teal-700 shrink-0 text-2xs font-bold font-sans">
+                        RM
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-855 text-2xs leading-snug">1 payment received (RM 1,080.00)</p>
+                        <span className="text-[9px] text-teal-650 block mt-0.5 font-bold">Ahmad Ibrahim • INV-MY-0098 paid</span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 text-xs leading-tight">
+                      <div className="w-7 h-7 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-700 shrink-0">
+                        <Calendar className="w-3.5 h-3.5 text-indigo-900" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 text-2xs leading-snug">1 booking request pending</p>
+                        <span className="text-[9px] text-slate-400 block mt-0.5 font-medium">Slots review requested for SS15 Gym</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1102,6 +1221,551 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
             </div>
           </motion.div>
         )}
+
+        {/* 1B. NEW PAGE: COACHING HUB VIEW - CLIENTS REVIEWS WORKSPACE */}
+        {activeTab === 'coaching-hub' && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8 text-left animate-fade-in"
+          >
+            {/* Coaching Hub Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h3 className="text-xl font-black font-display text-slate-900 flex items-center gap-2">
+                  <ClipboardList className="w-5.5 h-5.5 text-indigo-900" />
+                  <span>Coach Review Workspace</span>
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Centralized hub for reviewing workout logs, daily calorie macros, progress comparison photos, and authorized AI recommendations.
+                </p>
+              </div>
+              <div className="text-2xs font-mono text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                ⚡ Gate Controls Authorized
+              </div>
+            </div>
+
+            {/* Main Workspace Layout */}
+            <div className="grid lg:grid-cols-3 gap-8">
+              
+              {/* Left 2 Columns containing reviews logs: workouts, nutrition, photos, AI recommendations */}
+              <div className="lg:col-span-2 space-y-8 text-left">
+                
+                {/* SECTION A: WORKOUT LOGS AWAITING REVIEW */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm text-left">
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center gap-2">
+                      <Dumbbell className="w-5 h-5 text-indigo-900" />
+                      <h3 className="font-display font-medium text-slate-900 text-sm">
+                        Workout Logs Awaiting Review
+                      </h3>
+                    </div>
+                    <span className="px-2.5 py-1 text-2xs font-extrabold uppercase font-mono rounded-lg bg-teal-50 text-teal-700 border border-teal-200">
+                      {workouts.filter(w => !w.trainerFeedback).length || 3} Logs Pending
+                    </span>
+                  </div>
+
+                  {workouts.length === 0 ? (
+                    <p className="text-xs text-slate-400 py-6 text-center">No trainee workouts submitted today.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {workouts.map((w) => (
+                        <div key={w.id} className="border border-slate-150 rounded-xl p-4 bg-slate-50/70 text-slate-800">
+                          <div className="flex justify-between items-start gap-2 mb-2 font-sans text-slate-800">
+                            <div>
+                              <span className="text-[9.5px] font-bold text-indigo-950 block uppercase tracking-wider">Ahmad Ibrahim • Subang Jaya</span>
+                              <h4 className="font-bold text-slate-855 text-xs">{w.workoutType} Session Log</h4>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className="text-2xs font-extrabold text-[#001F3F] bg-[#001F3F]/5 px-2 py-0.5 rounded-lg inline-block">⏱ {w.duration} mins</span>
+                              <p className="text-[8.5px] text-slate-400 font-bold uppercase mt-1 font-mono font-sans font-sans">Submitted: {w.date || '11 Jun 2026'}</p>
+                            </div>
+                          </div>
+
+                          <div className="grid sm:grid-cols-2 gap-2 my-2.5 text-2xs text-slate-800">
+                            {w.exercises?.map((ex, idx) => (
+                              <div key={idx} className="bg-white px-2.5 py-1.5 rounded border border-slate-100 text-slate-650 font-medium font-sans">
+                                🏃 {ex.name || 'Core Stability Split'}: <strong className="text-slate-800">{ex.sets} sets</strong> × <strong className="text-slate-800">{ex.reps} reps</strong> {ex.weight > 0 ? `@ ${ex.weight}kg` : ''}
+                              </div>
+                            ))}
+                          </div>
+
+                          {w.notes && (
+                            <p className="text-2xs text-slate-550 italic bg-white p-2.5 rounded border border-slate-150 mb-3 block text-left">
+                              &ldquo;{w.notes}&rdquo;
+                            </p>
+                          )}
+
+                          {w.trainerFeedback ? (
+                            <div className="mt-2 bg-slate-100 border border-slate-150 text-slate-850 rounded-lg p-2.5 text-2xs text-left">
+                              <p className="font-black mb-0.5 text-[9px] uppercase tracking-wider text-slate-500 font-sans">Your Dispatched Feedback Review:</p>
+                              <p className="italic font-sans">&ldquo;{w.trainerFeedback}&rdquo;</p>
+                            </div>
+                          ) : (
+                            <div className="mt-3 flex flex-col gap-2 font-sans">
+                              {replyingWorkoutId === w.id ? (
+                                <div className="space-y-2">
+                                  <textarea
+                                    value={workoutFeedbackText}
+                                    onChange={(e) => setWorkoutFeedbackText(e.target.value)}
+                                    placeholder="Provide coaching advice, alignment adjustments, or water weight comments..."
+                                    className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs text-slate-800 focus:outline-[#001F3F] font-sans text-left"
+                                  />
+                                  <div className="flex gap-2 justify-end">
+                                    <button
+                                      type="button"
+                                      onClick={() => setReplyingWorkoutId(null)}
+                                      className="px-3 py-1 text-2xs font-bold text-slate-500 hover:bg-slate-100 rounded"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleWorkoutReply(w.id);
+                                        // add to Activity Feed
+                                        setCoachingFeed(prev => [
+                                          { id: Date.now(), type: 'workout', text: `Workout feedback sent to Ahmad Ibrahim: "${workoutFeedbackText}"`, time: 'Just now' },
+                                          ...prev
+                                        ]);
+                                      }}
+                                      className="bg-indigo-900 border border-indigo-950 font-bold hover:bg-slate-955 text-white text-2xs py-1.5 px-3.5 rounded"
+                                    >
+                                      Send Review
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex gap-1.5 flex-wrap">
+                                  <button
+                                    onClick={() => {
+                                      setReplyingWorkoutId(w.id);
+                                      setWorkoutFeedbackText('');
+                                    }}
+                                    className="bg-indigo-900 hover:bg-slate-955 text-white text-[10px] font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer font-sans"
+                                  >
+                                    <MessageSquare className="w-3.5 h-3.5 text-white" /> Review Workout & Send Feedback
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      dbService.addWorkoutFeedback(w.id, "Excellent job completing this entire physical prescription. Your tempo and posture look incredibly aligned. Keep up the high standard!");
+                                      triggerToast("Workout marked as reviewed! Automatic appraisal dispatched.", "success");
+                                      fetchTrainerData();
+                                      setCoachingFeed(prev => [
+                                        { id: Date.now(), type: 'workout', text: `Workout log marked as Reviewed & Approved for ${w.workoutType}`, time: 'Just now' },
+                                        ...prev
+                                      ]);
+                                    }}
+                                    className="border border-slate-150 bg-white hover:bg-slate-100 text-slate-655 text-[10px] font-bold py-1.5 px-3 rounded-lg transition cursor-pointer font-sans"
+                                  >
+                                    ✓ Instant Mark Reviewed
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* SECTION B: NUTRITION LOGS AWAITING REVIEW */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm text-left">
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center gap-2">
+                      <Utensils className="w-5 h-5 text-indigo-900" />
+                      <h3 className="font-display font-medium text-slate-900 text-sm">
+                        Nutrition Logs Awaiting Review
+                      </h3>
+                    </div>
+                    <span className="px-2.5 py-1 text-2xs font-extrabold uppercase font-mono rounded-lg bg-teal-50 text-teal-700 border border-teal-200">
+                      {nutrition.filter(n => !n.trainerFeedback).length || 2} Logs Pending
+                    </span>
+                  </div>
+
+                  {nutrition.length === 0 ? (
+                    <p className="text-xs text-slate-400 py-6 text-center">No trainee nutrition logs submitted.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {nutrition.map((n) => (
+                        <div key={n.id} className="border border-slate-155 rounded-xl p-4 bg-slate-50/70 text-slate-800 text-left">
+                          <div className="flex justify-between items-start gap-2 mb-2 font-sans">
+                            <div>
+                              <span className="text-[9.5px] font-bold text-indigo-650 block uppercase">Client: Ahmad Ibrahim</span>
+                              <h4 className="font-bold text-slate-855 text-xs">Meal: {n.foodName}</h4>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className="text-2xs font-extrabold text-amber-900 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-lg inline-block font-mono animate-pulse">
+                                🔥 {n.calories} kcal
+                              </span>
+                              <p className="text-[8.5px] text-slate-400 font-mono font-bold mt-1">Logged: {n.date || '11 Jun 2026'}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-4 text-2xs text-slate-500 font-semibold my-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 font-sans">
+                            <span>Carbs: <strong className="text-slate-850 font-bold font-mono">{n.carbs}g</strong></span>
+                            <span>Protein: <strong className="text-emerald-700 font-bold font-mono">{n.protein}g</strong></span>
+                            <span>Fat: <strong className="text-rose-700 font-bold font-mono">{n.fat}g</strong></span>
+                          </div>
+
+                          {n.notes && (
+                            <p className="text-2xs italic text-slate-550 border-l-2 border-slate-205 pl-2 mb-3">
+                              &ldquo;{n.notes}&rdquo;
+                            </p>
+                          )}
+
+                          {n.trainerFeedback ? (
+                            <div className="bg-slate-100 text-slate-850 rounded-lg p-3 text-2xs mt-2 border border-slate-150 text-left">
+                              <p className="font-black mb-0.5 text-[9px] uppercase tracking-wider text-slate-555">Dietary Recommendation:</p>
+                              <p className="italic font-sans">&ldquo;{n.trainerFeedback}&rdquo;</p>
+                            </div>
+                          ) : (
+                            <div className="mt-3 flex flex-col gap-2 font-sans">
+                              {replyingNutritionId === n.id ? (
+                                <div className="space-y-2">
+                                  <textarea
+                                    value={nutritionFeedbackText}
+                                    onChange={(e) => setNutritionFeedbackText(e.target.value)}
+                                    placeholder="Type comment or swap suggestion (e.g. swap white rice with quinoa)..."
+                                    className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs text-slate-800 focus:outline-[#001F3F] font-sans"
+                                  />
+                                  <div className="flex gap-2 justify-end">
+                                    <button
+                                      type="button"
+                                      onClick={() => setReplyingNutritionId(null)}
+                                      className="px-3 py-1 text-2xs font-bold text-slate-550 hover:bg-slate-100 rounded"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleNutritionReply(n.id);
+                                        // add to activity Feed
+                                        setCoachingFeed(prev => [
+                                          { id: Date.now(), type: 'nutrition', text: `Nutrition advice sent to Ahmad Ibrahim: "${nutritionFeedbackText}"`, time: 'Just now' },
+                                          ...prev
+                                        ]);
+                                      }}
+                                      className="bg-indigo-900 text-white font-bold text-2xs py-1 px-3.5 rounded"
+                                    >
+                                      Comment
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex gap-1.5 flex-wrap">
+                                  <button
+                                    onClick={() => {
+                                      setReplyingNutritionId(n.id);
+                                      setNutritionFeedbackText('');
+                                    }}
+                                    className="bg-indigo-900 hover:bg-slate-950 text-white text-[10px] font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer font-sans"
+                                  >
+                                    <MessageSquare className="w-3.5 h-3.5 text-white" /> Comment on Meal
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      dbService.addNutritionFeedback(n.id, `Recommending healthier swap options. The caloric load matches targets, but swap simple carbs for fiber-dense vegetables.`);
+                                      triggerToast("Strategic dietary swaps recommended successfully!", "success");
+                                      fetchTrainerData();
+                                      setCoachingFeed(prev => [
+                                        { id: Date.now(), type: 'nutrition', text: `Dietary swaps recommended to Ahmad Ibrahim for meal: ${n.foodName}`, time: 'Just now' },
+                                        ...prev
+                                      ]);
+                                    }}
+                                    className="bg-teal-50 border border-teal-200 text-teal-800 text-[10px] font-bold py-1.5 px-3 rounded-lg transition hover:bg-teal-100 cursor-pointer font-sans font-sans"
+                                  >
+                                    🥦 Recommend Dietary Swaps
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      dbService.addNutritionFeedback(n.id, "Perfect calorie and macro balance. Verified ✓");
+                                      triggerToast("Marked daily nutritional log as Approved!", "success");
+                                      fetchTrainerData();
+                                      setCoachingFeed(prev => [
+                                        { id: Date.now(), type: 'nutrition', text: `Dietary log authorized for Ahmad Ibrahim (${n.calories} kcal)`, time: 'Just now' },
+                                        ...prev
+                                      ]);
+                                    }}
+                                    className="border border-slate-150 bg-white hover:bg-slate-100 text-slate-655 text-[10px] font-bold py-1.5 px-3 rounded-lg transition cursor-pointer"
+                                  >
+                                    Mark Reviewed
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* SECTION C: PROGRESS PHOTOS AWAITING REVIEW */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm text-left">
+                  <div className="flex items-center gap-2 mb-6 border-b border-slate-50 pb-3">
+                    <Camera className="w-5 h-5 text-indigo-900" />
+                    <div>
+                      <h3 className="font-display font-medium text-slate-900 text-sm">
+                        Progress Photos Awaiting Review
+                      </h3>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Trainees visual physique timeline uploads pending coach feedback.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* Photo Card 1 */}
+                    <div className="border border-slate-150 bg-slate-50/55 p-4 rounded-2xl flex flex-col justify-between text-slate-850">
+                      <div>
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <strong className="text-slate-850 text-xs block font-bold">Ahmad Ibrahim</strong>
+                            <span className="text-[10px] text-teal-605 font-bold bg-teal-50 px-2 py-0.5 rounded-full inline-block mt-0.5 border border-teal-200/60 font-sans">
+                              Week 8 Visual Check
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-mono font-bold">11 Jun 2026</span>
+                        </div>
+                        
+                        {/* Mini thumbnails */}
+                        <div className="grid grid-cols-2 gap-2 my-2.5">
+                          <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=150" className="w-full h-24 object-cover rounded-lg grayscale border border-slate-100" alt="Before" />
+                          <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=150" className="w-full h-24 object-cover rounded-lg border border-teal-200" alt="Current font-sans" />
+                        </div>
+                        <p className="text-[10px] text-slate-400 font-sans">Comparing Base Week 1 against Current Week 8</p>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-slate-100 flex gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedPhotoTrainee(trainees[0] || { id: 'te_ahmad', name: 'Ahmad Ibrahim' } as any);
+                            setPhotoFeedbackText('');
+                          }}
+                          className="flex-1 bg-indigo-900 hover:bg-slate-955 text-white text-2xs font-bold py-2 rounded-xl text-center cursor-pointer transition"
+                        >
+                          Compare & Feedback
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Photo Card 2 */}
+                    <div className="border border-slate-150 bg-slate-50/55 p-4 rounded-2xl flex flex-col justify-between text-slate-850">
+                      <div>
+                        <div className="flex justify-between items-start mb-3 font-sans">
+                          <div>
+                            <strong className="text-slate-850 text-xs block font-bold font-sans">Mei Ling Tan</strong>
+                            <span className="text-[10px] text-indigo-900 font-bold bg-indigo-50 px-2 py-0.5 rounded-full inline-block mt-0.5">
+                              Week 4 Visual Check
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-mono font-bold">09 Jun 2026</span>
+                        </div>
+                        
+                        {/* Mini thumbnails */}
+                        <div className="grid grid-cols-2 gap-2 my-2.5">
+                          <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=150" className="w-full h-24 object-cover rounded-lg grayscale border border-slate-100" alt="Before" />
+                          <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=150" className="w-full h-24 object-cover rounded-lg border border-indigo-200" alt="Current" />
+                        </div>
+                        <p className="text-[10px] text-slate-400">Comparing Base Week 1 against Current Week 4</p>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-slate-100 flex gap-2">
+                        <button
+                          onClick={() => {
+                            const mei = trainees.find(t => t.id === 'te_ling') || { id: 'te_ling', name: 'Mei Ling Tan' } as any;
+                            setSelectedPhotoTrainee(mei);
+                            setPhotoFeedbackText('');
+                          }}
+                          className="flex-1 bg-indigo-900 hover:bg-slate-950 text-white text-2xs font-bold py-2 rounded-xl text-center cursor-pointer transition font-sans"
+                        >
+                          Compare & Feedback
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION D: AI RECOMMENDATIONS AWAITING APPROVAL */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm text-slate-800 text-left">
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-indigo-900 animate-spin" />
+                      <div>
+                        <h3 className="font-display font-medium text-slate-900 text-sm">
+                          AI Recommendations Awaiting Approval
+                        </h3>
+                        <p className="text-[10px] text-slate-400 mt-0.5">Mandatory premium certified coach verification gate.</p>
+                      </div>
+                    </div>
+                    <span className="bg-amber-100 border border-amber-200 text-amber-900 text-[10px] px-2 py-0.5 rounded font-black font-mono font-sans">
+                      HUMAN VERIFICATION REQUIRED
+                    </span>
+                  </div>
+
+                  {/* Program specifications */}
+                  <div className="bg-gradient-to-br from-indigo-950 to-slate-900 text-white rounded-2xl p-6 relative overflow-hidden mb-6 shadow-md text-left font-sans">
+                    <div className="absolute right-2 bottom-2 text-7xl opacity-10 font-black tracking-widest text-[#001F3F] pointer-events-none">GEMINI</div>
+                    <span className="bg-teal-400 text-[#001F3F] text-[9px] font-black px-2.5 py-0.5 rounded-full inline-block uppercase mb-2 animate-pulse">
+                      RELIABLE METRIC GENERATION
+                    </span>
+                    <h4 className="font-display font-bold text-base text-white mb-1">
+                      Ahmad Ibrahim • 3-Day Metabolic Strength Split
+                    </h4>
+                    <p className="text-[11px] text-slate-300 leading-relaxed max-w-xl">
+                      This plan was synthesized using client height (172cm), weight (70kg), and goals (Cardio Tone and Metabolic Stamina) targeted for local Selangor weather metrics.
+                    </p>
+                  </div>
+
+                  {/* Review / Interactive Section */}
+                  <div className="border border-indigo-150 rounded-2xl bg-indigo-50/40 p-5 space-y-4 font-sans text-slate-850">
+                    <div className="flex justify-between items-center border-b border-indigo-100 pb-3">
+                      <div>
+                        <strong className="text-indigo-950 text-[#001F3F] text-sm block font-sans font-bold">HIIT Cardio Intervals & Calibrated Core Strength</strong>
+                        <span className="text-[10px] text-slate-450 uppercase block mt-0.5 font-bold">Focus: Adipose Depletion & Lean Tone</span>
+                      </div>
+                      <span className="text-[10px] uppercase font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-250 font-sans">
+                        Pending Trainer Gate
+                      </span>
+                    </div>
+
+                    <div className="space-y-3.5 text-xs text-slate-800">
+                      {/* Day 1 */}
+                      <div className="bg-white p-3.5 border border-slate-200 rounded-xl shadow-sm">
+                        <strong className="text-slate-800 text-[11px] block border-b pb-1.5 mb-2 font-bold font-sans">Day 1: Upper Chest & Core Burn</strong>
+                        <ul className="space-y-1 text-slate-600 font-mono text-2xs leading-relaxed">
+                          <li>⚡ Dumbbell Press: 3 sets × 12 reps @ 18kg</li>
+                          <li>⚡ Push-ups (Tempo Control): 3 sets × 15 reps</li>
+                          <li>⚡ Dynamic Mountain Climbers: 3 sets × 30 seconds</li>
+                        </ul>
+                      </div>
+
+                      {/* Day 2 */}
+                      <div className="bg-white p-3.5 border border-slate-200 rounded-xl shadow-sm">
+                        <strong className="text-slate-805 text-[11px] block border-b pb-1.5 mb-2 font-bold font-sans">Day 2: Posterior Chain Strength</strong>
+                        <ul className="space-y-1 text-slate-600 font-mono text-2xs leading-relaxed">
+                          <li>⚡ Dumbbell Romanian Deadlifts: 3 sets × 10 reps @ 24kg</li>
+                          <li>⚡ Goblet Squats (Deep Hip Control): 3 sets × 12 reps @ 16kg</li>
+                          <li>⚡ Hanging Abdominal Leg Raises: 3 sets × 10 reps</li>
+                        </ul>
+                      </div>
+
+                      {/* Coach tips */}
+                      <div className="bg-[#001F3F] text-slate-50 p-4 rounded-xl text-2xs space-y-1 text-left">
+                        <span className="text-teal-400 font-black block tracking-wide font-sans">🇲🇾 Coach Tactical Tips:</span>
+                        <p>1. Rest exactly 45 seconds between exercises to optimize post-activation potentiation.</p>
+                        <p>2. Complete under indoor air-conditioned studio during active solar midday heat alerts.</p>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="border-t border-indigo-150 pt-4 flex flex-wrap gap-2 justify-between">
+                      <div className="flex gap-1.5 shrink-0">
+                        <button
+                          onClick={() => {
+                            triggerToast("Gemini Workout Suggestion successfully APPROVED & signed!", "success");
+                            // Send custom message
+                            dbService.createChatMessage({
+                              senderId: 'u_sarah',
+                              receiverId: 'u_ahmad',
+                              message: `✨ [Authorized AI Coach Optimizer Plan] I have approved your new 3-day training split! Focus is HIIT Cardio Intervals and Calibrated Core. Go to your workouts tab to review details!`
+                            });
+                            setCoachingFeed(prev => [
+                              { id: Date.now(), type: 'ai', text: 'Approved AI Custom 3-Day Workout prescription for Ahmad Ibrahim', time: 'Just now' },
+                              ...prev
+                            ]);
+                          }}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-2xs py-2 px-3.5 rounded-lg transition shrink-0 cursor-pointer font-sans"
+                        >
+                          ✓ Approve & Dispatch
+                        </button>
+                        <button
+                          onClick={() => {
+                            triggerToast("AI Proposal has been edited and signed with coach corrections done.", "success");
+                            setCoachingFeed(prev => [
+                              { id: Date.now(), type: 'ai', text: 'Edited & Signed AI Routine split modifications for Ahmad Ibrahim', time: 'Just now' },
+                              ...prev
+                            ]);
+                          }}
+                          className="bg-slate-200 hover:bg-slate-350 text-slate-855 font-extrabold text-2xs py-2 px-3 rounded-lg transition shrink-0 cursor-pointer font-sans"
+                        >
+                          Modify & Approve
+                        </button>
+                        <button
+                          onClick={() => {
+                            triggerToast("AI suggestion has been flagged as Rejected.", "info");
+                            setCoachingFeed(prev => [
+                              { id: Date.now(), type: 'ai', text: 'Rejected AI template proposal to regenerate focus', time: 'Just now' },
+                              ...prev
+                            ]);
+                          }}
+                          className="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 font-bold text-2xs py-2 px-3 rounded-lg transition shrink-0 cursor-pointer font-sans"
+                        >
+                          ✗ Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              
+              {/* SECTION E: RECENT COACHING ACTIVITY FEED (Right Column) */}
+              <div className="space-y-4">
+                <div className="bg-white border border-slate-205 rounded-2xl p-6 shadow-sm font-sans">
+                  <h3 className="font-sans font-black text-xs text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1.5 border-b border-slate-50 pb-2">
+                    <Activity className="w-4 h-4 text-[#001F3F]" />
+                    <span>Recent Coaching Activity Feed</span>
+                  </h3>
+
+                  <div className="space-y-4 text-left">
+                    {coachingFeed.map((f) => (
+                      <div key={f.id} className="flex gap-2.5 items-start text-xs leading-normal font-sans">
+                        <div className={`w-6.5 h-6.5 rounded-full flex items-center justify-center shrink-0 text-2xs mt-0.5 ${
+                          f.type === 'workout' ? 'bg-indigo-50 text-indigo-700 font-bold' :
+                          f.type === 'nutrition' ? 'bg-emerald-50 text-emerald-700 font-bold' :
+                          f.type === 'photo' ? 'bg-purple-100 text-purple-750 font-bold' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {f.type === 'workout' ? '🏋️' :
+                           f.type === 'nutrition' ? '🥦' :
+                           f.type === 'photo' ? '📸' : '✨'}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-slate-800 leading-snug font-medium font-sans">{f.text}</p>
+                          <span className="text-[9px] text-slate-450 font-bold uppercase font-mono">{f.time}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-indigo-950 text-white rounded-2xl p-5 border border-indigo-900 shadow-xl space-y-3 font-sans text-left">
+                  <span className="text-[10px] tracking-widest font-black uppercase text-teal-400 block font-mono">Coach Checklist Guideline</span>
+                  <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                    Always consult your clients during visual reviews or when modifying AI optimization. Provide encouraging swaps and hydrate continuously.
+                  </p>
+                  <button
+                    onClick={() => {
+                      triggerToast("Opened internal SS15 studio syllabus PDF mockup.");
+                    }}
+                    className="w-full bg-white/10 hover:bg-white/20 text-white text-2xs font-extrabold uppercase py-2.5 rounded-xl border border-white/20 transition cursor-pointer"
+                  >
+                    View Studio Syllabus
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+        )}
+
+        {/* 1C. LEGACY ROUTINE RENDER OVERRIDE HOOK */}
+        {activeTab === 'trainer-dashboard-disabled-placeholder' && (
+          <motion.div>
+          </motion.div>
+        )}
+
 
         {/* 2. DYNAMIC CLIENTS VIEW & DRILL DOWN DETAILS */}
         {activeTab === 'client-management' && (
@@ -1175,6 +1839,38 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                         <p className="text-slate-550 truncate"><strong className="text-slate-700 font-bold text-slate-650">Last Meal:</strong> {stats.latestMeal}</p>
                         <p className="text-slate-500"><strong className="text-slate-700">Next Secured:</strong> <span className="text-[#001F3F] font-semibold">{stats.nextSession}</span></p>
                       </div>
+
+                      {/* Workouts History Preview */}
+                      <div className="mt-4 pt-3.5 border-t border-slate-100 text-[10px]">
+                        <span className="font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">🏋️ Workouts History</span>
+                        <div className="space-y-1">
+                          {workouts.filter(w => w.traineeId === t.id).slice(0, 2).map((w, idx) => (
+                            <div key={idx} className="bg-slate-50/70 p-1.5 rounded border border-slate-100 flex justify-between">
+                              <span className="font-bold text-slate-700 truncate max-w-[130px]">{w.workoutType} Session</span>
+                              <span className="text-slate-400 shrink-0 font-mono text-[9px]">{w.date}</span>
+                            </div>
+                          ))}
+                          {workouts.filter(w => w.traineeId === t.id).length === 0 && (
+                            <p className="text-slate-400 italic text-2xs">No logged workouts yet</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Nutrition History Preview */}
+                      <div className="mt-3 text-[10px] pb-2">
+                        <span className="font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">🥗 Nutrition History</span>
+                        <div className="space-y-1">
+                          {nutrition.filter(n => n.traineeId === t.id).slice(0, 2).map((n, idx) => (
+                            <div key={idx} className="bg-slate-50/70 p-1.5 rounded border border-slate-100 flex justify-between items-center">
+                              <span className="font-bold text-slate-700 truncate max-w-[120px]">{n.foodName}</span>
+                              <span className="text-teal-600 font-extrabold shrink-0 font-mono text-[9px]">{n.calories} kcal</span>
+                            </div>
+                          ))}
+                          {nutrition.filter(n => n.traineeId === t.id).length === 0 && (
+                            <p className="text-slate-400 italic text-2xs">No logged meals yet</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Bottom layout */}
@@ -1247,10 +1943,10 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                     </div>
 
                     {/* Navigation Drawer Tabs */}
-                    <div className="bg-slate-55 bg-slate-100 p-2 border-b border-slate-200 shrink-0 flex gap-2 overflow-x-auto">
+                    <div className="bg-slate-100 p-2 border-b border-slate-200 shrink-0 flex gap-1.5 overflow-x-auto">
                       <button 
                         onClick={() => setTraineeDetailTab('body')}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition shrink-0 ${
+                        className={`px-2.5 py-1.5 text-2xs font-extrabold rounded-lg transition shrink-0 ${
                           traineeDetailTab === 'body' ? 'bg-[#001F3F] text-white shadow-sm' : 'text-slate-650 hover:bg-slate-200'
                         }`}
                       >
@@ -1258,15 +1954,23 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                       </button>
                       <button 
                         onClick={() => setTraineeDetailTab('history')}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition shrink-0 ${
+                        className={`px-2.5 py-1.5 text-2xs font-extrabold rounded-lg transition shrink-0 ${
                           traineeDetailTab === 'history' ? 'bg-[#001F3F] text-white shadow-sm' : 'text-slate-650 hover:bg-slate-200'
                         }`}
                       >
-                        🏋️ Workouts History
+                        🏋️ Workout History
+                      </button>
+                      <button 
+                        onClick={() => setTraineeDetailTab('nutrition')}
+                        className={`px-2.5 py-1.5 text-2xs font-extrabold rounded-lg transition shrink-0 ${
+                          traineeDetailTab === 'nutrition' ? 'bg-[#001F3F] text-white shadow-sm' : 'text-slate-650 hover:bg-slate-200'
+                        }`}
+                      >
+                        🍽️ Nutrition History
                       </button>
                       <button 
                         onClick={() => setTraineeDetailTab('photos')}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition shrink-0 ${
+                        className={`px-2.5 py-1.5 text-2xs font-extrabold rounded-lg transition shrink-0 ${
                           traineeDetailTab === 'photos' ? 'bg-[#001F3F] text-white shadow-sm' : 'text-slate-650 hover:bg-slate-200'
                         }`}
                       >
@@ -1274,7 +1978,7 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                       </button>
                       <button 
                         onClick={() => setTraineeDetailTab('ai')}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition shrink-0 flex items-center gap-1 ${
+                        className={`px-2.5 py-1.5 text-2xs font-extrabold rounded-lg transition shrink-0 flex items-center gap-1 ${
                           traineeDetailTab === 'ai' ? 'bg-[#001F3F] text-white shadow-sm' : 'text-indigo-650 font-black hover:bg-indigo-50'
                         }`}
                       >
@@ -1285,44 +1989,86 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                     {/* Drawer Scrollable Body Content */}
                     <div className="flex-1 p-6 space-y-6 overflow-y-auto text-left">
                       
-                      {/* TAB A: BODY METRICS & EDIT NOTES */}
+                      {/* TAB 1: METRICS & NOTES */}
                       {traineeDetailTab === 'body' && (
                         <div className="space-y-6">
                           
-                          {/* Metrics Grid */}
+                          {/* Metrics Header Summary */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-[#001F3F]/5 border border-teal-500/10 p-4 rounded-xl">
+                              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Client Attendance Status</span>
+                              <strong className="text-slate-800 text-lg block font-display font-black mt-0.5">{getTraineeStats(selectedTrainee.id).attendance}</strong>
+                              <p className="text-[9.5px] text-slate-500 mt-1">Status: Consistently active in Subang Studio</p>
+                            </div>
+                            <div className="bg-[#001F3F]/5 border border-teal-500/10 p-4 rounded-xl">
+                              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Calculated BMI Rating</span>
+                              <strong className="text-teal-700 text-lg block font-display font-black mt-0.5">
+                                {(selectedTrainee.weight / ((selectedTrainee.height / 100) ** 2)).toFixed(1)} kg/m²
+                              </strong>
+                              <p className="text-[9.5px] text-slate-500 mt-1">Goal: target to {(getTraineeStats(selectedTrainee.id).targetWeight / ((selectedTrainee.height / 100) ** 2)).toFixed(1)} kg/m²</p>
+                            </div>
+                          </div>
+
+                          {/* Anthropometrics Grid */}
                           <div>
                             <h4 className="font-bold text-xs uppercase text-slate-400 tracking-wider mb-3">Trainee Anthropometric Metrics</h4>
                             <div className="grid grid-cols-3 gap-3">
                               <div className="bg-slate-50 border border-slate-100 p-3 rounded-lg">
                                 <span className="text-[10px] text-slate-400 block uppercase font-bold">Height</span>
-                                <strong className="text-slate-800 text-sm font-sans">{selectedTrainee.height} cm</strong>
+                                <strong className="text-slate-800 text-xs font-sans">{selectedTrainee.height} cm</strong>
                               </div>
                               <div className="bg-slate-50 border border-slate-100 p-3 rounded-lg">
-                                <span className="text-[10px] text-slate-400 block uppercase font-bold">Weight</span>
-                                <strong className="text-slate-800 text-sm font-sans">{selectedTrainee.weight} kg</strong>
+                                <span className="text-[10px] text-slate-400 block uppercase font-bold">Current Weight</span>
+                                <strong className="text-slate-800 text-xs font-sans">{selectedTrainee.weight} kg</strong>
                               </div>
-                              <div className="bg-slate-50 border border-slate-105 p-3 rounded-lg">
+                              <div className="bg-slate-50 border border-slate-100 p-3 rounded-lg">
                                 <span className="text-[10px] text-slate-400 block uppercase font-bold">Target Weight</span>
-                                <strong className="text-slate-800 text-sm font-sans">{getTraineeStats(selectedTrainee.id).targetWeight} kg</strong>
+                                <strong className="text-teal-700 text-xs font-sans">{getTraineeStats(selectedTrainee.id).targetWeight} kg</strong>
                               </div>
-                              <div className="bg-slate-50 border border-slate-105 p-3 rounded-lg">
+                              <div className="bg-slate-50 border border-slate-100 p-3 rounded-lg">
                                 <span className="text-[10px] text-slate-400 block uppercase font-bold">Body Fat Rate</span>
-                                <strong className="text-slate-800 text-sm font-sans">{getTraineeStats(selectedTrainee.id).bodyMetrics.bodyFat} %</strong>
+                                <strong className="text-slate-800 text-xs font-sans">{getTraineeStats(selectedTrainee.id).bodyMetrics.bodyFat} %</strong>
                               </div>
-                              <div className="bg-slate-50 border border-slate-105 p-3 rounded-lg">
+                              <div className="bg-slate-50 border border-slate-100 p-3 rounded-lg">
                                 <span className="text-[10px] text-slate-400 block uppercase font-bold">Muscle Mass</span>
-                                <strong className="text-slate-800 text-sm font-sans">{getTraineeStats(selectedTrainee.id).bodyMetrics.muscleMass} kg</strong>
+                                <strong className="text-slate-800 text-xs font-sans">{getTraineeStats(selectedTrainee.id).bodyMetrics.muscleMass} kg</strong>
                               </div>
-                              <div className="bg-slate-50 border border-slate-105 p-3 rounded-lg">
-                                <span className="text-[10px] text-slate-400 block uppercase font-bold">Calculated BMR</span>
-                                <strong className="text-[#001F3F] text-sm font-black font-sans">{getTraineeStats(selectedTrainee.id).bodyMetrics.bmr} kcal</strong>
+                              <div className="bg-[#001F3F]/10 border border-[#001F3F]/15 p-3 rounded-lg">
+                                <span className="text-[10px] text-slate-500 block uppercase font-bold">Calculated BMR</span>
+                                <strong className="text-[#001F3F] text-xs font-black font-sans">{getTraineeStats(selectedTrainee.id).bodyMetrics.bmr} kcal</strong>
                               </div>
                             </div>
                           </div>
 
-                          {/* Interactive notes */}
+                          {/* Client Goals */}
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">Trainee Goal Objectives & Limitations</span>
+                            <div className="mt-2 space-y-1">
+                              <p className="text-xs font-bold text-slate-700">{selectedTrainee.goals || "Re-stabilize posture and achieve fat depletion of 3-5% before next cycle."}</p>
+                              <div className="flex gap-2 mt-2">
+                                <span className="bg-rose-50 text-rose-705 px-2.5 py-0.5 rounded text-[10px] font-bold border border-rose-100">🇲🇾 Subang Jaya Sandbox</span>
+                                <span className="bg-[#001F3F]/10 text-[#001F3F] px-2.5 py-0.5 rounded text-[10px] font-bold">Weekly Rate: 3x sessions</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Physical Check-In Dates History */}
                           <div>
-                            <div className="flex justify-between items-center mb-1.5">
+                            <h4 className="font-bold text-xs uppercase text-slate-400 tracking-wider mb-2.5 font-display">QR Code Scan Attendance Log</h4>
+                            <div className="flex gap-2 overflow-x-auto py-1">
+                              {["11 Jun 2026", "08 Jun 2026", "05 Jun 2026", "01 Jun 2026", "28 May 2026"].map((date, idx) => (
+                                <div key={idx} className="bg-white border text-center p-2 rounded-lg min-w-[85px] leading-tight shadow-xs">
+                                  <span className="text-[9px] text-slate-400 uppercase block font-bold">Session #{5 - idx}</span>
+                                  <strong className="text-[11px] text-slate-800 block mt-1">{date}</strong>
+                                  <span className="text-[9px] text-emerald-600 font-bold block mt-0.5">✓ Checked</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Private Observation notes */}
+                          <div>
+                            <div className="flex justify-between items-center mb-1.5 font-display">
                               <label className="font-bold text-xs uppercase text-slate-400 tracking-wider">Coach Private Observations</label>
                               {notesSuccess && <span className="text-[10px] font-bold text-teal-600 block">✓ Saved!</span>}
                             </div>
@@ -1331,7 +2077,7 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                               onChange={(e) => setNotesText(e.target.value)}
                               rows={5}
                               placeholder="Type tactical feedback, limitations, injury recovery profiles here..."
-                              className="w-full bg-slate-55 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-medium focus:outline-teal-500 mb-2"
+                              className="w-full bg-slate-55 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-medium focus:outline-[#001F3F] mb-2"
                             />
                             <button
                               onClick={handleSaveTraineeNotes}
@@ -1339,43 +2085,115 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                             >
                               Save Performance Observations
                             </button>
+                            
+                            {/* History Note Timeline */}
+                            <div className="mt-4 pt-4 border-t border-slate-100">
+                              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block mb-2">Observations timeline history</span>
+                              <div className="border-l-2 border-slate-200 pl-3 space-y-3">
+                                <div className="text-2xs">
+                                  <span className="text-slate-400 font-bold block">10 Jun 2026</span>
+                                  <p className="text-slate-650 italic mt-0.5">"{getTraineeStats(selectedTrainee.id).notes}"</p>
+                                </div>
+                                <div className="text-2xs">
+                                  <span className="text-slate-400 font-bold block">05 Jun 2026</span>
+                                  <p className="text-slate-650 italic mt-0.5">"Needs slight postural control alignment on overhead extensions level. Tight hammies."</p>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )}
 
-                      {/* TAB B: WORKOUTS & ATTENDANCE HISTORICS */}
+                      {/* TAB 2: WORKOUTS HISTORY ONLY */}
                       {traineeDetailTab === 'history' && (
                         <div className="space-y-6">
                           
-                          {/* Attendance Stat Panel */}
-                          <div className="bg-[#001F3F]/5 border border-teal-500/10 p-4 rounded-xl flex justify-between items-center">
-                            <div>
-                              <strong className="text-slate-800 text-sm block">Subang Center Attendance</strong>
-                              <p className="text-[10px] text-slate-500 mt-1">Checked in via physical QR codes.</p>
+                          {/* Workout summary stats cards + Weekly Workout completion chart */}
+                          <div className="bg-[#001F3F]/5 border border-teal-500/10 p-4 rounded-xl space-y-4">
+                            <div className="flex justify-between items-center border-b border-slate-250 pb-3">
+                              <div>
+                                <strong className="text-slate-800 text-sm block">Subang Center Activity Analytics</strong>
+                                <p className="text-[10px] text-slate-500 mt-1">Evaluated adherence metric over current recurring subscription cycle.</p>
+                              </div>
+                              <div className="text-right">
+                                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full">
+                                  92% Adherence
+                                </span>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <span className="text-[#001F3F] font-black text-base">{getTraineeStats(selectedTrainee.id).attendance}</span>
+
+                            {/* Weekly Workout Completion Chart */}
+                            <div>
+                              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block mb-2">Weekly Workout Completion Tracker</span>
+                              <div className="flex justify-between items-end h-16 pt-2 select-none">
+                                {[
+                                  { day: 'Mon', completed: true, val: 90 },
+                                  { day: 'Tue', completed: true, val: 90 },
+                                  { day: 'Wed', completed: false, val: 10 },
+                                  { day: 'Thu', completed: true, val: 90 },
+                                  { day: 'Fri', completed: true, val: 90 },
+                                  { day: 'Sat', completed: false, val: 10 },
+                                  { day: 'Sun', completed: true, val: 90 },
+                                ].map((item, idx) => (
+                                  <div key={idx} className="flex flex-col items-center flex-1">
+                                    <div className="w-4 bg-slate-200 rounded-t-sm relative h-10 overflow-hidden">
+                                      <div 
+                                        className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-305 ${
+                                          item.completed ? 'bg-gradient-to-t from-teal-500 to-[#001F3F]' : 'bg-slate-300'
+                                        }`}
+                                        style={{ height: `${item.val}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-[9px] font-bold text-slate-500 mt-1.5">{item.day}</span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           </div>
 
                           {/* Workouts checklist */}
                           <div>
                             <h4 className="font-bold text-xs uppercase text-slate-400 tracking-wider mb-3">Completed Workout Log Historics</h4>
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                               {workouts.filter(w => w.traineeId === selectedTrainee.id).map(w => (
-                                <div key={w.id} className="border border-slate-100 rounded-xl p-3.5 bg-slate-50 text-xs">
-                                  <div className="flex justify-between items-center mb-1">
-                                    <strong className="text-slate-800">{w.workoutType} Session</strong>
-                                    <span className="text-slate-400 text-[10px]">{w.date}</span>
+                                <div key={w.id} className="border border-slate-100 rounded-xl p-4 bg-white shadow-xs text-xs space-y-3">
+                                  <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                                    <div>
+                                      <strong className="text-slate-800 text-sm">{w.workoutType} Session</strong>
+                                      <span className="text-slate-400 text-[10px] block mt-0.5">{w.date}</span>
+                                    </div>
+                                    <span className="bg-teal-50 text-teal-800 font-bold px-2 py-0.5 rounded text-[10px]">
+                                      🔥 450 kcal • 45 mins
+                                    </span>
                                   </div>
-                                  <div className="flex flex-wrap gap-2 my-2">
+                                  
+                                  {/* Exercises detail list */}
+                                  <div className="flex flex-wrap gap-2">
                                     {w.exercises.map((ex, idx) => (
-                                      <span key={idx} className="bg-white px-2 py-0.5 rounded border border-slate-100 font-medium text-slate-600 text-[11px]">
-                                        {ex.name} ({ex.sets}x{ex.reps})
+                                      <span key={idx} className="bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 font-medium text-slate-600 text-[11px] flex gap-1">
+                                        🏋️ {ex.name} <strong className="text-[#001F3F] font-bold">({ex.sets}x{ex.reps} @ {ex.weight}kg)</strong>
                                       </span>
                                     ))}
                                   </div>
-                                  {w.notes && <p className="text-slate-500 italic text-[11px]">&ldquo;{w.notes}&rdquo;</p>}
+                                  
+                                  {w.notes && (
+                                    <p className="text-slate-500 italic text-[11px] bg-slate-50 p-2.5 rounded-lg border-l-2 border-teal-500">
+                                      &ldquo;{w.notes}&rdquo;
+                                    </p>
+                                  )}
+
+                                  {/* Contextual Reply to Workout button */}
+                                  <div className="flex justify-end pt-2 border-t border-slate-50">
+                                    <button
+                                      onClick={() => linkContextToChat(
+                                        `Workout Log - ${w.workoutType} Session (${w.date})`,
+                                        `Hey ${selectedTrainee.name}, excellent work on your ${w.workoutType} session logged on ${w.date}! Concerning your performance...`
+                                      )}
+                                      className="text-[10px] bg-[#001F3F]/10 text-[#001F3F] hover:bg-[#001F3F] hover:text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-all duration-100"
+                                    >
+                                      <Send className="w-3 h-3 text-teal-600" /> Reply to Workout
+                                    </button>
+                                  </div>
                                 </div>
                               ))}
 
@@ -1387,43 +2205,215 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                         </div>
                       )}
 
-                      {/* TAB C: PROGRESS PHOTOS GALLERY */}
-                      {traineeDetailTab === 'photos' && (
+                      {/* TAB 3: NUTRITION HISTORY ONLY */}
+                      {traineeDetailTab === 'nutrition' && (
                         <div className="space-y-6">
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-bold text-xs uppercase text-slate-400 tracking-wider">Visual Physique Tracker</h4>
-                            <label className="bg-[#001F3F] text-teal-400 px-3 py-1.5 rounded-lg text-2xs font-extrabold hover:bg-slate-900 cursor-pointer flex items-center gap-1">
-                              <Camera className="w-3.5 h-3.5" /> Upload Photo (mock)
-                              <input type="file" className="hidden" onChange={() => triggerToast('Physique photo processed in sandbox securely!')} />
-                            </label>
+                          
+                          {/* Compliance and Weekly Calorie Progress Charts */}
+                          <div className="bg-[#001F3F]/5 border border-teal-500/10 p-4 rounded-xl space-y-4">
+                            <div className="flex justify-between items-center border-b border-slate-200/50 pb-3">
+                              <div>
+                                <strong className="text-slate-800 text-sm block">Nutrition Compliance Analysis</strong>
+                                <p className="text-[10px] text-slate-500 mt-1">Daily cal target calories tracked relative to 1,800 kcal limit.</p>
+                              </div>
+                              <div className="text-right">
+                                <span className="bg-teal-100 text-[#001F3F] text-[10px] font-black px-2 py-0.5 rounded-full">
+                                  88% Compliance
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Weekly Calorie chart */}
+                            <div>
+                              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block mb-2">Weekly Calories Burnt vs Target</span>
+                              <div className="flex justify-between items-end h-16 pt-2 px-1 select-none">
+                                {[
+                                  { day: 'Mon', target: 1800, logged: 1720, label: 'Optimal' },
+                                  { day: 'Tue', target: 1800, logged: 2100, label: 'Over' },
+                                  { day: 'Wed', target: 1800, logged: 1950, label: 'Acceptable' },
+                                  { day: 'Thu', target: 1800, logged: 1680, label: 'Optimal' },
+                                  { day: 'Fri', target: 1800, logged: 1780, label: 'Optimal' },
+                                  { day: 'Sat', target: 1800, logged: 2200, label: 'Over' },
+                                  { day: 'Sun', target: 1800, logged: 1750, label: 'Optimal' },
+                                ].map((item, idx) => {
+                                  const pct = Math.min((item.logged / 2500) * 100, 100);
+                                  const isOver = item.logged > item.target;
+                                  return (
+                                    <div key={idx} className="flex flex-col items-center flex-1">
+                                      <div className="w-4 bg-slate-200 rounded-t-sm relative h-10 overflow-hidden">
+                                        <div 
+                                          className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${
+                                            isOver ? 'bg-amber-500' : 'bg-teal-500'
+                                          }`}
+                                          style={{ height: `${pct}%` }}
+                                        />
+                                      </div>
+                                      <span className="text-[9px] font-bold text-slate-500 mt-1.5">{item.day}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-100 text-center">
-                              <img 
-                                src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=320" 
-                                className="w-full h-36 object-cover rounded-lg mb-2" 
-                                alt="Week 1" 
-                              />
-                              <span className="text-[10px] font-bold text-slate-500">Initial Assessment (Week 1)</span>
-                            </div>
-                            <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-105 text-center">
-                              <img 
-                                src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=320" 
-                                className="w-full h-36 object-cover rounded-lg mb-2 grayscale" 
-                                alt="Week 8" 
-                              />
-                              <span className="text-[10px] font-bold text-slate-700">Recent Progression (Week 8)</span>
+                          {/* AI Nutrition Analysis Guidance card */}
+                          <div className="bg-gradient-to-r from-[#001F3F] to-indigo-950 text-white p-4 rounded-xl border border-teal-500/20">
+                            <span className="bg-teal-400 text-slate-950 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full inline-block leading-none mb-2 select-none font-sans">
+                              AI DIETARY ANALYZER
+                            </span>
+                            <h5 className="font-bold text-xs text-teal-300">Malaysian Foods Optimization Suggestion</h5>
+                            <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                              Your client has logged Nasi Lemak and Chicken Rice. While the protein component is adequate, we suggest replacing high-fat Malaysian coconut gravies with steamed options and requesting sauces on the side to decrease simple sugar loads by 20% in the current cycle.
+                            </p>
+                          </div>
+
+                          {/* Nutrition checklist */}
+                          <div>
+                            <h4 className="font-bold text-xs uppercase text-slate-400 tracking-wider mb-3">Completed Nutrition Meal Log Historics</h4>
+                            <div className="space-y-4">
+                              {nutrition.filter(n => n.traineeId === selectedTrainee.id).map(n => (
+                                <div key={n.id} className="border border-slate-100 rounded-xl p-4 bg-white shadow-xs text-xs space-y-3">
+                                  <div className="flex justify-between items-start border-b border-slate-50 pb-2">
+                                    <div>
+                                      <strong className="text-slate-800 text-sm">{n.foodName}</strong>
+                                      <span className="text-slate-400 text-[9px] block font-bold capitalize mt-0.5">{n.date} meal log</span>
+                                    </div>
+                                    <span className="text-xs font-black text-teal-800 bg-teal-50 px-2 mt-0.5 py-0.5 rounded flex gap-1">
+                                      🔥 {n.calories} kcal
+                                    </span>
+                                  </div>
+
+                                  <div className="flex gap-4 text-[10px] text-slate-500 font-semibold bg-slate-50 p-2 rounded-lg">
+                                    <span>Protein: <strong className="text-slate-800">{n.protein}g</strong></span>
+                                    <span>Carbs: <strong className="text-slate-800">{n.carbs}g</strong></span>
+                                    <span>Fat: <strong className="text-slate-800">{n.fat}g</strong></span>
+                                  </div>
+
+                                  {n.notes && (
+                                    <p className="text-[11px] text-slate-500 pl-2 border-l-2 border-slate-300 italic">
+                                      &ldquo;{n.notes}&rdquo;
+                                    </p>
+                                  )}
+
+                                  {n.trainerFeedback && (
+                                    <div className="bg-teal-50 border border-teal-100 rounded-xl p-2.5 text-[11px] text-teal-800">
+                                      <strong className="font-bold">Sent Observation:</strong> &ldquo;{n.trainerFeedback}&rdquo;
+                                    </div>
+                                  )}
+
+                                  {/* Contextual Reply to Nutrition Button */}
+                                  <div className="flex justify-end pt-2 border-t border-slate-50">
+                                    <button
+                                      onClick={() => linkContextToChat(
+                                        `Nutrition Log - ${n.foodName} (${n.date})`,
+                                        `Hey ${selectedTrainee.name}, analyzing your recent raw meal logs of ${n.foodName} (${n.calories} kcal) on ${n.date}...`
+                                      )}
+                                      className="text-[10px] bg-[#001F3F]/10 text-[#001F3F] hover:bg-[#001F3F] hover:text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 transition"
+                                    >
+                                      <Send className="w-3 h-3 text-teal-600" /> Reply to Nutrition
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+
+                              {nutrition.filter(n => n.traineeId === selectedTrainee.id).length === 0 && (
+                                <p className="text-xs text-slate-400 py-6 text-center bg-slate-100 rounded-xl border border-dashed border-slate-205">No nutrition records logged under this trainee yet.</p>
+                              )}
                             </div>
                           </div>
                         </div>
                       )}
 
-                      {/* TAB D: VERTICAL GEMINI AI RECOMMENDATIONS */}
+                      {/* TAB 4: PROGRESS PHOTOS GALLERY */}
+                      {traineeDetailTab === 'photos' && (
+                        <div className="space-y-6">
+                          <div className="flex justify-between items-center bg-slate-55 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <div>
+                              <h4 className="font-bold text-xs uppercase text-slate-700 tracking-wider">Visual Physique Tracker</h4>
+                              <p className="text-[10px] text-slate-500 mt-0.5">Dual assessment visual comparison slider timeline.</p>
+                            </div>
+                            <label className="bg-[#001F3F] text-teal-400 px-3 py-1.5 rounded-lg text-2xs font-extrabold hover:bg-slate-900 cursor-pointer flex items-center gap-1 leading-none">
+                              <Camera className="w-3.5 h-3.5 text-teal-400" /> Upload Photos
+                              <input type="file" className="hidden" onChange={() => triggerToast('Physique photo processed in sandbox securely!')} />
+                            </label>
+                          </div>
+
+                          {/* Beautiful before and after container */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-100 text-center">
+                              <img 
+                                referrerPolicy="no-referrer"
+                                src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=320" 
+                                className="w-full h-36 object-cover rounded-lg mb-2" 
+                                alt="Assessment Week 1" 
+                              />
+                              <span className="text-[10px] font-bold text-slate-500">Initial Assessment (Week 1)</span>
+                            </div>
+                            <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-100 text-center relative overflow-hidden group">
+                              <img 
+                                referrerPolicy="no-referrer"
+                                src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=320" 
+                                className="w-full h-36 object-cover rounded-lg mb-2 grayscale" 
+                                alt="Recent Progression Week 8" 
+                              />
+                              <span className="text-[10px] font-bold text-slate-700">Recent Progression (Week 8)</span>
+                            </div>
+                          </div>
+
+                          {/* Reply with Progress Review */}
+                          <div className="flex justify-between items-center text-xs bg-slate-50 border border-slate-100 p-3 rounded-lg">
+                            <span className="text-slate-500 text-[11px]">Last photo assessed: <strong className="text-slate-800">11 June 2026</strong></span>
+                            <button
+                              onClick={() => linkContextToChat(
+                                `Progress Photo assessed on 11 Jun 2026`,
+                                `Hey ${selectedTrainee.name}, incredible progress on your Week 8 visual photos comparison! I can see notable changes...`
+                              )}
+                              className="text-[10px] bg-[#001F3F]/10 text-[#001F3F] hover:bg-[#001F3F] hover:text-white px-3 py-1 rounded-lg font-bold flex items-center gap-1 transition"
+                            >
+                              <Send className="w-3 h-3 text-teal-650" /> Reply to Progress Photo
+                            </button>
+                          </div>
+
+                          {/* Physiological Measurements */}
+                          <div className="border-t border-slate-100 pt-4 space-y-4">
+                            <div>
+                              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block mb-2">Physiological Measurements (Past 8 Weeks)</span>
+                              <div className="grid grid-cols-3 gap-2 text-center">
+                                <div className="border border-slate-100 p-2 rounded bg-white">
+                                  <span className="text-[8px] text-slate-400 block uppercase font-bold">Waist Girth</span>
+                                  <strong className="text-slate-800 text-xs font-sans">82 cm <span className="text-emerald-600 text-[9px] font-black">(-4cm)</span></strong>
+                                </div>
+                                <div className="border border-slate-100 p-2 rounded bg-white">
+                                  <span className="text-[8px] text-slate-400 block uppercase font-bold">Chest Width</span>
+                                  <strong className="text-slate-800 text-xs font-sans">104 cm <span className="text-teal-650 text-[9px] font-bold">(+2cm)</span></strong>
+                                </div>
+                                <div className="border border-slate-100 p-2 rounded bg-white">
+                                  <span className="text-[8px] text-slate-400 block uppercase font-bold">Thigh Circumference</span>
+                                  <strong className="text-slate-800 text-xs font-sans">58 cm <span className="text-emerald-600 text-[9px] font-black">(-1.5cm)</span></strong>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Weight change trend visual indicator */}
+                            <div className="bg-[#001F3F]/5 rounded-xl p-3 border border-slate-100">
+                              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block mb-1">Weight Change Trendline</span>
+                              <div className="flex justify-between text-2xs text-slate-650 font-medium">
+                                <span>Week 1: <strong className="text-[#001F3F]">{selectedTrainee.weight + 4} kg</strong></span>
+                                <span>→</span>
+                                <span>Week 4: <strong className="text-[#001F3F]">{selectedTrainee.weight + 2} kg</strong></span>
+                                <span>→</span>
+                                <span>Week 8 (Now): <strong className="text-emerald-700">{selectedTrainee.weight} kg</strong></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* TAB 5: AI COACH OPTIMIZER */}
                       {traineeDetailTab === 'ai' && (
                         <div className="space-y-6">
                           <div className="bg-gradient-to-br from-indigo-950 to-slate-900 text-white rounded-2xl p-5 border border-slate-950 relative overflow-hidden text-left shadow-lg">
-                            <span className="absolute right-1 bottom-1 text-5xl opacity-10 pointer-events-none">✨</span>
+                            <span className="absolute right-1 bottom-1 text-5xl opacity-10 pointer-events-none text-slate-500">✨</span>
                             <span className="bg-teal-400 text-slate-950 text-[9px] font-extrabold px-2 py-0.5 rounded-full inline-block mb-2">
                               POWERED BY GEMINI 3.5 FLASH
                             </span>
@@ -1435,7 +2425,11 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                             </p>
                             
                             <button
-                              onClick={() => handleAskAiRecommendation(selectedTrainee.id)}
+                              onClick={() => {
+                                handleAskAiRecommendation(selectedTrainee.id);
+                                setApprovedState('idle');
+                                setAiEditMode(false);
+                              }}
                               disabled={loadingAi}
                               className="bg-teal-400 hover:bg-teal-500 text-slate-955 text-2xs font-extrabold px-4 py-2.5 rounded-lg flex items-center gap-1.5 transition disabled:opacity-50 text-slate-955 cursor-pointer"
                             >
@@ -1453,27 +2447,74 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                             >
                               <div className="border-b border-indigo-100 pb-3 flex justify-between items-center">
                                 <div>
-                                  <h5 className="font-bold text-sm text-indigo-950">{aiRecommendation.workoutName}</h5>
-                                  <p className="text-[10px] text-slate-500 uppercase font-bold mt-0.5">Primary focus: {aiRecommendation.focus}</p>
+                                  <h5 className="font-bold text-sm text-indigo-950">{aiRecommendation.workoutName || "Cardio Intervals & Calibrated Core Strength"}</h5>
+                                  <p className="text-[10px] text-slate-500 uppercase font-bold mt-0.5">Primary focus: {aiRecommendation.focus || "Adipose Depletion & Lean Tone"}</p>
                                 </div>
-                                <span className="bg-teal-600 text-white font-sans text-[10px] font-bold px-2 py-0.5 rounded">✓ Confirmed Plan</span>
+                                <span className={`font-sans text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                                  approvedState === 'approved' ? 'bg-emerald-650 text-emerald-800 bg-emerald-50 border border-emerald-250' :
+                                  approvedState === 'rejected' ? 'bg-rose-650 text-rose-800 bg-rose-50 border border-rose-250' :
+                                  approvedState === 'edited' ? 'bg-amber-650 text-amber-800 bg-amber-50 border border-amber-250' : 'bg-indigo-650 text-white'
+                                }`}>
+                                  {approvedState === 'approved' ? '✓ Approved' :
+                                   approvedState === 'rejected' ? '✗ Rejected' :
+                                   approvedState === 'edited' ? 'Modified' : 'Pending Review'}
+                                </span>
                               </div>
 
-                              <div className="space-y-3.5 text-xs">
-                                {aiRecommendation.schedule?.map((item: any, id: number) => (
-                                  <div key={id} className="bg-white border rounded-xl p-3 shadow-inner">
-                                    <strong className="text-slate-800 block text-[11px] mb-2">{item.day}</strong>
-                                    <ul className="space-y-1.5 text-slate-650">
-                                      {item.exercises?.map((ex: any, xid: number) => (
-                                        <li key={xid} className="border-b border-dashed border-slate-100 pb-1.5 text-[11px]">
-                                          👨‍💻 <strong className="text-[#001F3F]">{ex.name}</strong> • {ex.sets}s × {ex.reps}r {ex.weight > 0 ? `@ ${ex.weight}kg` : ''}
-                                          <p className="text-[10px] text-slate-400 leading-tight mt-0.5">{ex.descr}</p>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                ))}
+                              {/* Injury Risk warnings */}
+                              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-amber-900 text-2xs flex gap-2">
+                                <span className="bg-amber-500 text-white font-extrabold px-1.5 rounded h-4 block">ADVICE</span>
+                                <p className="leading-tight">
+                                  <strong>Metabolic Warnings:</strong> Baseline anthropometric metrics indicate standard vertebral control. Hold posture vertical and limit heavy compression deadlifts during heat alerts in Selangor.
+                                </p>
                               </div>
+
+                              {/* Dynamic Text Editor Area when edit state clicked */}
+                              {aiEditMode ? (
+                                <div className="space-y-2 text-left">
+                                  <label className="text-[10.5px] font-bold text-slate-600 block">Edit Program Specifications</label>
+                                  <textarea 
+                                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-[#001F3F]"
+                                    rows={5}
+                                    value={aiNotesBuffer || JSON.stringify(aiRecommendation.schedule, null, 2)}
+                                    onChange={(e) => setAiNotesBuffer(e.target.value)}
+                                  />
+                                  <div className="flex gap-2">
+                                    <button 
+                                      onClick={() => {
+                                        setAiEditMode(false);
+                                        setApprovedState('edited');
+                                        triggerToast("Updates to Gemini's routine successfully cached!");
+                                      }}
+                                      className="bg-emerald-650 text-white text-2xs px-3 py-1.5 rounded font-bold"
+                                    >
+                                      Save Changes
+                                    </button>
+                                    <button 
+                                      onClick={() => setAiEditMode(false)}
+                                      className="bg-slate-200 text-slate-700 text-2xs px-3 py-1.5 rounded font-bold"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="space-y-3.5 text-xs text-left">
+                                  {aiRecommendation.schedule?.map((item: any, id: number) => (
+                                    <div key={id} className="bg-white border rounded-xl p-3 shadow-inner">
+                                      <strong className="text-slate-800 block text-[11px] mb-2">{item.day}</strong>
+                                      <ul className="space-y-1.5 text-slate-650">
+                                        {item.exercises?.map((ex: any, xid: number) => (
+                                          <li key={xid} className="border-b border-dashed border-slate-100 pb-1.5 text-[11px]">
+                                            👨‍💻 <strong className="text-[#001F3F]">{ex.name}</strong> • {ex.sets}s × {ex.reps}r {ex.weight > 0 ? `@ ${ex.weight}kg` : ''}
+                                            <p className="text-[10px] text-slate-400 leading-tight mt-0.5">{ex.descr}</p>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
 
                               {/* Tips */}
                               <div className="bg-slate-900 text-white rounded-xl p-4 text-2xs relative">
@@ -1483,6 +2524,74 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                                     <li key={tid}>{t}</li>
                                   ))}
                                 </ul>
+                              </div>
+
+                              {/* Trainer approval workflow button dashboard panel */}
+                              <div className="border-t border-indigo-100 pt-3 flex flex-wrap gap-2 justify-between">
+                                <div className="flex gap-1.5 shrink-0">
+                                  <button
+                                    onClick={() => {
+                                      setApprovedState('approved');
+                                      triggerToast("Suggestion marked as Approved! Ready to dispatch.");
+                                    }}
+                                    className={`px-3 py-1.5 rounded-lg text-2xs font-extrabold transition cursor-pointer select-none ${
+                                      approvedState === 'approved' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-850 hover:bg-slate-300'
+                                    }`}
+                                  >
+                                    Approve Suggestion
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setAiEditMode(true);
+                                      setAiNotesBuffer(JSON.stringify(aiRecommendation.schedule, null, 2));
+                                    }}
+                                    className="px-3 py-1.5 rounded-lg bg-slate-200 text-slate-850 hover:bg-slate-300 text-2xs font-extrabold transition cursor-pointer select-none"
+                                  >
+                                    Edit Suggestion
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setApprovedState('rejected');
+                                      triggerToast("Suggestion marked as Rejected");
+                                    }}
+                                    className={`px-3 py-1.5 rounded-lg text-2xs font-extrabold transition cursor-pointer select-none ${
+                                      approvedState === 'rejected' ? 'bg-rose-600 text-white animate-pulse' : 'bg-slate-200 text-slate-850 hover:bg-slate-300'
+                                    }`}
+                                  >
+                                    Reject Suggestion
+                                  </button>
+                                </div>
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      await dbService.createChatMessage({
+                                        senderId: 'u_sarah',
+                                        receiverId: selectedTrainee.userId,
+                                        message: `✨ [Gemini AI Coach Optimizer] Here is your personalized prescription:\n\n${aiRecommendation.workoutName}\nFocus: ${aiRecommendation.focus}\nTips:\n- ${aiRecommendation.tips?.join('\n- ')}`
+                                      });
+                                      
+                                      // Focus thread
+                                      setActiveChatTrainee({
+                                        id: selectedTrainee.id,
+                                        userId: selectedTrainee.userId,
+                                        name: selectedTrainee.name,
+                                        avatarUrl: selectedTrainee.avatarUrl,
+                                        initials: selectedTrainee.name.substring(0, 2).toUpperCase(),
+                                        status: 'online'
+                                      });
+                                      
+                                      setChatOpen(true);
+                                      setChatInputText("Let me know if you would like me to modify this routine!");
+                                      fetchChatMessages(selectedTrainee.userId);
+                                      triggerToast("Optimizer program dispatched to client private chat!");
+                                    } catch (err) {
+                                      console.error(err);
+                                    }
+                                  }}
+                                  className="px-3 py-1.5 bg-indigo-950 hover:bg-slate-900 text-teal-400 font-extrabold rounded-lg text-2xs transition cursor-pointer select-none flex items-center gap-1 leading-none"
+                                >
+                                  <Send className="w-3.5 h-3.5 text-teal-400 font-bold" /> Send to Client
+                                </button>
                               </div>
                             </motion.div>
                           )}
@@ -1588,13 +2697,18 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                     { month: "May", amt: 2310, pct: '60%' },
                     { month: "Jun", amt: 3240, pct: '92%' }
                   ].map((item, id) => (
-                    <div key={id} className="flex flex-col items-center gap-1.5 flex-1 relative group">
+                    <div key={id} className="flex flex-col items-center justify-end h-36 flex-1 relative group">
                       {/* Tooltip on hover */}
                       <span className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 bg-slate-900 text-white text-[9px] px-1.5 py-0.5 rounded pointer-events-none transition duration-150 z-10 font-bold whitespace-nowrap">
                         RM {item.amt}
                       </span>
-                      {/* Bar fill */}
-                      <div className="w-8 sm:w-10 bg-indigo-950/80 hover:bg-teal-500 rounded transition duration-150 cursor-pointer" style={{ height: item.pct }}></div>
+                      {/* Bar fill wrapper to compute percentage with fixed height */}
+                      <div className="w-8 sm:w-10 bg-slate-100/85 rounded-lg flex items-end h-[100px] mb-1.5">
+                        <div 
+                          className="w-full bg-[#001F3F] hover:bg-teal-500 rounded-lg transition-all duration-300 cursor-pointer" 
+                          style={{ height: item.pct }}
+                        />
+                      </div>
                       <span className="text-[10px] text-slate-400 font-bold font-mono">{item.month}</span>
                     </div>
                   ))}
@@ -1748,23 +2862,39 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                             {b.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                          {/* Itemized action items */}
-                          <button 
-                            onClick={() => setSelectedInvoice(b)}
-                            className="bg-slate-900 text-teal-400 text-[10px] font-bold px-2.5 py-1 rounded cursor-pointer"
-                          >
-                            View Invoice
-                          </button>
-                          
-                          {b.status !== 'Paid' && (
+                        <td className="px-6 py-4 text-right whitespace-nowrap">
+                          <div className="flex justify-end items-center gap-1.5">
                             <button 
-                              onClick={() => handleSendReminder(b.traineeName)}
-                              className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-650 text-[10px] px-2.5 py-1 rounded cursor-pointer"
+                              onClick={() => {
+                                setSelectedInvoice(b);
+                                setSelectedInvoiceDocMode('invoice');
+                              }}
+                              className="bg-slate-800 hover:bg-slate-950 text-white text-[10px] font-bold px-2.5 py-1.5 rounded cursor-pointer flex items-center gap-1"
                             >
-                              Send Reminder
+                              <span>Invoice PDF</span>
                             </button>
-                          )}
+                            
+                            {b.status === 'Paid' && (
+                              <button 
+                                onClick={() => {
+                                  setSelectedInvoice(b);
+                                  setSelectedInvoiceDocMode('receipt');
+                                }}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-2.5 py-1.5 rounded cursor-pointer flex items-center gap-1"
+                              >
+                                <span>Receipt PDF</span>
+                              </button>
+                            )}
+                            
+                            {b.status !== 'Paid' && (
+                              <button 
+                                onClick={() => handleSendReminder(b.traineeName)}
+                                className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-650 text-[10px] px-2.5 py-1.5 rounded cursor-pointer"
+                              >
+                                Send Reminder
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1792,85 +2922,200 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                     className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl relative text-left overflow-hidden flex flex-col justify-between"
                   >
                     
-                    {/* Invoice Paper layout */}
-                    <div className="p-8 space-y-6">
+                    {/* Visual Document Switcher Tabs at top of Modal */}
+                    <div className="bg-slate-50 p-3 flex gap-2 border-b border-slate-200">
+                      <button 
+                        onClick={() => setSelectedInvoiceDocMode('invoice')}
+                        className={`flex-1 py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition ${
+                          selectedInvoiceDocMode === 'invoice'
+                            ? 'bg-slate-900 text-white shadow-md'
+                            : 'bg-slate-200/60 hover:bg-slate-200 text-slate-700'
+                        }`}
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Invoice PDF View</span>
+                      </button>
                       
-                      {/* Paper Top section */}
-                      <div className="flex justify-between items-start border-b border-slate-200 pb-5">
-                        <div>
-                          <h4 className="font-display font-black text-slate-800 text-base flex items-center gap-1">
-                            <span className="text-[#001F3F]">COACH</span><span className="text-teal-600">TRACK MY</span>
-                          </h4>
-                          <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">Malaysia Certified Invoice</p>
-                          <p className="text-[10px] text-slate-500 mt-2 font-mono">
-                            SST ID Reference: Tax-Free Sandbox Exempt<br/>
-                            Coach Sarah Tan Registry • SS15 Studio, Selangor
-                          </p>
+                      {selectedInvoice.status === 'Paid' ? (
+                        <button 
+                          onClick={() => setSelectedInvoiceDocMode('receipt')}
+                          className={`flex-1 py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition ${
+                            selectedInvoiceDocMode === 'receipt'
+                              ? 'bg-emerald-600 text-white shadow-md'
+                              : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800'
+                          }`}
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>Receipt PDF View</span>
+                        </button>
+                      ) : (
+                        <div className="flex-1 text-center py-2.5 text-[10px] uppercase font-black text-slate-400 bg-slate-100 border border-dashed rounded-xl tracking-wider select-none leading-relaxed flex items-center justify-center">
+                          Receipt Lock (Pending Payment)
                         </div>
-                        <div className="text-right">
-                          <span className={`inline-block px-3 py-1 rounded font-black text-2xs uppercase mb-3 ${
-                            selectedInvoice.status === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
-                            selectedInvoice.status === 'Overdue' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
-                          }`}>
-                            Selected Registry: {selectedInvoice.status}
-                          </span>
-                          <p className="text-slate-800 font-bold font-mono text-sm leading-none">#{selectedInvoice.invoiceNo}</p>
-                          <p className="text-slate-450 text-[10px] text-slate-400 mt-1">Due Date: {selectedInvoice.dueDate}</p>
-                        </div>
-                      </div>
-
-                      {/* Coach & Trainee Address Cards */}
-                      <div className="grid grid-cols-2 gap-4 text-xs">
-                        <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                          <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">Service Provider (Coach)</span>
-                          <strong className="text-slate-800 block text-[11px]">{trainerProfile.name}</strong>
-                          <p className="text-slate-500 text-[10px] mt-0.5">Discipline: {trainerProfile.discipline}</p>
-                          <p className="text-slate-400 text-[10px] leading-snug">Malaysia Digital Gym Associate</p>
-                        </div>
-                        <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                          <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">Bill To (Trainee Client)</span>
-                          <strong className="text-slate-800 block text-[11px]">{selectedInvoice.traineeName}</strong>
-                          <p className="text-slate-550 text-[10px] mt-0.5">Trainee Reference ID: {selectedInvoice.traineeId}</p>
-                          <p className="text-slate-400 text-[10px] leading-snug">Ahmad Ibrahim Resident address, Kuala Lumpur</p>
-                        </div>
-                      </div>
-
-                      {/* Items details Table */}
-                      <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
-                        <table className="w-full">
-                          <thead className="bg-slate-50 border-b border-slate-200">
-                            <tr className="font-bold text-slate-500">
-                              <th className="px-4 py-2">Item Description</th>
-                              <th className="px-4 py-2 text-center">Qty</th>
-                              <th className="px-4 py-2 text-right">Rates (RM)</th>
-                              <th className="px-4 py-2 text-right">Subtotal</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td className="px-4 py-3 font-semibold text-slate-800 leading-snug">
-                                {selectedInvoice.packageName}<br/>
-                                <span className="text-[10px] text-slate-400">Exclusive personalized functional progress plan</span>
-                              </td>
-                              <td className="px-4 py-3 text-center">1</td>
-                              <td className="px-4 py-3 text-right">RM {selectedInvoice.amount}.00</td>
-                              <td className="px-4 py-3 text-right font-bold text-[#001F3F]">RM {selectedInvoice.amount}.00</td>
-                            </tr>
-                            <tr className="border-t border-slate-150 font-bold bg-slate-50/50 text-slate-800">
-                              <td colSpan={3} className="px-4 py-2 text-right uppercase text-[9px] tracking-wider text-slate-400">Total payable (MYR)</td>
-                              <td className="px-4 py-2 text-right font-black text-sm text-slate-900 border-t border-slate-350">RM {selectedInvoice.amount}.00</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Corporate compliance notes */}
-                      <div className="text-[10px] text-slate-400 pt-3 border-t border-slate-100 space-y-1">
-                        <p className="font-bold">Sandbox Bank Information Guide (FPX Gateway simulation):</p>
-                        <p>Funds processes instantly back to trainer ledger upon confirmation. Invoice is compiled automatically on each package booking request event.</p>
-                      </div>
-
+                      )}
                     </div>
+
+                    {selectedInvoiceDocMode === 'receipt' && selectedInvoice.status === 'Paid' ? (
+                      /* Receipt Paper layout */
+                      <div className="p-8 space-y-6 relative overflow-hidden text-left">
+                        
+                        {/* Stamp watermark */}
+                        <div className="absolute right-8 top-16 opacity-15 pointer-events-none transform rotate-12 bg-emerald-100 border-4 border-dashed border-emerald-500 rounded-xl p-3 text-center text-emerald-800 font-black tracking-widest text-lg z-0">
+                          CLEARED & PAID
+                        </div>
+
+                        {/* Receipt Top Section */}
+                        <div className="flex justify-between items-start border-b border-dashed border-emerald-200 pb-5 relative z-10">
+                          <div>
+                            <h4 className="font-display font-black text-[#001F3F] text-base flex items-center gap-1">
+                              <span>COACH</span><span className="text-emerald-600">TRACK OFFICIAL RECEIPT</span>
+                            </h4>
+                            <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">Payment Network Receipt Token</p>
+                            <p className="text-[10px] text-slate-500 mt-2 font-mono">
+                              Settled Account Code: FPX-SIM-MYR<br/>
+                              Sarah Tan Registry • SS15 Studio, Selangor
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full font-black text-2xs uppercase mb-3">
+                              APPROVED ✓
+                            </span>
+                            <p className="text-slate-800 font-bold font-mono text-xs text-slate-400">Rcpt: REC-{selectedInvoice.invoiceNo}</p>
+                            <p className="text-slate-450 text-[10px] text-slate-400 mt-1">Paid: {selectedInvoice.dueDate}</p>
+                          </div>
+                        </div>
+
+                        {/* Address descriptions */}
+                        <div className="grid grid-cols-2 gap-4 text-xs relative z-10">
+                          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">Received By (Payee)</span>
+                            <strong className="text-slate-800 block text-[11px]">{trainerProfile.name}</strong>
+                            <p className="text-slate-550 text-[10px] mt-0.5">Discipline: {trainerProfile.discipline}</p>
+                            <p className="text-slate-400 text-[10px] leading-snug">Sarah Tan Fitness SSM: 2026038923-M</p>
+                          </div>
+                          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">Paid From (Payer Client)</span>
+                            <strong className="text-slate-800 block text-[11px]">{selectedInvoice.traineeName}</strong>
+                            <p className="text-slate-550 text-[10px] mt-0.5">Trainee Reference ID: {selectedInvoice.traineeId}</p>
+                            <p className="text-slate-400 text-[10px]">Ahmad Ibrahim Resident address, Kuala Lumpur</p>
+                          </div>
+                        </div>
+
+                        {/* Receipt details Table */}
+                        <div className="border border-slate-200 rounded-xl overflow-hidden text-xs relative z-10">
+                          <table className="w-full">
+                            <thead className="bg-[#001F3F]/5 border-b border-slate-200">
+                              <tr className="font-bold text-slate-500">
+                                <th className="px-4 py-2.5 text-left">Description of Settlement</th>
+                                <th className="px-4 py-2.5 text-center">Qty</th>
+                                <th className="px-4 py-2.5 text-right">Settled (RM)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td className="px-4 py-3.5 font-semibold text-slate-800 leading-snug">
+                                  {selectedInvoice.packageName}<br/>
+                                  <span className="text-[10px] text-emerald-700 font-bold">Proof of Payment - Fully Paid via Credit Card Token Auth</span>
+                                </td>
+                                <td className="px-4 py-3.5 text-center font-mono">1</td>
+                                <td className="px-4 py-3.5 text-right font-mono text-right font-bold text-slate-800">RM {selectedInvoice.amount}.00</td>
+                              </tr>
+                              <tr className="border-t border-slate-150 font-bold bg-slate-50/50 text-slate-800">
+                                <td colSpan={2} className="px-4 py-2.5 text-right uppercase text-[9px] tracking-wider text-slate-400">Total Cleared Amount</td>
+                                <td className="px-4 py-2.5 text-right font-black text-sm text-emerald-800 border-t border-slate-350">RM {selectedInvoice.amount}.00</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Compliance notes */}
+                        <div className="text-[10px] text-slate-450 border-t border-slate-100 pt-3 relative z-10 leading-normal space-y-1">
+                          <p className="font-bold text-slate-700 uppercase tracking-wide">E-Receipt Authorization Code:</p>
+                          <p className="font-mono text-slate-505 text-[9px]">Receipt reference authenticated by secure digital key signature match (ID: AUTH-{selectedInvoice.invoiceNo.toUpperCase()}).</p>
+                        </div>
+
+                      </div>
+                    ) : (
+                      /* Invoice Paper layout */
+                      <div className="p-8 space-y-6">
+                        
+                        {/* Paper Top section */}
+                        <div className="flex justify-between items-start border-b border-slate-200 pb-5">
+                          <div>
+                            <h4 className="font-display font-black text-slate-800 text-base flex items-center gap-1">
+                              <span className="text-[#001F3F]">COACH</span><span className="text-teal-600">TRACK MY</span>
+                            </h4>
+                            <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">Malaysia Certified Invoice</p>
+                            <p className="text-[10px] text-slate-500 mt-2 font-mono">
+                              SST ID Reference: Tax-Free Sandbox Exempt<br/>
+                              Coach Sarah Tan Registry • SS15 Studio, Selangor
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className={`inline-block px-3 py-1 rounded font-black text-2xs uppercase mb-3 ${
+                              selectedInvoice.status === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
+                              selectedInvoice.status === 'Overdue' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
+                            }`}>
+                              Selected Registry: {selectedInvoice.status}
+                            </span>
+                            <p className="text-slate-800 font-bold font-mono text-sm leading-none">#{selectedInvoice.invoiceNo}</p>
+                            <p className="text-slate-450 text-[10px] text-slate-400 mt-1">Due Date: {selectedInvoice.dueDate}</p>
+                          </div>
+                        </div>
+
+                        {/* Coach & Trainee Address Cards */}
+                        <div className="grid grid-cols-2 gap-4 text-xs">
+                          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">Service Provider (Coach)</span>
+                            <strong className="text-slate-800 block text-[11px]">{trainerProfile.name}</strong>
+                            <p className="text-slate-550 text-[10px] mt-0.5">Discipline: {trainerProfile.discipline}</p>
+                            <p className="text-slate-400 text-[10px] leading-snug">Malaysia Digital Gym Associate</p>
+                          </div>
+                          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">Bill To (Trainee Client)</span>
+                            <strong className="text-slate-800 block text-[11px]">{selectedInvoice.traineeName}</strong>
+                            <p className="text-slate-550 text-[10px] mt-0.5">Trainee Reference ID: {selectedInvoice.traineeId}</p>
+                            <p className="text-slate-400 text-[10px] leading-snug">Ahmad Ibrahim Resident address, Kuala Lumpur</p>
+                          </div>
+                        </div>
+
+                        {/* Items details Table */}
+                        <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
+                          <table className="w-full">
+                            <thead className="bg-slate-50 border-b border-slate-200">
+                              <tr className="font-bold text-slate-500">
+                                <th className="px-4 py-2">Item Description</th>
+                                <th className="px-4 py-2 text-center">Qty</th>
+                                <th className="px-4 py-2 text-right">Rates (RM)</th>
+                                <th className="px-4 py-2 text-right">Subtotal</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td className="px-4 py-3 font-semibold text-slate-800 leading-snug">
+                                  {selectedInvoice.packageName}<br/>
+                                  <span className="text-[10px] text-slate-400">Exclusive personalized functional progress plan</span>
+                                </td>
+                                <td className="px-4 py-3 text-center">1</td>
+                                <td className="px-4 py-3 text-right">RM {selectedInvoice.amount}.00</td>
+                                <td className="px-4 py-3 text-right font-bold text-[#001F3F]">RM {selectedInvoice.amount}.00</td>
+                              </tr>
+                              <tr className="border-t border-slate-150 font-bold bg-slate-50/50 text-slate-800">
+                                <td colSpan={3} className="px-4 py-2 text-right uppercase text-[9px] tracking-wider text-slate-400">Total payable (MYR)</td>
+                                <td className="px-4 py-2 text-right font-black text-sm text-slate-900 border-t border-slate-350">RM {selectedInvoice.amount}.00</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Corporate compliance notes */}
+                        <div className="text-[10px] text-slate-400 pt-3 border-t border-slate-100 space-y-1">
+                          <p className="font-bold">Sandbox Bank Information Guide (FPX Gateway simulation):</p>
+                          <p>Funds processes instantly back to trainer ledger upon confirmation. Invoice is compiled automatically on each package booking request event.</p>
+                        </div>
+
+                      </div>
+                    )}
 
                     {/* Paper Footer */}
                     <div className="p-4 bg-slate-100 border-t border-slate-200 flex justify-between shrink-0">
@@ -1881,10 +3126,20 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                         Close Preview
                       </button>
                       <button 
-                        onClick={() => triggerToast('Direct Invoice PDF generation mocked with browser print queue successfully!')}
-                        className="px-4 py-2 border border-slate-205 hover:bg-slate-200 text-slate-650 bg-white text-xs font-bold rounded-xl cursor-pointer"
+                        onClick={() => {
+                          if (selectedInvoiceDocMode === 'receipt' && selectedInvoice.status === 'Paid') {
+                            triggerToast('Direct Receipt PDF generation mocked with browser print queue successfully!');
+                          } else {
+                            triggerToast('Direct Invoice PDF generation mocked with browser print queue successfully!');
+                          }
+                        }}
+                        className={`px-4 py-2 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer ${
+                          selectedInvoiceDocMode === 'receipt' && selectedInvoice.status === 'Paid'
+                            ? 'bg-emerald-600 hover:bg-emerald-700'
+                            : 'bg-slate-900 hover:bg-black'
+                        }`}
                       >
-                        Print Invoice
+                        <span>Print {selectedInvoiceDocMode === 'receipt' && selectedInvoice.status === 'Paid' ? 'Receipt PDF' : 'Invoice PDF'}</span>
                       </button>
                     </div>
 
@@ -1898,88 +3153,520 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
       </div>
 
       {/* 4. CHAT MESSAGE COMPACT INTERACTIVE TOGGLE AT LOWER-RIGHT REGION FOR COACH */}
-      <div className="fixed bottom-6 right-6 z-50 text-left">
+      <div className="fixed bottom-6 right-6 z-[999] flex flex-col items-end gap-3 max-w-[90vw] sm:max-w-none text-left font-sans">
         <AnimatePresence>
-          {chatOpen ? (
+          {chatOpen && (
             <motion.div
-              initial={{ opacity: 0, y: 40, scale: 0.92 }}
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 40, scale: 0.92 }}
-              className="bg-white rounded-2xl w-[350px] h-[480px] shadow-2xl border border-slate-200 flex flex-col justify-between overflow-hidden absolute bottom-16 right-0"
+              exit={{ opacity: 0, y: 30, scale: 0.95 }}
+              className="bg-white border border-slate-200 rounded-2xl w-[320px] sm:w-[480px] md:w-[600px] h-[580px] sm:h-[650px] flex flex-row overflow-hidden shadow-2xl relative text-slate-800"
             >
-              {/* Header inside floating box */}
-              <div className="bg-[#001F3F] text-white p-4 flex justify-between items-center shrink-0">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center font-bold text-slate-950 text-xs">
-                    💬
-                  </div>
+              {/* Left Sidebar — Trainee Selection Panel (35% width) */}
+              <div className="w-44 sm:w-52 md:w-56 bg-slate-50 border-r border-slate-200 flex flex-col shrink-0 overflow-hidden text-left">
+                <div className="p-4 border-b border-slate-200 bg-white flex justify-between items-center shrink-0">
                   <div>
-                    <h4 className="font-extrabold text-white text-xs leading-none">Ahmad Ibrahim (Client)</h4>
-                    <span className="text-[9px] text-teal-400 font-bold block mt-1 tracking-wide uppercase">Active Thread • FPX Sandbox</span>
+                    <h3 className="font-display font-black text-slate-800 text-xs sm:text-sm uppercase tracking-wider">Select Trainee</h3>
+                    <p className="text-[10px] text-slate-400">Coached Client Channels</p>
+                  </div>
+                  {(() => {
+                    const defaultTrainees = [
+                      {
+                        id: 'te_ahmad',
+                        userId: 'u_ahmad',
+                        name: 'Ahmad Ibrahim',
+                        avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCm6XjkajKC1E-auUB-6Sr-GyTGI4zsoY-YEgT0MAl6pw_jL3uSF-kMR6I3SCISx-0HXh-tcAf99gfuoVVhzN1P1HU5oCZk0WWchxWKY22ATwB-APrTezY3HVTAOMGVpXNApLlt1VIzi9o8yJXJ5nQRsSmRHOuxBYfJf_533KGGsCsvrxpZ_3m5uxZ9KZr2L6dBuXJkWmoMBDY9z_YnDYNr0b8EJ3Tyw-sPE0l5vW78317CdkDStSWtXZxNwtq6QaBgqW3N2oV2two',
+                        goals: 'Weight Loss & Cardio',
+                        streakCount: 5,
+                        status: 'online'
+                      },
+                      {
+                        id: 'te_ling',
+                        userId: 'u_ling',
+                        name: 'Mei Ling Tan',
+                        avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150',
+                        goals: 'Post-Partum Recovery',
+                        streakCount: 8,
+                        status: 'offline'
+                      },
+                      {
+                        id: 'te_faizul',
+                        userId: 'u_faizul',
+                        name: 'Jason Wong',
+                        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
+                        goals: 'Powerlifting',
+                        streakCount: 12,
+                        status: 'online'
+                      }
+                    ];
+
+                    const displayedTraineesMap = new Map<string, any>();
+                    defaultTrainees.forEach(dt => displayedTraineesMap.set(dt.userId, dt));
+                    trainees.forEach(t => {
+                      if (t.userId) {
+                        const existing = displayedTraineesMap.get(t.userId);
+                        displayedTraineesMap.set(t.userId, {
+                          id: t.id,
+                          userId: t.userId,
+                          name: t.name === 'Ahmad bin Ibrahim' ? 'Ahmad Ibrahim' : t.name,
+                          avatarUrl: t.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120',
+                          goals: t.goals || existing?.goals || 'General Fitness',
+                          streakCount: t.streakCount ?? existing?.streakCount ?? 0,
+                          status: existing?.status || 'offline'
+                        });
+                      }
+                    });
+                    const combinedTrainees = Array.from(displayedTraineesMap.values());
+
+                    return (
+                      <span className="text-[10px] bg-slate-200 text-slate-705 font-extrabold px-2 py-0.5 rounded-full shrink-0">
+                        {combinedTrainees.length} Active
+                      </span>
+                    );
+                  })()}
+                </div>
+
+                {/* Trainee search query box */}
+                <div className="p-3 border-b border-slate-200 bg-white shrink-0">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Search managed clients..."
+                      value={chatSearchQuery}
+                      onChange={(e) => setChatSearchQuery(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-1.5 pl-9 pr-3 text-2xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-slate-300"
+                    />
                   </div>
                 </div>
-                <button
-                  onClick={() => setChatOpen(false)}
-                  className="p-1 rounded hover:bg-white/10 text-slate-300"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
 
-              {/* Chat messages body list */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/75">
-                {chatMessages.length === 0 ? (
-                  <p className="text-2xs text-slate-400 py-12 text-center">No chat messages with Ahmad yet.</p>
-                ) : (
-                  chatMessages.map(m => {
-                    const isCoach = m.senderId === 'u_sarah';
-                    return (
-                      <div key={m.id} className={`flex ${isCoach ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] p-3 rounded-2xl text-2xs ${
-                          isCoach ? 'bg-[#001F3F] text-white rounded-tr-none' : 'bg-white text-slate-800 border rounded-tl-none border-slate-100 shadow-xs'
-                        }`}>
-                          <p className="leading-relaxed whitespace-pre-wrap">{m.message}</p>
-                          <span className="text-[9px] block text-right mt-1.5 opacity-60">
-                            {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                      </div>
+                {/* List of trainees */}
+                <div className="flex-1 overflow-y-auto p-2 space-y-1.5 scrollbar-thin">
+                  {(() => {
+                    const defaultTrainees = [
+                      {
+                        id: 'te_ahmad',
+                        userId: 'u_ahmad',
+                        name: 'Ahmad Ibrahim',
+                        avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCm6XjkajKC1E-auUB-6Sr-GyTGI4zsoY-YEgT0MAl6pw_jL3uSF-kMR6I3SCISx-0HXh-tcAf99gfuoVVhzN1P1HU5oCZk0WWchxWKY22ATwB-APrTezY3HVTAOMGVpXNApLlt1VIzi9o8yJXJ5nQRsSmRHOuxBYfJf_533KGGsCsvrxpZ_3m5uxZ9KZr2L6dBuXJkWmoMBDY9z_YnDYNr0b8EJ3Tyw-sPE0l5vW78317CdkDStSWtXZxNwtq6QaBgqW3N2oV2two',
+                        goals: 'Weight Loss & Cardio',
+                        streakCount: 5,
+                        status: 'online'
+                      },
+                      {
+                        id: 'te_ling',
+                        userId: 'u_ling',
+                        name: 'Mei Ling Tan',
+                        avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150',
+                        goals: 'Post-Partum Recovery',
+                        streakCount: 8,
+                        status: 'offline'
+                      },
+                      {
+                        id: 'te_faizul',
+                        userId: 'u_faizul',
+                        name: 'Jason Wong',
+                        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
+                        goals: 'Powerlifting',
+                        streakCount: 12,
+                        status: 'online'
+                      }
+                    ];
+
+                    const displayedTraineesMap = new Map<string, any>();
+                    defaultTrainees.forEach(dt => displayedTraineesMap.set(dt.userId, dt));
+                    trainees.forEach(t => {
+                      if (t.userId) {
+                        const existing = displayedTraineesMap.get(t.userId);
+                        displayedTraineesMap.set(t.userId, {
+                          id: t.id,
+                          userId: t.userId,
+                          name: t.name === 'Ahmad bin Ibrahim' ? 'Ahmad Ibrahim' : t.name,
+                          avatarUrl: t.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120',
+                          goals: t.goals || existing?.goals || 'General Fitness',
+                          streakCount: t.streakCount ?? existing?.streakCount ?? 0,
+                          status: existing?.status || 'offline'
+                        });
+                      }
+                    });
+
+                    const filtered = Array.from(displayedTraineesMap.values()).filter(t => 
+                      !chatSearchQuery.trim() || t.name.toLowerCase().includes(chatSearchQuery.toLowerCase())
                     );
-                  })
-                )}
-                <div ref={chatEndRef} />
+
+                    if (filtered.length === 0) {
+                      return <p className="text-[11px] text-slate-400 text-center py-8">No clients match filter.</p>;
+                    }
+
+                    return filtered.map((t: any) => {
+                      const isSelected = activeChatTrainee?.userId === t.userId;
+                      const unread = unreadCounts[t.userId] || 0;
+
+                      // Previews of last messages
+                      let lastMsg = "Thanks coach Sarah! I logged my breakfast just now.";
+                      if (t.id === 'te_ling') lastMsg = "Ready to target pelvis floor alignment recovery.";
+                      if (t.id === 'te_faizul') lastMsg = "Deadlift target hit at 150kg today! Form felt stable.";
+
+                      return (
+                        <button
+                          key={t.userId}
+                          onClick={() => {
+                            setActiveChatTrainee(t);
+                            // Reset unread map
+                            setUnreadCounts(prev => ({ ...prev, [t.userId]: 0 }));
+                            fetchChatMessages(t.userId);
+                          }}
+                          className={`w-full text-left p-3 rounded-xl transition duration-150 relative border flex items-center gap-3 cursor-pointer select-none ${
+                            isSelected
+                              ? 'bg-slate-900 border-slate-900 text-white shadow-md font-semibold'
+                              : 'bg-white border-slate-100 hover:bg-slate-105 hover:border-slate-200 text-slate-700 shadow-3xs'
+                          }`}
+                        >
+                          {/* Avatar with indicator */}
+                          <div className="relative shrink-0">
+                            <img
+                              referrerPolicy="no-referrer"
+                              src={t.avatarUrl}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120';
+                              }}
+                              className={`w-10 h-10 rounded-full object-cover border shrink-0 ${isSelected ? 'border-slate-700' : 'border-slate-200'}`}
+                              alt={t.name}
+                            />
+                            {/* Live Online Badge */}
+                            <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 ${isSelected ? 'border-slate-900' : 'border-white'} ${
+                              t.status === 'online' ? 'bg-emerald-500' : 'bg-slate-400'
+                            }`} />
+                          </div>
+
+                          {/* Middle textual section */}
+                          <div className="flex-1 min-w-0 pr-1.5">
+                            <div className="flex justify-between items-baseline gap-1">
+                              <h4 className={`font-extrabold text-xs truncate leading-tight ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                                {t.name}
+                              </h4>
+                              <span className={`text-[8.5px] uppercase font-black px-1.5 rounded ${isSelected ? 'bg-teal-400 text-slate-950 font-black' : 'bg-slate-100 text-slate-650'}`}>
+                                Client
+                              </span>
+                            </div>
+                            <p className={`text-[10px] truncate mt-0.5 ${isSelected ? 'text-teal-300' : 'text-teal-605 font-bold text-teal-600'}`}>
+                              {t.goals}
+                            </p>
+                            <div className="flex items-center gap-1.5 mt-1 text-[10px]">
+                              <span className={`font-bold flex items-center gap-0.5 ${isSelected ? 'text-amber-400' : 'text-amber-600'}`}>
+                                <Flame className={`w-3 h-3 ${isSelected ? 'fill-amber-400 text-amber-400' : 'fill-amber-600 text-amber-600'}`} /> {t.streakCount} Days
+                              </span>
+                              <span className="text-slate-300 select-none">•</span>
+                              <span className={`truncate select-none block max-w-[90px] ${isSelected ? 'text-slate-400' : 'text-slate-400'}`}>
+                                {lastMsg}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Unread dot notifications */}
+                          {unread > 0 && (
+                            <span className="absolute right-3 top-3 bg-rose-500 text-white font-black text-[9px] min-w-4 h-4 rounded-full flex items-center justify-center px-1 animate-bounce">
+                              {unread}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
               </div>
 
-              {/* Input direct box row */}
-              <form onSubmit={handleSendFloatingMessage} className="bg-white p-3 border-t border-slate-100 flex gap-1.5 shrink-0">
-                <input 
-                  type="text" 
-                  placeholder="Review client progress or send tips..."
-                  value={chatInputText}
-                  onChange={(e) => setChatInputText(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-[#001F3F]"
-                />
-                <button 
-                  type="submit" 
-                  className="bg-[#001F3F]/10 hover:bg-[#001F3F]/20 text-[#001F3F] p-2 rounded-xl transition duration-75 shrink-0"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
+              {/* Chat Messenger (65% width) */}
+              <div className="flex-1 md:w-[65%] bg-white flex flex-col min-h-0 overflow-hidden text-slate-800">
+                {/* Trainer Chat Header */}
+                <div className="p-4 bg-slate-900 text-white border-b border-slate-200 flex justify-between items-center shrink-0">
+                  <div className="text-left flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center font-bold text-slate-900 text-sm shrink-0">
+                      👥
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-display font-black text-white text-sm sm:text-base leading-none">
+                          {activeChatTrainee?.name || 'Ahmad Ibrahim'} (Client)
+                        </h4>
+                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1 self-center">
+                          <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" /> Active Client
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-teal-400 font-bold tracking-wider uppercase mt-1">
+                        ACTIVE CLIENT THREAD
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Header Action Tools */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        fetchChatMessages(activeChatTrainee?.userId);
+                        triggerToast('Instantly refreshed client synchronized records timeline!');
+                      }}
+                      title="Sync history"
+                      className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 transition shrink-0 cursor-pointer"
+                    >
+                      <RefreshCw className="w-4 h-4 text-slate-300" />
+                    </button>
+                    <button
+                      onClick={() => setChatOpen(false)}
+                      title="Close message workspace"
+                      className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 transition shrink-0 cursor-pointer"
+                    >
+                      <X className="w-4 h-4 text-slate-300" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Context Selector zone above Message Inputs */}
+                <div className="bg-slate-50 border-b border-slate-200 p-2.5 px-4 flex flex-wrap items-center gap-2 text-[10px] sm:text-xs text-left shrink-0 select-none">
+                  <span className="text-slate-400 font-bold block text-2xs uppercase">Tag Context:</span>
+                  <button
+                    type="button"
+                    onClick={() => { setReplyTagType('Workout Log'); setReplyTagTitle('Active Routine'); }}
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                  >
+                    🏋️ Workout Log
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setReplyTagType('Nutrition Tracker'); setReplyTagTitle('Diet Logs'); }}
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                  >
+                    🍱 Nutrition Tracker
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setReplyTagType('Progress Photo'); setReplyTagTitle('Week 8 Comparison'); }}
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                  >
+                    📸 Progress Photo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setReplyTagType('Body Metrics Update'); setReplyTagTitle('Scale Weight'); }}
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                  >
+                    📊 Metrics Update
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setReplyTagType('Payment Status'); setReplyTagTitle('Monthly Subscription'); }}
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                  >
+                    💳 Payment Status
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setReplyTagType('Upcoming Session'); setReplyTagTitle('Private Workout'); }}
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                  >
+                    📅 Session Booking
+                  </button>
+                </div>
+
+                {/* Message list bubble container */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/70 scrollbar-thin">
+                  {chatMessages.length === 0 ? (
+                    <div className="text-center py-20 text-slate-400 text-xs space-y-2 flex flex-col items-center justify-center">
+                      <MessageSquare className="w-10 h-10 text-slate-300 mx-auto opacity-75" />
+                      <p className="font-bold text-slate-500">No matching messages found in thread.</p>
+                      <p className="text-[11px] text-slate-400">Send motivational tips or comment on progress below.</p>
+                    </div>
+                  ) : (
+                    chatMessages.map(m => {
+                      const isCoach = m.senderId === 'u_sarah';
+                      
+                      // Identify contextual tag styles
+                      let contextIcon = "📌";
+                      if (m.replyToType === 'Workout Log') contextIcon = "🏋️";
+                      else if (m.replyToType === 'Nutrition Tracker') contextIcon = "🍱";
+                      else if (m.replyToType === 'Progress Photo') contextIcon = "📸";
+                      else if (m.replyToType === 'Body Metrics Update') contextIcon = "📊";
+                      else if (m.replyToType === 'Payment Status') contextIcon = "💳";
+                      else if (m.replyToType === 'Upcoming Session') contextIcon = "📅";
+
+                      return (
+                        <div key={m.id} className={`flex ${isCoach ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[80%] rounded-2xl p-3.5 shadow-sm text-xs relative text-left ${
+                            isCoach 
+                              ? 'bg-slate-900 text-slate-50 rounded-tr-none' 
+                              : 'bg-white border border-slate-150 text-slate-800 rounded-tl-none'
+                          }`}>
+                            
+                            {/* Replying Context Tag Above Message Bubble */}
+                            {m.replyToType && (
+                              <div className={`mb-1.5 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider flex items-center gap-1 ${
+                                isCoach 
+                                  ? 'bg-white/10 text-teal-305 text-teal-300' 
+                                  : 'bg-teal-50 border border-teal-100/50 text-teal-800 text-teal-850'
+                              }`}>
+                                <span>{contextIcon}</span>
+                                <span>Replying to {m.replyToType} {m.replyToTitle ? `[${m.replyToTitle}]` : ''}</span>
+                              </div>
+                            )}
+
+                            <p className="leading-relaxed font-sans text-xs whitespace-pre-wrap">{m.message}</p>
+                            
+                            <div className="flex justify-end items-center gap-1.5 mt-1.5 opacity-60 text-[9px] select-none">
+                              <span>
+                                {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                              {isCoach && <span className="text-[8px] text-teal-400 font-extrabold font-mono">✓ Sent</span>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+
+                {/* Smart Trainer Actions Toolbar (Prefills message + sets context tag) */}
+                <div className="bg-slate-50 border-t border-slate-150 p-3 flex flex-col text-left shrink-0 select-none">
+                  <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-800 mb-1.5 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-teal-600 font-bold" /> Smart Coach Actions (1-Click Presets)
+                  </span>
+                  <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar text-[11px] font-semibold text-slate-600">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReplyTagType('Upcoming Session');
+                        setReplyTagTitle('Personalized Motivation');
+                        setChatInputText("🔥 Phenomenal performance logged this week! You are unlocking an entirely new standard. Let's keep this momentum unbroken!");
+                      }}
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                    >
+                      🚀 Send Motivation
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReplyTagType('Workout Log');
+                        setReplyTagTitle('Alignment Correction');
+                        setChatInputText("🏋️ Posture Correction: Avoid hyper-extending upper lumbar spine at lockout. Keep core loaded thoracic extended.");
+                      }}
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                    >
+                      🏋️ Posture Correction
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReplyTagType('Nutrition Tracker');
+                        setReplyTagTitle('Macronutrient Advice');
+                        setChatInputText("🍱 Meal feedback: Exceptional protein volume! Try swapping out saturated oils to shave margin lipid count.");
+                      }}
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                    >
+                      🍱 Comment Meal Log
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReplyTagType('Progress Photo');
+                        setReplyTagTitle('Aesthetic Checkin');
+                        setChatInputText("📸 Photo review: Splendid lateral expansion! Postural vertical alignment shows marvelous progress!");
+                      }}
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                    >
+                      📸 Photo Feedback
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReplyTagType('Workout Log');
+                        setReplyTagTitle('Follow Up Missed');
+                        setChatInputText("🚨 Missed Workout: Let's keep our cellular momentum rolling! Access our low-intensity mobilizer stretching frame today.");
+                      }}
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                    >
+                      🚨 Missed Workout
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReplyTagType('Payment Status');
+                        setReplyTagTitle('Invoice Stream');
+                        setChatInputText("💰 Invoice reminder: To avoid disruptions, please drop by your Billing Cabinet tab to reconcile remaining balances.");
+                      }}
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                    >
+                      💰 Send Payment Reminder
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReplyTagType('Upcoming Session');
+                        setReplyTagTitle('Evaluation booking');
+                        setChatInputText("📅 Calendar booking: Let's synchronize virtual progress evaluation schedules! Let me know your best days.");
+                      }}
+                      className="bg-white hover:bg-slate-105 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                    >
+                      📅 Schedule Session
+                    </button>
+                  </div>
+                </div>
+
+                {/* Form input bottom messaging row */}
+                <form onSubmit={handleSendFloatingMessage} className="bg-white border-t border-slate-200 p-3.5 flex flex-col gap-2 shrink-0">
+                  {replyTagType && (
+                    <div className="bg-teal-50 border border-teal-100 text-teal-800 px-3 py-1 rounded-lg flex justify-between items-center text-[10px] select-none shrink-0">
+                      <span className="font-bold uppercase tracking-wider text-[9px]">
+                        📌 Active Tag: Replying to {replyTagType} &ldquo;{replyTagTitle}&rdquo;
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReplyTagType(null);
+                          setReplyTagTitle('');
+                        }}
+                        className="font-black hover:text-teal-900 text-xs shrink-0 cursor-pointer"
+                      >
+                        ✕ Clear
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder={`Send a private direct prompt to Client ${activeChatTrainee?.name || 'Ahmad'}...`}
+                      value={chatInputText}
+                      onChange={(e) => setChatInputText(e.target.value)}
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:outline-teal-500 font-sans"
+                    />
+                    <button
+                      type="submit"
+                      className="bg-slate-900 hover:bg-slate-800 text-teal-400 px-4 rounded-xl transition duration-75 font-black uppercase text-3xs tracking-wider flex items-center justify-center gap-1 shrink-0 cursor-pointer"
+                    >
+                      <Send className="w-3.5 h-3.5" /> Send
+                    </button>
+                  </div>
+                </form>
+
+              </div>
+
             </motion.div>
-          ) : null}
+          )}
         </AnimatePresence>
 
-        {/* Circular Floating trigger button */}
+        {/* Floating circular workspace trigger button */}
         <button
-          onClick={() => setChatOpen(!chatOpen)}
-          className={`flex items-center justify-center rounded-full p-4 shadow-2xl transition-all duration-150 scale-110 active:scale-95 cursor-pointer ${
-            chatOpen ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-[#001F3F] hover:bg-slate-900 text-teal-400'
-          }`}
-          title="Direct Client Messaging"
+          onClick={() => {
+            setChatOpen(!chatOpen);
+            if (!chatOpen && activeChatTrainee?.userId) {
+              fetchChatMessages(activeChatTrainee.userId);
+            }
+          }}
+          className={`flex items-center justify-center rounded-full p-4 shadow-2xl transition-all duration-150 scale-110 active:scale-95 cursor-pointer bg-[#001F3F] hover:bg-slate-900 border border-teal-500/20 text-teal-400`}
+          title="Direct Client Messaging Workspace"
           id="btn-coach-floating-chat"
         >
-          {chatOpen ? <X className="w-5 h-5" /> : <MessageSquare className="w-5 h-5 text-teal-400" />}
+          {chatOpen ? <X className="w-5 h-5 text-teal-400" /> : <MessageSquare className="w-5 h-5 text-teal-400" />}
         </button>
       </div>
 
