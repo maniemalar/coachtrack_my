@@ -735,5 +735,59 @@ export const dbService = {
       body: JSON.stringify({ paymentId })
     });
     return res.ok;
+  },
+
+  async getInvitations(filters: { traineeId?: string; trainerId?: string }): Promise<any[]> {
+    if (isSupabaseConfigured && supabase) {
+      let q = supabase.from('invitations').select('*');
+      if (filters.traineeId) q = q.eq('traineeId', filters.traineeId);
+      if (filters.trainerId) q = q.eq('trainerId', filters.trainerId);
+      const { data } = await q;
+      if (data) return data;
+    }
+    const val = filters.traineeId ? `traineeId=${filters.traineeId}` : `trainerId=${filters.trainerId}`;
+    const res = await fetch(`/api/invitations?${val}`);
+    if (res.ok) return res.json();
+    return [];
+  },
+
+  async createInvitation(invitation: { trainerId: string; traineeEmail: string; packageName: string; sessions: number; price: number }): Promise<any> {
+    const res = await fetch('/api/invitations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(invitation)
+    });
+    if (res.ok) return res.json();
+    const err = await res.json();
+    throw new Error(err.message || 'Failed to create invitation');
+  },
+
+  async respondToInvitation(id: string, status: 'Accepted' | 'Declined'): Promise<any> {
+    const res = await fetch(`/api/invitations/${id}/respond`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    if (res.ok) return res.json();
+    const err = await res.json();
+    throw new Error(err.message || 'Failed to respond to invitation');
+  },
+
+  async getNotifications(userId: string): Promise<any[]> {
+    if (isSupabaseConfigured && supabase) {
+      const { data } = await supabase.from('notifications').select('*').eq('userId', userId);
+      if (data) return data;
+    }
+    const res = await fetch(`/api/notifications?userId=${userId}`);
+    if (res.ok) return res.json();
+    return [];
+  },
+
+  async markNotificationRead(id: string): Promise<boolean> {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.from('notifications').update({ read: true }).eq('id', id);
+    }
+    const res = await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
+    return res.ok;
   }
 };

@@ -341,7 +341,9 @@ let dbData = {
   chats: DEFAULT_CHATS,
   payments: DEFAULT_PAYMENTS,
   invoices: DEFAULT_INVOICES,
-  prescribedWorkouts: DEFAULT_PRESCRIBED
+  prescribedWorkouts: DEFAULT_PRESCRIBED,
+  invitations: [] as any[],
+  notifications: [] as any[]
 };
 
 function readDb() {
@@ -765,25 +767,45 @@ app.get('/api/prescribed-workouts', (req, res) => {
 });
 
 app.post('/api/prescribed-workouts', (req, res) => {
-  const { trainerId, traineeId, workoutType, duration, exercises, notes } = req.body;
-  const newPW: PrescribedWorkout = {
-    id: `pw_${Date.now()}`,
-    trainerId,
-    traineeId,
-    workoutType: workoutType || 'Coaches Custom Target routine',
-    duration: Number(duration) || 45,
-    exercises: exercises || [],
-    notes: notes || '',
-    status: 'Pending',
-    assignedDate: new Date().toISOString().split('T')[0]
-  };
+  const { trainerId, traineeId, traineeIds, workoutType, duration, exercises, notes } = req.body;
+  
+  // Resolve list of target trainee IDs
+  let ids: string[] = [];
+  if (Array.isArray(traineeIds)) {
+    ids = traineeIds;
+  } else if (traineeId) {
+    ids = [traineeId];
+  }
+
+  if (ids.length === 0) {
+    return res.status(400).json({ message: 'No trainees specified for assignment' });
+  }
+
+  const baseId = Date.now();
+  const created: any[] = [];
 
   if (!dbData.prescribedWorkouts) {
     dbData.prescribedWorkouts = [];
   }
-  dbData.prescribedWorkouts.push(newPW);
+
+  ids.forEach((tId, idx) => {
+    const newPW = {
+      id: `pw_${baseId}_${idx}`,
+      trainerId,
+      traineeId: tId,
+      workoutType: workoutType || 'Coaches Custom Target routine',
+      duration: Number(duration) || 45,
+      exercises: exercises || [],
+      notes: notes || '',
+      status: 'Pending',
+      assignedDate: new Date().toISOString().split('T')[0]
+    };
+    dbData.prescribedWorkouts.push(newPW as any);
+    created.push(newPW);
+  });
+
   writeDb();
-  res.json(newPW);
+  res.json(created.length === 1 ? created[0] : created);
 });
 
 app.post('/api/prescribed-workouts/:id/checkin', (req, res) => {
@@ -946,6 +968,182 @@ app.post('/api/invoices', (req, res) => {
 
   writeDb();
   res.json({ newPayment, newInvoice });
+});
+
+// GET invitations
+app.get('/api/invitations', (req, res) => {
+  const { traineeId, trainerId } = req.query;
+  let list = dbData.invitations || [];
+  if (traineeId) {
+    list = list.filter(inv => inv.traineeId === traineeId);
+  }
+  if (trainerId) {
+    list = list.filter(inv => inv.trainerId === trainerId);
+  }
+  res.json(list);
+});
+
+// POST send new invitation
+app.post('/api/invitations', (req, res) => {
+  const { trainerId, traineeEmail, packageName, sessions, price } = req.body;
+  const trainer = dbData.trainers.find(t => t.id === trainerId);
+  const userAccount = dbData.users.find(u => u.email.toLowerCase() === traineeEmail.toLowerCase() && u.role === 'TRAINEE');
+
+  if (!userAccount) {
+    return res.status(404).json({ message: 'No registered CoachTrack MY Trainee account found with this email.' });
+  }
+
+  const trainee = dbData.trainees.find(t => t.userId === userAccount.id || t.id === userAccount.id);
+  if (!trainee) {
+    return res.status(404).json({ message: 'Trainee profile not found.' });
+  }
+
+  // Assign trainer ID immediately so client appears automatically in Trainer's roster
+  trainee.assignedTrainerId = trainerId;
+
+  const newInv = {
+    id: 'inv_' + Date.now(),
+    trainerId,
+    trainerName: trainer ? trainer.name : 'Coach Sarah Tan',
+    trainerDiscipline: trainer ? trainer.discipline : 'Fitness Specialist',
+    traineeId: trainee.id,
+    traineeEmail: userAccount.email,
+    packageName,
+    sessions: Number(sessions) || 1,
+    price: Number(price) || 100,
+    status: 'Pending',
+    date: new Date().toISOString().split('T')[0]
+  };
+
+  if (!dbData.invitations) dbData.invitations = [];
+  dbData.invitations.push(newInv);
+
+  // Send trainee an in-app notification
+  if (!dbData.notifications) dbData.notifications = [];
+  dbData.notifications.push({
+    id: 'not_' + Date.now(),
+    userId: trainee.id,
+    title: 'New Coach Onboarding Invitation!',
+    message: `Coach ${trainer ? trainer.name : 'Sarah Tan'} has invited you to connect under the: ${packageName}!`,
+    date: new Date().toISOString().split('T')[0],
+    read: false
+  });
+
+  writeDb();
+  res.json(newInv);
+});
+
+// POST respond connection invitation
+app.post('/api/invitations/:id/respond', (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body; // 'Accepted' | 'Declined'
+  const list = dbData.invitations || [];
+  const inv = list.find(i => i.id === id);
+
+  if (!inv) {
+    return res.status(404).json({ message: 'Invitation record not found' });
+  }
+
+  inv.status = status;
+
+  if (status === 'Accepted') {
+    const trainee = dbData.trainees.find(t => t.id === inv.traineeId);
+    if (trainee) {
+      trainee.assignedTrainerId = inv.trainerId;
+    }
+
+    const trainerProfile = dbData.trainers.find(t => t.id === inv.trainerId);
+    if (trainerProfile && trainee) {
+      // 1. Generate Payment record
+      const paymentId = `p_${Date.now()}`;
+      const newPayment = {
+        id: paymentId,
+        trainerId: inv.trainerId,
+        traineeId: trainee.id,
+        traineeName: trainee.name,
+        amount: Number(inv.price),
+        date: new Date().toISOString().split('T')[0],
+        status: 'Unpaid',
+        description: `${inv.packageName} - Onboarding Fee`
+      };
+
+      // 2. Generate Invoice record
+      const invoiceId = `inv_${Date.now()}`;
+      const newInvoice = {
+        id: invoiceId,
+        paymentId,
+        invoiceNo: `COACH-2026-0${Math.floor(Math.random() * 9000 + 1000)}`,
+        trainerId: inv.trainerId,
+        trainerName: trainerProfile.name,
+        trainerEmail: 'trainer@coachtrack.my',
+        traineeId: trainee.id,
+        traineeName: trainee.name,
+        traineeEmail: inv.traineeEmail,
+        amount: Number(inv.price),
+        date: new Date().toISOString().split('T')[0],
+        dueDate: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split('T')[0],
+        status: 'Unpaid',
+        items: [
+          {
+            description: `${inv.packageName} (${inv.sessions} sessions)`,
+            quantity: 1,
+            unitPrice: Number(inv.price),
+            total: Number(inv.price)
+          }
+        ]
+      };
+
+      dbData.payments.push(newPayment as any);
+      dbData.invoices.push(newInvoice as any);
+    }
+
+    // Notify trainer
+    if (!dbData.notifications) dbData.notifications = [];
+    dbData.notifications.push({
+      id: 'not_' + Date.now(),
+      userId: inv.trainerId,
+      title: 'Trainee Accepted Onboarding Plan!',
+      message: `${trainee ? trainee.name : 'Trainee'} accepted your invitation. First invoice generated automatically.`,
+      date: new Date().toISOString().split('T')[0],
+      read: false
+    });
+  } else if (status === 'Declined') {
+    // Notify trainer
+    if (!dbData.notifications) dbData.notifications = [];
+    dbData.notifications.push({
+      id: 'not_' + Date.now(),
+      userId: inv.trainerId,
+      title: 'Invitation Declined',
+      message: `${inv.traineeEmail} has declined your onboarding request.`,
+      date: new Date().toISOString().split('T')[0],
+      read: false
+    });
+  }
+
+  writeDb();
+  res.json({ message: `Invitation status updated to ${status}`, invitation: inv });
+});
+
+// GET notifications
+app.get('/api/notifications', (req, res) => {
+  const { userId } = req.query;
+  let list = dbData.notifications || [];
+  if (userId) {
+    list = list.filter(n => n.userId === userId);
+  }
+  res.json(list);
+});
+
+// POST Mark notification read
+app.post('/api/notifications/:id/read', (req, res) => {
+  const { id } = req.params;
+  const list = dbData.notifications || [];
+  const item = list.find(n => n.id === id);
+  if (item) {
+    item.read = true;
+  }
+  writeDb();
+  res.json({ success: true });
 });
 
 // Admin Profile Reset

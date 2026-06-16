@@ -64,7 +64,7 @@ export default function BrandingHeader({
           <img 
             alt="CoachTrack MY Logo" 
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuDETvXZjCP6SyPdhxA5LBJxWToef2-2QRTWXAAcbAR1pYCPBQvSJ3JfenXj6iDZVITmo5sPVkUUbY6CFwY_JmfWywrTQ6vMQ17bJvlNGH4dBCAJBZQAbpTyqrM4kh0PaRdmjdFW5e_ga3qBpyVr_yuIpHJ3_B6g5G116iBOCQhZkDgjAZt18i5v1T48bkwzj8qwRAN4PQidoeK2dCT4jg0emt8ViDZeIiKE--IH9uddRKJNsZ2f0AOkUxqqnvBN0WOSIFHezK-Aw6s" 
-            className="h-[60px] w-[60px] rounded-xl object-contain shadow-md shrink-0 bg-white border border-slate-100"
+            className="h-[60px] w-[60px] object-contain shrink-0 bg-transparent"
             id="app_logo"
           />
           <div className="flex flex-col justify-center">

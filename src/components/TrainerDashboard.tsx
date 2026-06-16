@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Users, 
   Calendar, 
@@ -49,6 +49,12 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTrainee, setSelectedTrainee] = useState<TraineeProfile | null>(null);
   const [traineeDetailTab, setTraineeDetailTab] = useState<'history' | 'body' | 'photos' | 'ai' | 'chat' | 'nutrition'>('body');
+  const [clientFilterMode, setClientFilterMode] = useState<'consistency' | 'payment'>('consistency');
+
+  // Schedule Session states for Group Scheduling
+  const [scheduleType, setScheduleType] = useState<'individual' | 'group'>('individual');
+  const [scheduleSelectedTraineeIds, setScheduleSelectedTraineeIds] = useState<string[]>([]);
+  const [scheduleSearchQuery, setScheduleSearchQuery] = useState('');
   
   // Workspace Dynamic Chat Thread state
   const [activeChatTrainee, setActiveChatTrainee] = useState<any>({
@@ -136,8 +142,60 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
   const [newClientWeight, setNewClientWeight] = useState(70);
   const [newClientHeight, setNewClientHeight] = useState(172);
 
+  // Redesigned Add Client connection states
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [invitePkgOption, setInvitePkgOption] = useState('Monthly Coaching Plan — 8 Sessions — RM299');
+  const [inviteError, setInviteError] = useState('');
+  const [inviteSuccess, setInviteSuccess] = useState(false);
+  const [trainerInvitations, setTrainerInvitations] = useState<any[]>([]);
+  const [inviteLoading, setInviteLoading] = useState(false);
+
+  // Expanded Invoice states
+  const [invoiceTitle, setInvoiceTitle] = useState('Personal Training Services Invoice');
+  const [invoiceNotes, setInvoiceNotes] = useState('');
+  const [invoiceType, setInvoiceType] = useState('Personal Training Package');
+  const [invoiceBillingTarget, setInvoiceBillingTarget] = useState<'individual' | 'selected' | 'all'>('individual');
+  const [invoiceSelectedTraineeIds, setInvoiceSelectedTraineeIds] = useState<string[]>([]);
+
+  // Schedule Session states
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [scheduleTraineeId, setScheduleTraineeId] = useState('');
+  const [scheduleDate, setScheduleDate] = useState('2026-06-17');
+  const [scheduleTimeSlot, setScheduleTimeSlot] = useState('10:00 AM');
+  const [scheduleLocation, setScheduleLocation] = useState('SS15 Studio • Selangor');
+  const [scheduleNotes, setScheduleNotes] = useState('');
+  const [scheduleSuccess, setScheduleSuccess] = useState(false);
+
+  // Send Reminder states
   const [showSendReminderForm, setShowSendReminderForm] = useState(false);
-  const [reminderClientName, setReminderClientName] = useState('Ahmad Ibrahim');
+  const [reminderTraineeId, setReminderTraineeId] = useState('');
+  const [reminderType, setReminderType] = useState('Workout Plan Log Checklist Reminder');
+  const [reminderMessage, setReminderMessage] = useState('');
+  const [reminderSuccess, setReminderSuccess] = useState(false);
+
+  // Auto-update reminder template when recipient or reminder type changes
+  useEffect(() => {
+    const selectedTrainee = trainees.find(t => t.id === reminderTraineeId);
+    if (!selectedTrainee) return;
+    
+    let msg = '';
+    if (reminderType === 'Workout Plan Log Checklist Reminder') {
+      msg = `Hi ${selectedTrainee.name}! Just a quick nudge to complete your prescribed HIIT Core Workout Routine and submit your feedback logs. Let's maintain the momentum!`;
+    } else if (reminderType === 'Nutrition Log & Calorie Tracker Reminder') {
+      msg = `Hi ${selectedTrainee.name}, please log your meals and updates inside your Daily Calorie Tracker. Consistency with macros is key!`;
+    } else if (reminderType === 'Outstanding Invoice Payment Reminder') {
+      msg = `Hi ${selectedTrainee.name}, this is a gentle reminder that you have an outstanding coaching invoice of ours awaiting check-out. Let me know if you face any issues.`;
+    } else if (reminderType === 'Progress Gallery Verification Reminder') {
+      msg = `Hey ${selectedTrainee.name}! Don't forget to upload your Week 8 progress photos inside the Trainee Dashboard. Can't wait to check your development.`;
+    } else if (reminderType === 'Session Attendance Reminder') {
+      msg = `Hi ${selectedTrainee.name}! Our training session is slotted for ${scheduleTimeSlot || 'your scheduled hour'} tomorrow. Get packed, stay hydrated, and let's crush it!`;
+    }
+    setReminderMessage(msg);
+  }, [reminderTraineeId, reminderType, trainees]);
+
+  // Assignment Options for Workouts
+  const [assignOption, setAssignOption] = useState<'all' | 'selected' | 'individual'>('individual');
+  const [selectedTraineeIdsForPrescription, setSelectedTraineeIdsForPrescription] = useState<string[]>([]);
 
   const [coachingFeed, setCoachingFeed] = useState<any[]>([
     { id: 1, type: 'workout', text: 'Workout feedback successfully sent to Ahmad Ibrahim for HIIT Routine', time: '15 mins ago' },
@@ -191,10 +249,6 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
       const dataWorkouts = await dbService.getWorkouts({ trainerId: trainerProfile.id });
       setWorkouts(dataWorkouts);
 
-      // Payments from backend
-      const dataPay = await dbService.getPayments({ trainerId: trainerProfile.id });
-      setPayments(dataPay);
-
       // Get all assigned trainees
       const dataTr = await dbService.getTraineesForTrainer(trainerProfile.id);
       if (dataTr && dataTr.length > 0) {
@@ -204,12 +258,210 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
         if (dataSingle) setTrainees([dataSingle]);
       }
 
+      // Payments from backend
+      const dataPay = await dbService.getPayments({ trainerId: trainerProfile.id });
+      setPayments(dataPay);
+      if (dataPay && dataPay.length > 0) {
+        const mappedBackendPayments = dataPay.map((p: any) => {
+          const traineeInfo = (dataTr || []).find((t: any) => t.id === p.traineeId) || { name: 'Ahmad bin Ibrahim', email: 'ahmad@coachtrack.my' };
+          return {
+            id: p.id,
+            traineeName: traineeInfo.name,
+            traineeId: p.traineeId,
+            packageName: p.packageName || p.itemDescription || 'Monthly Coaching Plan',
+            packageType: (p.packageName || p.itemDescription || '').toLowerCase().includes('monthly') ? 'Monthly' : 'Single',
+            amount: p.amount,
+            dueDate: p.dueDate || '2026-06-25',
+            status: p.status || 'Pending',
+            month: 'June 2026',
+            invoiceNo: p.invoiceNo || `COACH-2026-${String(Math.floor(Math.random() * 9000 + 1000))}`,
+            email: traineeInfo.email || 'ahmad@coachtrack.my'
+          };
+        });
+
+        setBillingList(prev => {
+          const combined = [...mappedBackendPayments];
+          prev.forEach(item => {
+            if (!combined.some(c => c.id === item.id)) {
+              combined.push(item);
+            }
+          });
+          return combined;
+        });
+      }
+
+      // Fetch trainer invitations
+      const dataInv = await dbService.getInvitations({ trainerId: trainerProfile.id });
+      setTrainerInvitations(dataInv);
+
       // Populate nutrition from Ahmad bin Ibrahim
       const dataNutr = await dbService.getNutrition('te_ahmad');
       setNutrition(dataNutr);
 
     } catch (e) {
       console.error('Error loading coach dashboard data:', e);
+    }
+  };
+
+  const handleAddClientInviteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInviteLoading(true);
+    setInviteError('');
+    setInviteSuccess(false);
+
+    try {
+      let packageName = invitePkgOption;
+      let sessions = 8;
+      let price = 299;
+
+      if (invitePkgOption === 'Single Class') {
+        packageName = 'Single Class Onboarding Slot';
+        sessions = 1;
+        price = 110;
+      } else if (invitePkgOption === '4-Class Package') {
+        packageName = '4-Class Coaching Pass';
+        sessions = 4;
+        price = 399;
+      } else if (invitePkgOption === '8-Class Package') {
+        packageName = '8-Class Active Plan';
+        sessions = 8;
+        price = 750;
+      } else if (invitePkgOption === 'Monthly Pass') {
+        packageName = 'Monthly Infinite Pass';
+        sessions = 12;
+        price = 299;
+      } else if (invitePkgOption === 'Custom Package') {
+        packageName = 'Premium Certified Custom Package';
+        sessions = 15;
+        price = 1499;
+      }
+
+      await dbService.createInvitation({
+        trainerId: trainerProfile.id,
+        traineeEmail: inviteEmail.trim(),
+        packageName,
+        sessions,
+        price
+      });
+
+      setInviteSuccess(true);
+      setInviteEmail('');
+      
+      // Update local invites and trainee roster!
+      const refreshedInv = await dbService.getInvitations({ trainerId: trainerProfile.id });
+      setTrainerInvitations(refreshedInv);
+
+      // Re-trigger global data fetch
+      await fetchTrainerData();
+
+      // Show alert visual banner
+      setAlertBanner({ message: `Invitation successfully sent to ${inviteEmail.trim()}! Status marked: Pending.`, type: 'success' });
+      
+      // Close modal after delay
+      setTimeout(() => {
+        setShowAddClientForm(false);
+        setInviteSuccess(false);
+      }, 1500);
+
+    } catch (err: any) {
+      setInviteError(err.message || 'Failed to send connection request. Check trainee email exists.');
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const registeredTraineesForSlot = useMemo(() => {
+    if (!scheduleDate || !scheduleTimeSlot) return [];
+    const matched = bookings.filter(b => b.date === scheduleDate && b.timeSlot === scheduleTimeSlot);
+    return Array.from(new Set(matched.map(b => b.traineeId)));
+  }, [bookings, scheduleDate, scheduleTimeSlot]);
+
+  const handleScheduleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (scheduleType === 'individual' && !scheduleTraineeId) return;
+
+    try {
+      if (scheduleType === 'individual') {
+        const selectedT = trainees.find(t => t.id === scheduleTraineeId);
+        const payload = {
+          trainerId: trainerProfile.id,
+          traineeId: scheduleTraineeId,
+          traineeName: selectedT ? selectedT.name : 'Client',
+          date: scheduleDate,
+          timeSlot: scheduleTimeSlot,
+          location: scheduleLocation,
+          notes: scheduleNotes,
+          status: 'Approved' as const,
+          packageType: 'Single Slot' as const,
+          amountPaid: 150,
+          paymentStatus: 'Paid' as const
+        };
+
+        const res = await dbService.createBooking(payload);
+        if (res) {
+          setScheduleSuccess(true);
+          triggerToast(`Individual session scheduled successfully with ${selectedT ? selectedT.name : 'Client'}!`, 'success');
+        }
+      } else {
+        // Group Session: Create booking records for each additional participant
+        for (const tid of scheduleSelectedTraineeIds) {
+          const selectedT = trainees.find(t => t.id === tid);
+          const payload = {
+            trainerId: trainerProfile.id,
+            traineeId: tid,
+            traineeName: selectedT ? selectedT.name : 'Client',
+            date: scheduleDate,
+            timeSlot: scheduleTimeSlot,
+            location: scheduleLocation,
+            notes: scheduleNotes,
+            status: 'Approved' as const,
+            packageType: 'Group Slot' as const,
+            amountPaid: 150,
+            paymentStatus: 'Paid' as const
+          };
+          await dbService.createBooking(payload);
+        }
+        setScheduleSuccess(true);
+        const totalCount = registeredTraineesForSlot.length + scheduleSelectedTraineeIds.length;
+        triggerToast(`Group session scheduled! Total ${totalCount} participants synced.`, 'success');
+      }
+
+      setTimeout(() => {
+        setScheduleSuccess(false);
+        setShowScheduleModal(false);
+        setScheduleSelectedTraineeIds([]);
+        setScheduleSearchQuery('');
+        fetchTrainerData();
+      }, 1500);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSendReminderSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reminderTraineeId || !reminderMessage.trim()) return;
+
+    try {
+      const selectedT = trainees.find(t => t.id === reminderTraineeId);
+      const payload = {
+        senderId: 'u_sarah', // Trainer ID
+        receiverId: selectedT ? selectedT.userId : 'u_ahmad',
+        message: `📢 [COACH REMINDER - ${reminderType.toUpperCase()}]: ${reminderMessage}`
+      };
+
+      const res = await dbService.createChatMessage(payload);
+      if (res) {
+        setReminderSuccess(true);
+        triggerToast(`Reminder dispatched to ${selectedT ? selectedT.name : 'Client'}'s chat feed!`, 'success');
+        setTimeout(() => {
+          setReminderSuccess(false);
+          setShowSendReminderForm(false);
+          fetchTrainerData();
+        }, 1200);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -297,46 +549,70 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
 
   const handleInvoiceCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTraineeId) return;
+    
+    let targetIds: string[] = [];
+    if (invoiceBillingTarget === 'all') {
+      targetIds = trainees.map(t => t.id);
+    } else if (invoiceBillingTarget === 'selected') {
+      targetIds = invoiceSelectedTraineeIds;
+    } else {
+      if (selectedTraineeId) {
+        targetIds = [selectedTraineeId];
+      }
+    }
+
+    if (targetIds.length === 0) {
+      alert("Please select or assign at least one trainee client!");
+      return;
+    }
 
     try {
-      const payload = {
-        trainerId: trainerProfile.id,
-        traineeId: selectedTraineeId,
-        amount: invoiceAmount,
-        itemDescription: invoiceDescription,
-        dueDate: invoiceDueDate
-      };
-
-      const res = await dbService.createInvoice(payload);
-
-      if (res) {
-        const target = trainees.find(t => t.id === selectedTraineeId);
-        
-        // Add to billing simulation dynamically
-        const newSim = {
-          id: "pay_sim_" + Date.now(),
-          traineeName: target ? target.name : 'Issued Client',
-          traineeId: selectedTraineeId,
-          packageName: invoiceDescription,
-          packageType: invoiceDescription.toLowerCase().includes('monthly') ? 'Monthly' : 'Single',
+      // Loop over targeted clients
+      for (const targetId of targetIds) {
+        const payload = {
+          trainerId: trainerProfile.id,
+          traineeId: targetId,
           amount: invoiceAmount,
-          dueDate: invoiceDueDate,
-          status: 'Pending',
-          month: 'June 2026',
-          invoiceNo: 'INV-MY-010' + (billingList.length + 1),
-          email: 'client@coachtrack.my'
+          itemDescription: `${invoiceTitle} - ${invoiceDescription} (${invoiceType})`,
+          dueDate: invoiceDueDate
         };
-        setBillingList([newSim, ...billingList]);
-        
-        setInvoiceCreatedSuccess(true);
-        triggerToast('Custom Malaysia Invoice issued with sandbox checkout gateway!');
-        setTimeout(() => {
-          setInvoiceCreatedSuccess(false);
-          setShowInvoiceForm(false);
-          fetchTrainerData();
-        }, 1200);
+
+        const res = await dbService.createInvoice(payload);
+        if (res) {
+          const target = trainees.find(t => t.id === targetId);
+          // Add to billing simulation dynamically
+          const newSim = {
+            id: "pay_sim_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+            traineeName: target ? target.name : 'Issued Client',
+            traineeId: targetId,
+            packageName: `${invoiceTitle} - ${invoiceDescription}`,
+            packageType: invoiceType.toLowerCase().includes('monthly') ? 'Monthly' : 'Single',
+            amount: invoiceAmount,
+            dueDate: invoiceDueDate,
+            status: 'Pending',
+            month: 'June 2026',
+            invoiceNo: 'INV-2026-000' + String(Math.floor(Math.random() * 90 + 10)),
+            email: target ? target.email : 'client@coachtrack.my',
+            notes: invoiceNotes
+          };
+          setBillingList(prev => [newSim, ...prev]);
+        }
       }
+
+      setInvoiceCreatedSuccess(true);
+      triggerToast(`Custom Invoice issued successfully to ${targetIds.length} client(s)!`, 'success');
+      setTimeout(() => {
+        setInvoiceCreatedSuccess(false);
+        setShowInvoiceForm(false);
+        setInvoiceNotes('');
+        setInvoiceTitle('Personal Training Services Invoice');
+        setInvoiceDescription('1x Premium HIIT Custom Workout Hour');
+        setInvoiceAmount(150);
+        setInvoiceBillingTarget('individual');
+        setInvoiceSelectedTraineeIds([]);
+        fetchTrainerData();
+      }, 1200);
+
     } catch (err) {
       console.error(err);
     }
@@ -344,12 +620,28 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
 
   const handlePrescribeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!prescribeTraineeId) return;
+    
+    let targetIds: string[] = [];
+    if (assignOption === 'all') {
+      targetIds = trainees.map(t => t.id);
+    } else if (assignOption === 'selected') {
+      targetIds = selectedTraineeIdsForPrescription;
+    } else {
+      if (prescribeTraineeId) {
+        targetIds = [prescribeTraineeId];
+      }
+    }
+
+    if (targetIds.length === 0) {
+      alert("Please select or assign to at least one trainee client!");
+      return;
+    }
 
     try {
       const payload = {
         trainerId: trainerProfile.id,
-        traineeId: prescribeTraineeId,
+        traineeId: targetIds[0], // fallback compatibility
+        traineeIds: targetIds, // handles multi targets
         workoutType: prescribeWorkoutType,
         duration: prescribeDuration,
         exercises: prescribeExercises.filter(ex => ex.name.trim() !== ''),
@@ -360,12 +652,14 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
 
       if (res) {
         setPrescribeSuccess(true);
-        triggerToast(`Routine prescribed for ${prescribeTraineeName}!`);
+        triggerToast(`Routine prescribed successfully to ${targetIds.length} client(s)!`);
         setTimeout(() => {
           setPrescribeSuccess(false);
           setShowPrescribeForm(false);
           setPrescribeNotes('');
           setPrescribeExercises([{ name: '', sets: 3, reps: 10, weight: 0 }]);
+          setAssignOption('individual');
+          setSelectedTraineeIdsForPrescription([]);
           fetchTrainerData();
         }, 1200);
       }
@@ -383,41 +677,62 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
     const defaults: Record<string, any> = {
       'te_ahmad': {
         targetWeight: 75,
-        completionRate: 85,
+        completionRate: 42,
+        completedWorkouts: 5,
+        missedWorkouts: 7,
         lastCheckin: traineeWorkouts.length > 0 
           ? `${traineeWorkouts[0].date} - ${traineeWorkouts[0].workoutType}` 
           : "2026-06-10 - Cardio Interval Run",
+        lastWorkoutDate: "2026-06-10",
         latestMeal: traineeMeals.length > 0 
           ? `${traineeMeals[0].foodName} (${traineeMeals[0].calories} kcal)` 
           : "Nasi Lemak tapi kurang manis (620 kcal)",
-        paymentStatus: "Paid",
+        packageName: "Monthly Pass",
+        paymentStatus: "Pending",
+        outstandingAmount: 299,
+        dueDate: "2026-06-25",
+        invoiceCount: 1,
         nextSession: traineeBookings.length > 0 && traineeBookings[0].status === 'Approved'
           ? `${traineeBookings[0].date} @ ${traineeBookings[0].timeSlot}` 
           : "2026-06-12 @ 10:00 AM",
         bodyMetrics: { weight: 84, height: 176, bodyFat: 21.8, muscleMass: 36.4, bmr: 1730 },
-        attendance: "92% (12/13 completed)",
+        attendance: "42% (5/12 completed)",
         notes: "Excellent commitment to cardio metrics. Lower lumbar spine feels stable after glute bridge repetitions. Needs reminder about daily water consumption in Subang heat."
       },
       'te_ling': {
         targetWeight: 52,
-        completionRate: 94,
+        completionRate: 68,
+        completedWorkouts: 13,
+        missedWorkouts: 6,
         lastCheckin: "2026-06-09 - Reformer Pilates Level 1",
+        lastWorkoutDate: "2026-06-09",
         latestMeal: "Shredded Quinoa Salad & Chicken Breast (390 kcal)",
-        paymentStatus: "Pending",
+        packageName: "8-Class Package",
+        paymentStatus: "Overdue",
+        outstandingAmount: 450,
+        dueDate: "2026-06-05",
+        invoiceCount: 2,
         nextSession: "2026-06-13 @ 2:30 PM",
         bodyMetrics: { weight: 58, height: 162, bodyFat: 25.5, muscleMass: 21.2, bmr: 1250 },
-        attendance: "96% (24/25 completed)",
+        attendance: "68% (13/19 completed)",
         notes: "Post-partum abdominal separation (diastasis recti) is healing well. Focus on safe transverse abdominis stabilizers. Strict posture control on pelvic alignment."
       },
       'te_faizul': {
         targetWeight: 88,
-        completionRate: 68,
-        lastCheckin: "2026-06-08 - Compound Powerlifting Deadlift Set",
+        completionRate: 91,
+        completedWorkouts: 20,
+        missedWorkouts: 2,
+        lastCheckin: "2026-06-14 - Compound Powerlifting Deadlift Set",
+        lastWorkoutDate: "2026-06-14",
         latestMeal: "Brown Rice & Double Grilled Chicken Breast (820 kcal)",
-        paymentStatus: "Overdue",
+        packageName: "Personal Training Package",
+        paymentStatus: "Paid",
+        outstandingAmount: 0,
+        dueDate: "None (Fully Paid)",
+        invoiceCount: 1,
         nextSession: "None Scheduled",
         bodyMetrics: { weight: 92, height: 180, bodyFat: 17.6, muscleMass: 42.8, bmr: 1980 },
-        attendance: "75% (6/8 completed)",
+        attendance: "91% (20/22 completed)",
         notes: "High potential for deadlift target of 180kg. Work on thoracic spine extension under heavy loads. Form is solid, but tends to hyper-extend lower lumbar at lockouts."
       }
     };
@@ -425,12 +740,19 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
     return defaults[traineeId] || {
       targetWeight: 70,
       completionRate: 80,
+      completedWorkouts: 8,
+      missedWorkouts: 2,
       lastCheckin: "None logged this cycle",
+      lastWorkoutDate: "N/A",
       latestMeal: "No meal logged today",
+      packageName: "Custom Package",
       paymentStatus: "Pending",
+      outstandingAmount: 150,
+      dueDate: "2026-06-20",
+      invoiceCount: 1,
       nextSession: "None Booked",
       bodyMetrics: { weight: 75, height: 170, bodyFat: 19.5, muscleMass: 31.0, bmr: 1510 },
-      attendance: "80% (0/0)",
+      attendance: "80% (8/10 completed)",
       notes: "Baseline training details configured. Maintain consistency across workout prescriptions."
     };
   };
@@ -602,33 +924,715 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
           </div>
         </div>
 
-        {/* Invoice Generator Modal Form */}
+        {/* Quick Actions Row */}
+        <div className="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-sm mb-8 text-left">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3.5 flex items-center gap-1.5 font-sans">
+            ⚡ Trainer Quick Actions
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row md:flex-wrap gap-3 select-none">
+            
+            <button
+              id="qa-add-client"
+              onClick={() => {
+                setInviteEmail('');
+                setInvitePkgOption('Monthly Pass');
+                setShowAddClientForm(true);
+              }}
+              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-teal-500/15 to-teal-600/5 hover:from-teal-500/25 hover:to-teal-600/10 border border-teal-200 text-[#001f3f] rounded-xl text-xs font-bold font-sans transition duration-155 cursor-pointer shadow-2xs hover:shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5 shrink-0 text-teal-600" />
+              <span>Add New Client</span>
+            </button>
+
+            <button
+              id="qa-issue-invoice"
+              onClick={() => {
+                setSelectedTraineeId(trainees[0]?.id || 'te_ahmad');
+                setInvoiceAmount(150);
+                setInvoiceDueDate('2026-06-25');
+                setInvoiceDescription('Premium Personal Training Service Tier');
+                setInvoiceType('Personal Training Package');
+                setInvoiceNotes('');
+                setInvoiceTitle('Coaching Services Invoice');
+                setInvoiceBillingTarget('individual');
+                setInvoiceSelectedTraineeIds([]);
+                setShowInvoiceForm(true);
+              }}
+              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-indigo-500/15 to-indigo-600/5 hover:from-indigo-500/25 hover:to-indigo-600/10 border border-indigo-200 text-[#001f3f] rounded-xl text-xs font-bold font-sans transition duration-155 cursor-pointer shadow-2xs hover:shadow-sm"
+            >
+              <FileText className="w-3.5 h-3.5 shrink-0 text-indigo-600" />
+              <span>Issue Custom Invoice</span>
+            </button>
+
+            <button
+              id="qa-create-workout"
+              onClick={() => {
+                const defaultTr = trainees[0] || { id: 'te_ahmad', name: 'Ahmad bin Ibrahim' };
+                setPrescribeTraineeId(defaultTr.id);
+                setPrescribeTraineeName(defaultTr.name);
+                setPrescribeWorkoutType('HIIT Core Strength');
+                setPrescribeDuration(45);
+                setPrescribeNotes('');
+                setPrescribeExercises([{ name: '', sets: 3, reps: 10, weight: 0 }]);
+                setAssignOption('individual');
+                setSelectedTraineeIdsForPrescription([]);
+                setShowPrescribeForm(true);
+              }}
+              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-[#001F3F]/15 to-slate-950/5 hover:from-[#001F3F]/25 hover:to-slate-950/10 border border-slate-200 text-[#001F3F] rounded-xl text-xs font-bold font-sans transition duration-155 cursor-pointer shadow-2xs hover:shadow-sm"
+            >
+              <Dumbbell className="w-3.5 h-3.5 shrink-0 text-[#001F3F]" />
+              <span>Create Workout Plan</span>
+            </button>
+
+            <button
+              id="qa-schedule-session"
+              onClick={() => {
+                setScheduleTraineeId(trainees[0]?.id || 'te_ahmad');
+                setScheduleDate('2026-06-17');
+                setScheduleTimeSlot('10:00 AM');
+                setScheduleLocation('SS15 Studio • Selangor');
+                setScheduleNotes('Personal training tracking alignment review');
+                setShowScheduleModal(true);
+              }}
+              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-amber-500/15 to-amber-600/5 hover:from-amber-500/25 hover:to-amber-600/10 border border-amber-200 text-[#001f3f] rounded-xl text-xs font-bold font-sans transition duration-155 cursor-pointer shadow-2xs hover:shadow-sm"
+            >
+              <Calendar className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+              <span>Schedule Session</span>
+            </button>
+
+            <button
+              id="qa-send-reminder"
+              onClick={() => {
+                setReminderTraineeId(trainees[0]?.id || 'te_ahmad');
+                setReminderType('Workout Plan Log Checklist Reminder');
+                setReminderMessage("Hi Ahmad! Please log your pending HIIT Core workout split inside your planner logs. Let's finish strong!");
+                setShowSendReminderForm(true);
+              }}
+              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-rose-500/15 to-rose-600/5 hover:from-rose-500/25 hover:to-rose-600/10 border border-rose-200 text-[#001f3f] rounded-xl text-xs font-bold font-sans transition duration-155 cursor-pointer shadow-2xs hover:shadow-sm"
+            >
+              <Bell className="w-3.5 h-3.5 shrink-0 text-rose-600" />
+              <span>Send Reminder</span>
+            </button>
+            
+          </div>
+        </div>
+
+        {/* Custom Invoice Generator Modal Form */}
         {showInvoiceForm && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100 text-left">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100 text-left">
               <h3 className="font-display font-medium text-slate-900 text-lg mb-1">
-                Issue Certified Malaysia Invoice
+                Issue Custom Invoice
               </h3>
-              <p className="text-xs text-slate-500 mb-4">
-                Fill details below to generate a sandbox payment invoice that updates metrics immediately.
+              <p className="text-xs text-slate-500 mb-4 font-sans">
+                Generate and dispatch a professional sandboxed invoice directly to client accounts.
               </p>
 
               {invoiceCreatedSuccess ? (
                 <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-4 text-center my-6">
                   <span className="text-xl">📋</span>
-                  <p className="font-bold mt-1">Invoice Issued Successfully!</p>
-                  <p className="text-xs text-slate-500">Client notified with checkout page link.</p>
+                  <p className="font-bold mt-1">Invoice Generated Successfully!</p>
+                  <p className="text-xs text-slate-500">Client billing registers have been updated.</p>
                 </div>
               ) : (
                 <form onSubmit={handleInvoiceCreateSubmit} className="space-y-4">
+                  {/* Billing Target Option */}
+                  <div className="bg-slate-50 border border-slate-150 p-4 rounded-xl space-y-3 text-left">
+                    <label className="block text-2xs font-bold text-slate-700 uppercase tracking-wider mb-1 font-sans">
+                      🎯 Billing Target Group
+                    </label>
+                    <div className="flex flex-wrap gap-4 text-xs">
+                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold font-sans text-slate-755">
+                        <input
+                          type="radio"
+                          name="invoiceTargetOption"
+                          value="individual"
+                          checked={invoiceBillingTarget === 'individual'}
+                          onChange={() => setInvoiceBillingTarget('individual')}
+                          className="text-teal-605 focus:ring-teal-500 rounded-full cursor-pointer"
+                        />
+                        Single Client
+                      </label>
+                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold font-sans text-slate-755">
+                        <input
+                          type="radio"
+                          name="invoiceTargetOption"
+                          value="selected"
+                          checked={invoiceBillingTarget === 'selected'}
+                          onChange={() => {
+                            setInvoiceBillingTarget('selected');
+                            if (selectedTraineeId && !invoiceSelectedTraineeIds.includes(selectedTraineeId)) {
+                              setInvoiceSelectedTraineeIds([selectedTraineeId]);
+                            }
+                          }}
+                          className="text-teal-605 focus:ring-teal-500 rounded-full cursor-pointer"
+                        />
+                        Selected Clients
+                      </label>
+                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold font-sans text-slate-755">
+                        <input
+                          type="radio"
+                          name="invoiceTargetOption"
+                          value="all"
+                          checked={invoiceBillingTarget === 'all'}
+                          onChange={() => setInvoiceBillingTarget('all')}
+                          className="text-teal-605 focus:ring-teal-500 rounded-full cursor-pointer"
+                        />
+                        All Active Clients ({trainees.length})
+                      </label>
+                    </div>
+
+                    {/* Client lists to select from */}
+                    {invoiceBillingTarget === 'selected' && (
+                      <div className="pt-2 border-t border-slate-200 mt-2 grid grid-cols-2 gap-2 text-2xs">
+                        {trainees.map((t) => (
+                          <label key={t.id} className="flex items-center gap-2 cursor-pointer bg-white px-2.5 py-1.5 rounded-lg border border-slate-150 shadow-2xs">
+                            <input
+                              type="checkbox"
+                              checked={invoiceSelectedTraineeIds.includes(t.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setInvoiceSelectedTraineeIds([...invoiceSelectedTraineeIds, t.id]);
+                                } else {
+                                  setInvoiceSelectedTraineeIds(invoiceSelectedTraineeIds.filter(id => id !== t.id));
+                                }
+                              }}
+                              className="rounded text-teal-605 focus:ring-teal-500 cursor-pointer"
+                            />
+                            <span className="font-bold text-slate-755 truncate">{t.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
+                    {invoiceBillingTarget === 'individual' && (
+                      <div className="pt-1.5">
+                        <select
+                          value={selectedTraineeId}
+                          onChange={(e) => setSelectedTraineeId(e.target.value)}
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800"
+                          required
+                        >
+                          <option value="">-- Choose Client --</option>
+                          {trainees.map(t => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Invoice details */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1 font-sans">
+                        Invoice Title
+                      </label>
+                      <input 
+                        type="text" 
+                        value={invoiceTitle}
+                        onChange={(e) => setInvoiceTitle(e.target.value)}
+                        placeholder="E.g. Coaching Hub Fee"
+                        className="w-full bg-slate-50 border border-slate-250 rounded-xl px-3 py-2 text-xs focus:ring-teal-500 text-slate-800 font-sans font-medium"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1 font-sans">
+                        Invoice Type
+                      </label>
+                      <select
+                        value={invoiceType}
+                        onChange={(e) => setInvoiceType(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-250 rounded-xl px-3 py-2 text-xs focus:ring-teal-500 text-slate-800 font-sans font-medium"
+                        required
+                      >
+                        <option value="Single Class">Single Class</option>
+                        <option value="4-Class Package">4-Class Package</option>
+                        <option value="8-Class Package">8-Class Package</option>
+                        <option value="Monthly Pass">Monthly Pass</option>
+                        <option value="Nutrition Coaching">Nutrition Coaching</option>
+                        <option value="Personal Training Package">Personal Training Package</option>
+                        <option value="Custom Invoice">Custom Invoice</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1 font-sans">
+                        Amount (RM)
+                      </label>
+                      <input 
+                        type="number" 
+                        value={invoiceAmount}
+                        onChange={(e) => setInvoiceAmount(Number(e.target.value))}
+                        className="w-full bg-slate-50 border border-slate-250 rounded-xl px-3 py-2 text-xs focus:ring-teal-500 text-slate-800 font-sans font-medium"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1 font-sans">
+                        Due Date
+                      </label>
+                      <input 
+                        type="date" 
+                        value={invoiceDueDate}
+                        onChange={(e) => setInvoiceDueDate(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-250 rounded-xl px-3 py-2 text-xs focus:ring-teal-500 text-slate-800 font-sans font-medium"
+                        required
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                      Choose Active Trainee Client
+                    <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1 font-sans">
+                      Service Description
+                    </label>
+                    <input 
+                      type="text" 
+                      value={invoiceDescription}
+                      onChange={(e) => setInvoiceDescription(e.target.value)}
+                      placeholder="E.g. Monthly Pack (8x Slots)"
+                      className="w-full bg-slate-50 border border-slate-250 rounded-xl px-3 py-2 text-xs focus:ring-teal-500 text-slate-800 font-sans font-medium"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1 font-sans">
+                      Notes (Optional Remarks)
+                    </label>
+                    <textarea 
+                      value={invoiceNotes}
+                      onChange={(e) => setInvoiceNotes(e.target.value)}
+                      placeholder="E.g. Please checkout via FPX or GrabPay inside CoachTrack app wrapper..."
+                      className="w-full bg-slate-50 border border-slate-255 rounded-xl px-3 py-2 text-xs focus:ring-teal-500 text-slate-800 font-sans h-16 resize-none"
+                    />
+                  </div>
+
+                  <div className="flex gap-2 justify-end pt-2 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setShowInvoiceForm(false)}
+                      className="px-4 py-2 border border-slate-200 rounded-xl text-xs text-slate-600 hover:bg-slate-50 cursor-pointer font-sans font-semibold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="bg-[#001F3F] text-teal-400 hover:bg-slate-900 font-extrabold px-5 py-2 rounded-xl text-xs cursor-pointer shadow-md py-2 px-5 font-sans"
+                    >
+                      Issue Invoice
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Add Client Onboarding Modal */}
+        {showAddClientForm && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100 text-left">
+              <h3 className="font-display font-medium text-slate-900 text-lg mb-1 font-sans">
+                Invite & Onboard New Trainee Client
+              </h3>
+              <p className="text-xs text-slate-500 mb-4 font-sans">
+                Enter your prospective trainee's registered email address and assign a structured coaching package to invite them to your roster.
+              </p>
+
+              <form onSubmit={handleAddClientInviteSubmit} className="space-y-4">
+                {inviteError && (
+                  <div className="bg-rose-50 border border-rose-100 text-rose-800 rounded-xl p-3 text-xs font-semibold">
+                    ⚠️ {inviteError}
+                  </div>
+                )}
+                
+                {inviteSuccess && (
+                  <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-3 text-xs font-semibold text-center">
+                    🎉 Invitation generated successfully! Trainee notified.
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 font-sans">
+                    Trainee Registered Email
+                  </label>
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="E.g. ahmad@coachtrack.my"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:ring-teal-500 text-slate-800"
+                    required
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1 font-sans">
+                    Only existing CoachTrack MY accounts can be onboarded.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 font-sans">
+                    Select Training Package
+                  </label>
+                  <select
+                    value={invitePkgOption}
+                    onChange={(e) => setInvitePkgOption(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:ring-teal-500 text-slate-800 font-sans"
+                    required
+                  >
+                    <option value="Single Class">Single Class</option>
+                    <option value="4-Class Package">4-Class Package</option>
+                    <option value="8-Class Package font-sans">8-Class Package</option>
+                    <option value="Monthly Pass">Monthly Pass</option>
+                    <option value="Custom Package">Custom Package</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-2 justify-end pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddClientForm(false);
+                      setInviteError('');
+                    }}
+                    className="px-4 py-2 border border-slate-200 rounded-xl text-xs text-slate-600 hover:bg-slate-50 cursor-pointer font-sans"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={inviteLoading}
+                    className="bg-[#001F3F] text-teal-400 hover:bg-slate-900 font-bold px-5 py-2 rounded-xl text-xs cursor-pointer shadow-md flex items-center gap-1 font-sans"
+                  >
+                    {inviteLoading ? 'Sending Invitation...' : 'Send Client Invite'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Schedule Session Modal */}
+        {showScheduleModal && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100 text-left">
+              <h3 className="font-display font-medium text-slate-900 text-lg mb-1">
+                📅 Schedule Client Session
+              </h3>
+              <p className="text-xs text-slate-500 mb-4">
+                Schedule a coaching slot in our certified studio calendars.
+              </p>
+
+              {scheduleSuccess ? (
+                <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-4 text-center my-6">
+                  <span className="text-xl">📅</span>
+                  <p className="font-bold mt-1">Session Slotted Successfully!</p>
+                  <p className="text-xs text-slate-550 font-sans">The client notification checklists have been synchronised.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleScheduleSubmit} className="space-y-4">
+                  {/* Step 1: Session Type Selection */}
+                  <div>
+                    <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-2 font-sans text-slate-600">
+                      Session Type
+                    </label>
+                    <div className="flex gap-4 mb-1 font-sans text-xs">
+                      <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+                        <input 
+                          type="radio" 
+                          name="scheduleType" 
+                          checked={scheduleType === 'individual'} 
+                          onChange={() => setScheduleType('individual')}
+                          className="w-4 h-4 text-indigo-900 border-slate-300 focus:ring-indigo-900"
+                        />
+                        <span>Individual Session</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+                        <input 
+                          type="radio" 
+                          name="scheduleType" 
+                          checked={scheduleType === 'group'} 
+                          onChange={() => setScheduleType('group')}
+                          className="w-4 h-4 text-indigo-900 border-slate-300 focus:ring-indigo-900"
+                        />
+                        <span>Group Session</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {scheduleType === 'individual' ? (
+                    <div>
+                      <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-1 font-sans text-slate-600">
+                        Target Trainee Client
+                      </label>
+                      <select
+                        value={scheduleTraineeId}
+                        onChange={(e) => setScheduleTraineeId(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-[#001F3F] text-slate-800 font-sans font-medium"
+                        required={scheduleType === 'individual'}
+                      >
+                        <option value="">-- Choose Client --</option>
+                        {trainees.map((t) => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 font-sans text-xs">
+                      <div>
+                        <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-1.5 text-slate-600">
+                          Select Participants
+                        </label>
+                        
+                        {/* Search Filter for additional trainees */}
+                        <div className="relative mb-2">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                          <input 
+                            type="text"
+                            placeholder="Query trainee by name..."
+                            value={scheduleSearchQuery}
+                            onChange={(e) => setScheduleSearchQuery(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 focus:ring-indigo-900 focus:outline-none"
+                          />
+                        </div>
+
+                        {/* Registered Participants (Auto-Added) */}
+                        {registeredTraineesForSlot.length > 0 && (
+                          <div className="mb-3 bg-slate-100/80 rounded-xl p-3 border border-slate-205">
+                            <span className="block text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-1">
+                              <span>Registered Participants (Auto-Added)</span>
+                              <span className="text-[9px] text-slate-400 font-normal italic">(Locked)</span>
+                            </span>
+                            <div className="space-y-1.5">
+                              {trainees.filter(t => registeredTraineesForSlot.includes(t.id)).map(t => (
+                                <div key={t.id} className="flex items-center gap-2 text-slate-400 select-none">
+                                  <div className="w-3.5 h-3.5 rounded bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-500 text-[9px] font-black">
+                                    ✓
+                                  </div>
+                                  <img referrerPolicy="no-referrer" src={t.avatarUrl} className="w-4.5 h-4.5 rounded-full object-cover saturate-50 opacity-75" />
+                                  <span className="font-medium text-slate-500 text-xs">{t.name}</span>
+                                  <span className="text-[8px] bg-slate-200 text-slate-600 font-bold tracking-wide uppercase px-1.5 py-0.5 rounded ml-auto">
+                                    via Trainee Portal
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Additional Participants */}
+                        <div>
+                          <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1.5">
+                            Add Additional Participants
+                          </span>
+                          <div className="max-h-28 overflow-y-auto border border-slate-200 rounded-xl p-2.5 space-y-2 bg-slate-50/50">
+                            {trainees
+                              .filter(t => !registeredTraineesForSlot.includes(t.id))
+                              .filter(t => t.name.toLowerCase().includes(scheduleSearchQuery.toLowerCase()))
+                              .map(t => {
+                                const isSelected = scheduleSelectedTraineeIds.includes(t.id);
+                                return (
+                                  <label key={t.id} className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 p-1 rounded transition-colors text-slate-700">
+                                    <input 
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => {
+                                        if (isSelected) {
+                                          setScheduleSelectedTraineeIds(prev => prev.filter(id => id !== t.id));
+                                        } else {
+                                          setScheduleSelectedTraineeIds(prev => [...prev, t.id]);
+                                        }
+                                      }}
+                                      className="w-3.5 h-3.5 rounded text-indigo-900 border-slate-300 focus:ring-indigo-900"
+                                    />
+                                    <img referrerPolicy="no-referrer" src={t.avatarUrl} className="w-4.5 h-4.5 rounded-full object-cover" />
+                                    <span className="font-semibold text-xs text-slate-800">{t.name}</span>
+                                  </label>
+                                );
+                              })}
+                            {trainees.filter(t => !registeredTraineesForSlot.includes(t.id)).length === 0 && (
+                              <p className="text-[10px] text-slate-400 italic py-1">No additional trainees available to inject.</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Chips list */}
+                        {(registeredTraineesForSlot.length > 0 || scheduleSelectedTraineeIds.length > 0) && (
+                          <div className="flex flex-wrap gap-1.5 pt-2">
+                            {/* Auto registered locks */}
+                            {trainees.filter(t => registeredTraineesForSlot.includes(t.id)).map(t => (
+                              <span key={t.id} className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 text-2xs px-2 py-0.5 rounded-full font-bold border border-slate-200 select-none animate-fade-in">
+                                ✓ {t.name}
+                              </span>
+                            ))}
+                            {/* Manually added */}
+                            {trainees.filter(t => scheduleSelectedTraineeIds.includes(t.id)).map(t => (
+                              <span key={t.id} className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-900 text-2xs px-2 py-0.5 rounded-full font-bold border border-indigo-100 animate-fade-in">
+                                👤 {t.name}
+                                <button 
+                                  type="button" 
+                                  onClick={() => setScheduleSelectedTraineeIds(prev => prev.filter(id => id !== t.id))}
+                                  className="text-indigo-400 hover:text-indigo-600 font-extrabold ml-1 font-mono text-center"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-1 font-sans text-slate-600">
+                        Scheduled Date
+                      </label>
+                      <input 
+                        type="date" 
+                        value={scheduleDate}
+                        onChange={(e) => setScheduleDate(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-[#001F3F] text-slate-800 font-sans font-medium"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-1 font-sans text-slate-600">
+                        Time Slot
+                      </label>
+                      <select
+                        value={scheduleTimeSlot}
+                        onChange={(e) => setScheduleTimeSlot(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-[#001F3F] text-slate-800 font-sans font-medium"
+                        required
+                      >
+                        <option value="08:00 AM">08:00 AM</option>
+                        <option value="09:00 AM">09:00 AM</option>
+                        <option value="10:00 AM">10:00 AM</option>
+                        <option value="11:00 AM">11:00 AM</option>
+                        <option value="12:00 PM">12:00 PM</option>
+                        <option value="01:00 PM">01:00 PM</option>
+                        <option value="02:00 PM">02:00 PM</option>
+                        <option value="03:00 PM">03:00 PM</option>
+                        <option value="04:00 PM">04:00 PM</option>
+                        <option value="05:00 PM">05:00 PM</option>
+                        <option value="06:00 PM">06:00 PM</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-1 font-sans text-slate-600">
+                      Session Location
+                    </label>
+                    <input 
+                      type="text" 
+                      value={scheduleLocation}
+                      onChange={(e) => setScheduleLocation(e.target.value)}
+                      placeholder="E.g. SS15 Studio • Selangor"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-[#001F3F] text-slate-800 font-sans font-medium"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-1 font-sans text-slate-600">
+                      Session Notes / Agenda
+                    </label>
+                    <textarea 
+                      value={scheduleNotes}
+                      onChange={(e) => setScheduleNotes(e.target.value)}
+                      placeholder="E.g. Form check, heavy squats, postural evaluation check-in..."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-[#001F3F] text-slate-800 font-sans h-20 resize-none leading-relaxed"
+                    />
+                  </div>
+
+                  {/* Dynamic Summary Card */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5 font-sans">
+                    <span className="block text-[10px] font-black uppercase text-slate-400 tracking-wider">Session Summary</span>
+                    <div className="grid grid-cols-2 gap-y-1.5 gap-x-3 text-2xs text-slate-700">
+                      <div>
+                        <span className="text-slate-400">Session Type:</span>
+                        <strong className="block text-slate-800 capitalize">{scheduleType} Session</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">Schedule Slot:</span>
+                        <strong className="block text-slate-800">{scheduleDate} @ {scheduleTimeSlot}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">Location:</span>
+                        <strong className="block text-slate-800 truncate">{scheduleLocation}</strong>
+                      </div>
+                      {scheduleType === 'group' ? (
+                        <div>
+                          <span className="text-slate-400">Participants Checklist:</span>
+                          <strong className="block text-slate-850 font-sans font-black text-slate-900">
+                            {registeredTraineesForSlot.length + scheduleSelectedTraineeIds.length} Total ({registeredTraineesForSlot.length} Reg, {scheduleSelectedTraineeIds.length} Add)
+                          </strong>
+                        </div>
+                      ) : (
+                        <div>
+                          <span className="text-slate-400">Trainee Patient:</span>
+                          <strong className="block text-slate-800 truncate">
+                            {trainees.find(t => t.id === scheduleTraineeId)?.name || 'Needs Selection'}
+                          </strong>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 justify-end pt-2 border-t border-slate-100 font-sans">
+                    <button
+                      type="button"
+                      onClick={() => setShowScheduleModal(false)}
+                      className="px-4 py-2 border border-slate-200 rounded-xl text-xs text-slate-600 hover:bg-slate-50 cursor-pointer font-bold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="bg-[#001F3F] text-teal-400 hover:bg-slate-900 font-extrabold px-5 py-2 rounded-xl text-xs cursor-pointer shadow-md"
+                    >
+                      Schedule Slot
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Send Reminder Modal */}
+        {showSendReminderForm && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100 text-left font-sans">
+              <h3 className="font-display font-medium text-slate-900 text-lg mb-1 font-semibold">
+                📢 Send Client Onboarding Reminder
+              </h3>
+              <p className="text-xs text-slate-500 mb-4 font-sans">
+                Shoot a tailored in-app dispatch to your trainee client to nudge checklist logging.
+              </p>
+
+              {reminderSuccess ? (
+                <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-4 text-center my-6">
+                  <span className="text-xl">📢</span>
+                  <p className="font-bold mt-1">Reminder Dispatched Successfully!</p>
+                  <p className="text-xs text-slate-500">The notification push is live on recipient terminal feed.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSendReminderSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-1 font-sans text-slate-600">
+                      Select Trainee Recipient
                     </label>
                     <select
-                      value={selectedTraineeId}
-                      onChange={(e) => setSelectedTraineeId(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-teal-500 text-slate-800"
+                      value={reminderTraineeId}
+                      onChange={(e) => setReminderTraineeId(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-[#001F3F] text-slate-800 font-sans font-medium"
                       required
                     >
                       <option value="">-- Choose Client --</option>
@@ -638,60 +1642,50 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                     </select>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                        Session Fee (RM)
-                      </label>
-                      <input 
-                        type="number" 
-                        value={invoiceAmount}
-                        onChange={(e) => setInvoiceAmount(Number(e.target.value))}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-teal-500 text-slate-800"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                        Due Date
-                      </label>
-                      <input 
-                        type="date" 
-                        value={invoiceDueDate}
-                        onChange={(e) => setInvoiceDueDate(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-teal-500 text-slate-800"
-                        required
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-1 font-sans text-slate-600">
+                      Reminder Category / Nudge Type
+                    </label>
+                    <select
+                      value={reminderType}
+                      onChange={(e) => setReminderType(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-[#001F3F] text-slate-800 font-sans font-medium"
+                      required
+                    >
+                      <option value="Workout Plan Log Checklist Reminder">🏋️ Workout Plan Log Checklist Reminder</option>
+                      <option value="Nutrition Log & Calorie Tracker Reminder">🥦 Nutrition Log & Calorie Tracker Reminder</option>
+                      <option value="Outstanding Invoice Payment Reminder">🧾 Outstanding Invoice Payment Reminder</option>
+                      <option value="Progress Gallery Verification Reminder">📸 Progress Gallery Verification Reminder</option>
+                      <option value="Session Attendance Reminder">📅 Session Attendance Reminder</option>
+                    </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                      Item Description / Package Details
+                    <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-1 font-sans text-slate-600">
+                      Reminder Message (Malaysia Bahasa/English friendly)
                     </label>
-                    <input 
-                      type="text" 
-                      value={invoiceDescription}
-                      onChange={(e) => setInvoiceDescription(e.target.value)}
-                      placeholder="E.g. Monthly Pack (8x Slots)"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-teal-500 text-slate-800"
+                    <textarea 
+                      value={reminderMessage}
+                      onChange={(e) => setReminderMessage(e.target.value)}
+                      placeholder="E.g. Hi Ahmad, please log your pending workouts..."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-[#001F3F] text-slate-800 font-sans h-24 resize-none leading-relaxed"
                       required
                     />
                   </div>
 
-                  <div className="flex gap-2 justify-end pt-2 border-t border-slate-100">
+                  <div className="flex gap-2 justify-end pt-2 border-t border-slate-100 font-sans">
                     <button
                       type="button"
-                      onClick={() => setShowInvoiceForm(false)}
-                      className="px-4 py-2 border border-slate-200 rounded-xl text-xs text-slate-600 hover:bg-slate-50 cursor-pointer"
+                      onClick={() => setShowSendReminderForm(false)}
+                      className="px-4 py-2 border border-slate-200 rounded-xl text-xs text-slate-600 hover:bg-slate-50 cursor-pointer font-bold"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="bg-[#001F3F] text-teal-400 font-bold px-5 py-2 rounded-xl text-xs cursor-pointer"
+                      className="bg-[#001F3F] text-teal-400 hover:bg-slate-900 font-extrabold px-5 py-2 rounded-xl text-xs cursor-pointer shadow-md"
                     >
-                      Issue Invoice
+                      Send Reminder
                     </button>
                   </div>
                 </form>
@@ -719,6 +1713,95 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                 </div>
               ) : (
                 <form onSubmit={handlePrescribeSubmit} className="space-y-4">
+                  
+                  {/* Assignment Target Option selection */}
+                  <div className="bg-slate-50 border border-slate-150 p-4 rounded-xl space-y-3 text-left">
+                    <label className="block text-2xs font-bold text-slate-705 uppercase tracking-wider mb-1 font-sans">
+                      🎯 Sequence Assignment Target
+                    </label>
+                    <div className="flex flex-wrap gap-4 text-xs">
+                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold font-sans text-slate-750">
+                        <input
+                          type="radio"
+                          name="assignOption"
+                          value="individual"
+                          checked={assignOption === 'individual'}
+                          onChange={() => setAssignOption('individual')}
+                          className="text-teal-605 focus:ring-teal-500 rounded-full"
+                        />
+                        Single Client
+                      </label>
+                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold font-sans text-slate-750">
+                        <input
+                          type="radio"
+                          name="assignOption"
+                          value="selected"
+                          checked={assignOption === 'selected'}
+                          onChange={() => {
+                            setAssignOption('selected');
+                            if (prescribeTraineeId && !selectedTraineeIdsForPrescription.includes(prescribeTraineeId)) {
+                              setSelectedTraineeIdsForPrescription([prescribeTraineeId]);
+                            }
+                          }}
+                          className="text-teal-605 focus:ring-teal-500 rounded-full"
+                        />
+                        Selected Client(s)
+                      </label>
+                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold font-sans text-slate-750">
+                        <input
+                          type="radio"
+                          name="assignOption"
+                          value="all"
+                          checked={assignOption === 'all'}
+                          onChange={() => setAssignOption('all')}
+                          className="text-teal-605 focus:ring-teal-500 rounded-full"
+                        />
+                        All Active Clients ({trainees.length})
+                      </label>
+                    </div>
+
+                    {/* Checkboxes layout for multi-select option */}
+                    {assignOption === 'selected' && (
+                      <div className="pt-2 border-t border-slate-200 mt-2 grid grid-cols-2 gap-2 text-2xs">
+                        {trainees.map((t) => (
+                          <label key={t.id} className="flex items-center gap-2 cursor-pointer bg-white px-2.5 py-1.5 rounded-lg border border-slate-150 shadow-2xs">
+                            <input
+                              type="checkbox"
+                              checked={selectedTraineeIdsForPrescription.includes(t.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedTraineeIdsForPrescription([...selectedTraineeIdsForPrescription, t.id]);
+                                } else {
+                                  setSelectedTraineeIdsForPrescription(selectedTraineeIdsForPrescription.filter(id => id !== t.id));
+                                }
+                              }}
+                              className="rounded text-teal-605 focus:ring-teal-500"
+                            />
+                            <span className="font-bold text-slate-755 truncate">{t.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
+                    {assignOption === 'individual' && trainees.length > 1 && (
+                      <div className="pt-2 border-t border-slate-150 mt-2">
+                        <select
+                          value={prescribeTraineeId}
+                          onChange={(e) => {
+                            setPrescribeTraineeId(e.target.value);
+                            const tFound = trainees.find(tr => tr.id === e.target.value);
+                            if (tFound) setPrescribeTraineeName(tFound.name);
+                          }}
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-2xs text-slate-800"
+                        >
+                          {trainees.map(t => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
@@ -1072,100 +2155,8 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
 
               </div>
 
-              {/* Right Column: E. QUICK ACTIONS & C. RECENT NOTIFICATIONS */}
+              {/* Right Column: C. RECENT NOTIFICATIONS */}
               <div className="space-y-8 text-left">
-                
-                {/* E. QUICK ACTIONS */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-display font-medium text-slate-900 text-sm mb-4 flex items-center gap-1.5 border-b border-slate-100 pb-3 font-sans">
-                    <Sparkles className="w-4 h-4 text-indigo-900" />
-                    <span>Business Quick Actions</span>
-                  </h3>
-
-                  <div className="grid grid-cols-1 gap-2.5">
-                    {/* Add Client */}
-                    <button
-                      onClick={() => {
-                        setNewClientName('');
-                        setShowAddClientForm(true);
-                      }}
-                      className="w-full text-left bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-4 py-3 rounded-xl block transition cursor-pointer border border-slate-150 relative group"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center text-teal-600 font-bold text-sm shrink-0">
-                          ＋
-                        </div>
-                        <div>
-                          <p className="text-2xs text-slate-805 font-black leading-none font-sans">Add New Client</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Provision metadata & goals profiles</p>
-                        </div>
-                      </div>
-                    </button>
-
-                    {/* Issue Invoice */}
-                    <button
-                      onClick={() => {
-                        setSelectedTraineeId(trainees[0]?.id || 'te_ahmad');
-                        setInvoiceAmount(150);
-                        setInvoiceDescription('1x Custom Personal Training Hour');
-                        setInvoiceCreatedSuccess(false);
-                        setShowInvoiceForm(true);
-                      }}
-                      className="w-full text-left bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-4 py-3 rounded-xl block transition cursor-pointer border border-slate-150 relative group"
-                    >
-                      <div className="flex items-center gap-2.5 font-sans">
-                        <div className="w-7 h-7 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-700 shrink-0">
-                          <FileText className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-2xs text-slate-800 font-black leading-none font-sans">Issue Invoice</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5 font-medium font-sans">Create certified Malaysia invoice</p>
-                        </div>
-                      </div>
-                    </button>
-
-                    {/* Send Reminder */}
-                    <button
-                      onClick={() => setShowSendReminderForm(true)}
-                      className="w-full text-left bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-4 py-3 rounded-xl block transition cursor-pointer border border-slate-150 relative group"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 shrink-0">
-                          <Bell className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-2xs text-slate-800 font-black leading-none font-sans">Send Payment Reminder</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5 font-medium">SMS & WhatsApp FPX reminder</p>
-                        </div>
-                      </div>
-                    </button>
-
-                    {/* Create Workout Plan */}
-                    <button
-                      onClick={() => {
-                        const defaultTrainee = trainees[0] || { id: 'te_ahmad', name: 'Ahmad bin Ibrahim' };
-                        setPrescribeTraineeId(defaultTrainee.id);
-                        setPrescribeTraineeName(defaultTrainee.name);
-                        setPrescribeWorkoutType('Custom Core Interval Routine');
-                        setPrescribeDuration(45);
-                        setPrescribeNotes('Prioritize vertebral safety and proper breathing cycles.');
-                        setPrescribeExercises([{ name: 'Squat Stability Lift', sets: 3, reps: 10, weight: 15 }]);
-                        setShowPrescribeForm(true);
-                      }}
-                      className="w-full text-left bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold px-4 py-3 rounded-xl block transition cursor-pointer border border-slate-150 relative group font-sans"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-750 shrink-0">
-                          🏋️
-                        </div>
-                        <div>
-                          <p className="text-2xs text-slate-800 font-black leading-none font-sans">Create Workout Plan</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Prescribe verified dynamic workouts</p>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
 
                 {/* C. RECENT NOTIFICATIONS */}
                 <div className="bg-white border border-slate-202 rounded-2xl p-6 shadow-sm text-left font-sans">
@@ -1759,136 +2750,283 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
             </div>
           </motion.div>
         )}
-
-        {/* 1C. LEGACY ROUTINE RENDER OVERRIDE HOOK */}
-        {activeTab === 'trainer-dashboard-disabled-placeholder' && (
-          <motion.div>
-          </motion.div>
-        )}
-
-
         {/* 2. DYNAMIC CLIENTS VIEW & DRILL DOWN DETAILS */}
-        {activeTab === 'client-management' && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
-          >
-            {/* Header description */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div>
-                <h3 className="text-2xl font-black font-display text-slate-900">Searchable Trainess Roster</h3>
-                <p className="text-xs text-slate-500">Manage logs, metrics, attendance and AI workouts optimization for each trainee.</p>
-              </div>
-              <div className="relative w-full md:w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Query trainees by name..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-800 focus:outline-teal-500"
-                />
-              </div>
-            </div>
+        {activeTab === 'client-management' && (() => {
+          const getConsistencyBadge = (rate: number) => {
+            if (rate >= 75) {
+              return <span className="text-[10px] bg-teal-50 border border-teal-200 text-teal-750 px-2.5 py-0.5 rounded-full font-bold">Consistent</span>;
+            } else if (rate >= 50) {
+              return <span className="text-[10px] bg-amber-50 border border-amber-200 text-amber-750 px-2.5 py-0.5 rounded-full font-bold">Needs Attention</span>;
+            } else {
+              return <span className="text-[10px] bg-rose-50 border border-rose-200 text-rose-750 px-2.5 py-0.5 rounded-full font-bold">Low Consistency</span>;
+            }
+          };
 
-            {/* Clients Cards Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trainees.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase())).map((t) => {
-                const stats = getTraineeStats(t.id);
-                return (
+          const getPaymentBadge = (status: string) => {
+            if (status === 'Paid') {
+              return <span className="text-[10px] bg-emerald-50 border border-emerald-250 text-emerald-850 px-2.5 py-0.5 rounded-full font-bold">Paid</span>;
+            } else if (status === 'Pending') {
+              return <span className="text-[10px] bg-yellow-50 border border-yellow-250 text-yellow-850 px-2.5 py-0.5 rounded-full font-bold">Pending</span>;
+            } else {
+              return <span className="text-[10px] bg-rose-50 border border-rose-250 text-rose-850 px-2.5 py-0.5 rounded-full font-bold">Overdue</span>;
+            }
+          };
+
+          const sortedTrainees = trainees
+            .filter(t => {
+              const stats = getTraineeStats(t.id);
+              const query = searchTerm.toLowerCase();
+              const matchesName = t.name.toLowerCase().includes(query);
+              const matchesGoal = (t.goals || '').toLowerCase().includes(query);
+              const matchesPackage = (stats.packageName || '').toLowerCase().includes(query);
+              return matchesName || matchesGoal || matchesPackage;
+            })
+            .sort((a, b) => {
+              const statsA = getTraineeStats(a.id);
+              const statsB = getTraineeStats(b.id);
+              
+              if (clientFilterMode === 'consistency') {
+                if (statsA.completionRate !== statsB.completionRate) {
+                  return statsA.completionRate - statsB.completionRate;
+                }
+                return (statsB.missedWorkouts || 0) - (statsA.missedWorkouts || 0);
+              } else {
+                const isAUnpaid = statsA.outstandingAmount > 0;
+                const isBUnpaid = statsB.outstandingAmount > 0;
+                
+                if (isAUnpaid !== isBUnpaid) {
+                  return isAUnpaid ? -1 : 1; 
+                }
+                
+                if (statsB.outstandingAmount !== statsA.outstandingAmount) {
+                  return statsB.outstandingAmount - statsA.outstandingAmount;
+                }
+                
+                if (statsA.paymentStatus !== statsB.paymentStatus) {
+                  if (statsA.paymentStatus === 'Overdue') return -1;
+                  if (statsB.paymentStatus === 'Overdue') return 1;
+                  if (statsA.paymentStatus === 'Pending') return -1;
+                  if (statsB.paymentStatus === 'Pending') return 1;
+                }
+                return 0;
+              }
+            });
+
+          return (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-8"
+            >
+              {/* Header description */}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h3 className="text-2xl font-black font-display text-slate-900">Searchable Trainees Roster</h3>
+                  <p className="text-xs text-slate-500">Manage logs, metrics, attendance and AI workouts optimization for each trainee.</p>
+                </div>
+                <div className="relative w-full md:w-72">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input 
+                    type="text" 
+                    placeholder="Search trainees by name, package or goal..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-800 focus:outline-[#001F3F]"
+                  />
+                </div>
+              </div>
+
+              {/* Segmented Filter Control Section */}
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-left font-sans shadow-sm">
+                <div>
+                  <span className="block text-[10px] font-black uppercase text-indigo-950 tracking-wider mb-0.5">
+                    Client prioritization filter
+                  </span>
+                  <p className="text-2xs text-slate-500 leading-normal">
+                    {clientFilterMode === 'consistency' 
+                      ? "Arrange by lowest completion rates first. Targets non-consistent or lagging attendees first."
+                      : "Arrange by outstanding accounts first. Targets users with high unpaid invoices and overdue status."
+                    }
+                  </p>
+                </div>
+                <div className="flex bg-slate-200/60 p-1 rounded-xl shrink-0">
+                  <button 
+                    onClick={() => setClientFilterMode('consistency')}
+                    className={`px-3 py-1.5 rounded-lg text-2xs font-extrabold transition cursor-pointer ${
+                      clientFilterMode === 'consistency' ? 'bg-[#001F3F] text-teal-400 shadow-sm font-black' : 'text-slate-600 hover:text-slate-905 font-medium'
+                    }`}
+                  >
+                    🏋️ Workout Consistency
+                  </button>
+                  <button 
+                    onClick={() => setClientFilterMode('payment')}
+                    className={`px-3 py-1.5 rounded-lg text-2xs font-extrabold transition cursor-pointer ${
+                      clientFilterMode === 'payment' ? 'bg-[#001F3F] text-teal-400 shadow-sm font-black' : 'text-slate-600 hover:text-slate-905 font-medium'
+                    }`}
+                  >
+                    💰 Payment Status
+                  </button>
+                </div>
+              </div>
+
+              {/* Clients Cards Grid */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Pending Invitations list with 'Pend' label */}
+                {trainerInvitations.filter(inv => inv.status === 'Pending').map((inv) => (
                   <div 
-                    key={t.id}
-                    onClick={() => {
-                      setSelectedTrainee(t);
-                      setNotesText(stats.notes);
-                      setAiRecommendation(null);
-                      setTraineeDetailTab('body');
-                    }}
-                    className="bg-white border-2 border-transparent hover:border-teal-500/40 rounded-2xl p-5 shadow-sm text-left transition-all hover:-translate-y-1 hover:shadow-md cursor-pointer flex flex-col justify-between"
+                    key={inv.id}
+                    className="bg-slate-50 border-2 border-dashed border-amber-200 hover:border-amber-400 rounded-2xl p-5 shadow-sm text-left flex flex-col justify-between transition-all"
                   >
                     <div>
                       {/* Trainee Card upper */}
-                      <div className="flex items-center gap-3 border-b border-slate-100 pb-3 mb-3.5">
-                        <img 
-                          referrerPolicy="no-referrer"
-                          src={t.avatarUrl} 
-                          className="w-12 h-12 rounded-full object-cover border border-slate-100 shrink-0" 
-                          alt={t.name} 
-                        />
+                      <div className="flex items-center gap-3 border-b border-slate-200 pb-3 mb-3.5">
+                        <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-700 shrink-0 font-bold font-sans border border-amber-100">
+                          ✉️
+                        </div>
                         <div className="min-w-0">
-                          <h4 className="font-extrabold text-slate-800 text-sm truncate">{t.name}</h4>
-                          <span className="text-[10px] text-teal-650 font-bold bg-teal-500/10 px-2 py-0.5 rounded-full">
-                            Streak: {t.streakCount} Days
+                          <h4 className="font-extrabold text-slate-800 text-sm truncate">{inv.traineeEmail}</h4>
+                          <span className="text-[10px] text-amber-800 font-bold bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200/50 uppercase tracking-wide font-sans">
+                            Pend
                           </span>
                         </div>
                       </div>
 
                       {/* Info specs */}
-                      <div className="space-y-2 text-2xs mb-4">
-                        <p className="text-slate-500 line-clamp-1"><strong className="text-slate-700">Goal:</strong> {t.goals}</p>
-                        <p className="text-slate-550"><strong className="text-slate-700">Metrics Progress:</strong> Height {t.height}cm • Weight {t.weight}kg (Target {stats.targetWeight}kg)</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-slate-500">Routines Rate:</span>
-                          <div className="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                            <div className="bg-teal-500 h-full rounded-full" style={{ width: `${stats.completionRate}%` }}></div>
-                          </div>
-                          <strong className="text-slate-800 font-sans">{stats.completionRate}%</strong>
-                        </div>
-                        <p className="text-slate-550 truncate"><strong className="text-slate-700 font-bold text-slate-650">Last Workout:</strong> {stats.lastCheckin}</p>
-                        <p className="text-slate-550 truncate"><strong className="text-slate-700 font-bold text-slate-650">Last Meal:</strong> {stats.latestMeal}</p>
-                        <p className="text-slate-500"><strong className="text-slate-700">Next Secured:</strong> <span className="text-[#001F3F] font-semibold">{stats.nextSession}</span></p>
-                      </div>
-
-                      {/* Workouts History Preview */}
-                      <div className="mt-4 pt-3.5 border-t border-slate-100 text-[10px]">
-                        <span className="font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">🏋️ Workouts History</span>
-                        <div className="space-y-1">
-                          {workouts.filter(w => w.traineeId === t.id).slice(0, 2).map((w, idx) => (
-                            <div key={idx} className="bg-slate-50/70 p-1.5 rounded border border-slate-100 flex justify-between">
-                              <span className="font-bold text-slate-700 truncate max-w-[130px]">{w.workoutType} Session</span>
-                              <span className="text-slate-400 shrink-0 font-mono text-[9px]">{w.date}</span>
-                            </div>
-                          ))}
-                          {workouts.filter(w => w.traineeId === t.id).length === 0 && (
-                            <p className="text-slate-400 italic text-2xs">No logged workouts yet</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Nutrition History Preview */}
-                      <div className="mt-3 text-[10px] pb-2">
-                        <span className="font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">🥗 Nutrition History</span>
-                        <div className="space-y-1">
-                          {nutrition.filter(n => n.traineeId === t.id).slice(0, 2).map((n, idx) => (
-                            <div key={idx} className="bg-slate-50/70 p-1.5 rounded border border-slate-100 flex justify-between items-center">
-                              <span className="font-bold text-slate-700 truncate max-w-[120px]">{n.foodName}</span>
-                              <span className="text-teal-600 font-extrabold shrink-0 font-mono text-[9px]">{n.calories} kcal</span>
-                            </div>
-                          ))}
-                          {nutrition.filter(n => n.traineeId === t.id).length === 0 && (
-                            <p className="text-slate-400 italic text-2xs">No logged meals yet</p>
-                          )}
-                        </div>
+                      <div className="space-y-1.5 text-2xs mb-4 text-slate-600 font-sans">
+                        <p><strong className="text-slate-700">Offered Package:</strong> {inv.packageName}</p>
+                        <p><strong className="text-slate-700">Contract Sessions:</strong> {inv.sessions} sessions</p>
+                        <p><strong className="text-slate-700">Price Quote:</strong> RM{inv.price}</p>
+                        <p className="text-[10px] text-slate-400 font-mono mt-2 uppercase tracking-wide">Issued: {inv.date}</p>
                       </div>
                     </div>
 
-                    {/* Bottom layout */}
-                    <div className="flex justify-between items-center pt-3 border-t border-slate-100 mt-2">
-                      <span className={`text-[10px] font-black px-2 py-0.5 rounded ${
-                        stats.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        🇲🇾 {stats.paymentStatus} status
-                      </span>
-                      <button 
-                        className="text-teal-600 hover:text-teal-700 text-2xs font-extrabold flex items-center gap-0.5 cursor-pointer"
-                      >
-                        Deep Profile Detail <ArrowUpRight className="w-3.5 h-3.5" />
-                      </button>
+                    <div className="bg-amber-50/50 rounded-xl p-2.5 border border-amber-100/50 text-center text-[10px] text-amber-900 font-semibold leading-relaxed font-sans">
+                      Awaiting onboarding acceptance inside client dashboard.
                     </div>
                   </div>
-                );
-              })}
+                ))}
+
+                {sortedTrainees.map((t) => {
+                  const stats = getTraineeStats(t.id);
+                  return (
+                    <div 
+                      key={t.id}
+                      onClick={() => {
+                        setSelectedTrainee(t);
+                        setNotesText(stats.notes);
+                        setAiRecommendation(null);
+                        setTraineeDetailTab('body');
+                      }}
+                      className="bg-white border-2 border-transparent hover:border-teal-500/40 rounded-2xl p-5 shadow-sm text-left transition-all hover:-translate-y-1 hover:shadow-md cursor-pointer flex flex-col justify-between"
+                    >
+                      <div>
+                        {/* Trainee Card upper */}
+                        <div className="flex items-center gap-3 border-b border-slate-100 pb-3 mb-3.5 justify-between">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <img 
+                              referrerPolicy="no-referrer"
+                              src={t.avatarUrl} 
+                              className="w-12 h-12 rounded-full object-cover border border-slate-100 shrink-0" 
+                              alt={t.name} 
+                            />
+                            <div className="min-w-0">
+                              <h4 className="font-extrabold text-slate-800 text-sm truncate">{t.name}</h4>
+                              <span className="text-[10px] text-teal-650 font-bold bg-teal-500/10 px-2 py-0.5 rounded-full">
+                                Streak: {t.streakCount} Days
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Dynamic Badge based on Filter state */}
+                          <div className="shrink-0">
+                            {clientFilterMode === 'consistency' 
+                              ? getConsistencyBadge(stats.completionRate)
+                              : getPaymentBadge(stats.paymentStatus)
+                            }
+                          </div>
+                        </div>
+
+                        {/* Info details switching by Filter mode */}
+                        {clientFilterMode === 'consistency' ? (
+                          <div className="space-y-2 text-2xs mb-4 font-sans text-slate-600">
+                            <p className="line-clamp-1">
+                              <strong className="text-slate-700">Fitness Goal:</strong> {t.goals}
+                            </p>
+                            
+                            <div className="flex items-center gap-2 pt-1 font-sans">
+                              <span className="text-slate-500">Routines Rate:</span>
+                              <div className="flex-1 bg-slate-150 rounded-full h-1.5 overflow-hidden">
+                                <div className={`h-full rounded-full ${
+                                  stats.completionRate >= 75 ? 'bg-teal-500' : stats.completionRate >= 50 ? 'bg-amber-405' : 'bg-rose-500'
+                                }`} style={{ width: `${stats.completionRate}%` }}></div>
+                              </div>
+                              <strong className="text-slate-800 font-bold font-mono">{stats.completionRate}%</strong>
+                            </div>
+
+                            <p><strong className="text-slate-700">Assigned Workouts Completed:</strong> {stats.completedWorkouts || 0}</p>
+                            <p><strong className="text-slate-700">Missed Workouts:</strong> <span className="font-bold text-rose-600 font-mono">{stats.missedWorkouts || 0}</span></p>
+                            <p className="truncate"><strong className="text-slate-700">Last Workout Date:</strong> <span className="font-mono text-slate-800 font-bold">{stats.lastWorkoutDate || 'N/A'}</span></p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2 text-2xs mb-4 font-sans text-slate-600">
+                            <p className="truncate">
+                              <strong className="text-slate-700">Product Package:</strong> <span className="font-extrabold text-indigo-950">{stats.packageName || 'PT Package'}</span>
+                            </p>
+                            <p><strong className="text-slate-700">Outstanding Fee amount:</strong> <span className="font-black text-rose-600 font-mono text-xs">RM {stats.outstandingAmount || 0}</span></p>
+                            <p><strong className="text-slate-700">Invoices count:</strong> {stats.invoiceCount || 0}</p>
+                            <p className="truncate"><strong className="text-slate-700">Next billing Date due:</strong> <span className="font-mono text-slate-850 font-bold">{stats.dueDate || 'N/A'}</span></p>
+                          </div>
+                        )}
+
+                        {/* Workouts History Preview */}
+                        <div className="mt-4 pt-3.5 border-t border-slate-100 text-[10px] font-sans">
+                          <span className="font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">🏋️ Workouts History</span>
+                          <div className="space-y-1">
+                            {workouts.filter(w => w.traineeId === t.id).slice(0, 2).map((w, idx) => (
+                              <div key={idx} className="bg-slate-50/70 p-1.5 rounded border border-slate-100 flex justify-between">
+                                <span className="font-bold text-slate-700 truncate max-w-[130px]">{w.workoutType} Session</span>
+                                <span className="text-slate-400 shrink-0 font-mono text-[9px]">{w.date}</span>
+                              </div>
+                            ))}
+                            {workouts.filter(w => w.traineeId === t.id).length === 0 && (
+                              <p className="text-slate-400 italic text-2xs">No logged workouts yet</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Nutrition History Preview */}
+                        <div className="mt-3 text-[10px] pb-2 font-sans">
+                          <span className="font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">🥗 Nutrition History</span>
+                          <div className="space-y-1">
+                            {nutrition.filter(n => n.traineeId === t.id).slice(0, 2).map((n, idx) => (
+                              <div key={idx} className="bg-slate-50/70 p-1.5 rounded border border-slate-100 flex justify-between items-center">
+                                <span className="font-bold text-slate-700 truncate max-w-[120px]">{n.foodName}</span>
+                                <span className="text-teal-600 font-extrabold shrink-0 font-mono text-[9px]">{n.calories} kcal</span>
+                              </div>
+                            ))}
+                            {nutrition.filter(n => n.traineeId === t.id).length === 0 && (
+                              <p className="text-slate-400 italic text-2xs">No logged meals yet</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bottom layout */}
+                      <div className="flex justify-between items-center pt-3 border-t border-slate-100 mt-2 font-sans">
+                        <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                          stats.paymentStatus === 'Paid' ? 'bg-teal-50 border border-teal-200 text-teal-850' : 'bg-rose-50 border border-rose-200 text-rose-850'
+                        }`}>
+                          🇲🇾 Account: {stats.paymentStatus}
+                        </span>
+                        <button 
+                          className="text-[#001F3F] hover:text-slate-900 text-2xs font-extrabold flex items-center gap-0.5 cursor-pointer"
+                        >
+                          Deep Profile Detail <ArrowUpRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               
               {trainees.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
                 <div className="col-span-full bg-white p-12 text-center rounded-xl border border-dashed border-slate-200">
@@ -2627,7 +3765,8 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
               )}
             </AnimatePresence>
           </motion.div>
-        )}
+        );
+      })()}
 
         {/* 3. COMPREHENSIVE PAYMENTS / REVENUE VIEW */}
         {activeTab === 'revenue' && (

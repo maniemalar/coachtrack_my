@@ -42,6 +42,10 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
   const [nutrition, setNutrition] = useState<NutritionLog[]>([]);
   const [bookings, setBookings] = useState<BookingSession[]>([]);
   const [trainer, setTrainer] = useState<TrainerProfile | null>(null);
+  const [invitations, setInvitations] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [invActionLoading, setInvActionLoading] = useState<string | null>(null);
   
   // Prescribed Workouts state
   const [prescribedWorkouts, setPrescribedWorkouts] = useState<PrescribedWorkout[]>([]);
@@ -102,14 +106,52 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
 
       if (dataProfile.assignedTrainerId) {
         const dataTr = await dbService.getTrainerProfile(dataProfile.assignedTrainerId);
-        if (dataTr) setTrainer(dataTr);
+        if (dataTr) {
+          setTrainer(dataTr);
+        } else {
+          setTrainer(null);
+        }
+      } else {
+        setTrainer(null);
       }
 
       // Fetch coach prescribed sessions
       const dataPW = await dbService.getPrescribedWorkouts(dataProfile.id, 'Pending');
       setPrescribedWorkouts(dataPW);
+
+      // Fetch trainee connection invitations
+      const dataInv = await dbService.getInvitations({ traineeId: dataProfile.id });
+      setInvitations(dataInv.filter(inv => inv.status === 'Pending'));
+
+      // Fetch trainee notifications
+      const dataNotif = await dbService.getNotifications(dataProfile.id);
+      setNotifications(dataNotif);
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleRespondInvitation = async (invId: string, status: 'Accepted' | 'Declined') => {
+    setInvActionLoading(invId);
+    try {
+      await dbService.respondToInvitation(invId, status);
+      await fetchTraineeData();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setInvActionLoading(null);
+    }
+  };
+
+  const handleMarkRead = async (notifId: string) => {
+    try {
+      await dbService.markNotificationRead(notifId);
+      if (traineeMeta) {
+        const dataNotif = await dbService.getNotifications(traineeMeta.id);
+        setNotifications(dataNotif);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -279,6 +321,83 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
   return (
     <div className="w-full bg-slate-50 min-h-screen pb-16 pt-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* Onboarding Invitations Alert Banner */}
+        {invitations.length > 0 && (
+          <div className="space-y-4 mb-8">
+            {invitations.map((inv) => (
+              <div
+                key={inv.id}
+                className="bg-gradient-to-r from-teal-50 to-teal-100/50 border-2 border-teal-200 rounded-2xl p-6 shadow-md relative text-left"
+              >
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="bg-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse font-sans">
+                        New Invite
+                      </span>
+                      <span className="text-xs text-slate-500 font-mono font-medium">
+                        Received on {inv.date}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-display font-bold text-slate-900">
+                      Coaching Invitation from <span className="text-teal-600">{inv.trainerName}</span>
+                    </h3>
+                    <p className="text-slate-600 text-xs mt-1 md:max-w-2xl leading-relaxed">
+                      This Malaysian certified trainer wants to guide your journey. Accepting this will link you directly for chat, personalized workout recipes, and automated payment checkout logs.
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-4 text-xs font-semibold text-slate-700">
+                      <div className="bg-white/80 px-3 py-1.5 rounded-lg border border-teal-100 font-sans">
+                        Package: <span className="text-teal-600 font-bold">{inv.packageName}</span>
+                      </div>
+                      <div className="bg-white/80 px-3 py-1.5 rounded-lg border border-teal-100 font-sans">
+                        Sessions: <span className="text-teal-600 font-bold">{inv.sessions} Sessions</span>
+                      </div>
+                      <div className="bg-white/80 px-3 py-1.5 rounded-lg border border-teal-100 font-sans">
+                        Price: <span className="text-teal-600 font-bold">RM{inv.price}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 shrink-0 w-full md:w-auto">
+                    <button
+                      disabled={invActionLoading === inv.id}
+                      onClick={() => handleRespondInvitation(inv.id, 'Declined')}
+                      className="flex-1 md:flex-none px-4 py-2 border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl cursor-pointer disabled:opacity-50"
+                    >
+                      Decline
+                    </button>
+                    <button
+                      disabled={invActionLoading === inv.id}
+                      onClick={() => handleRespondInvitation(inv.id, 'Accepted')}
+                      className="flex-1 md:flex-none px-5 py-2 bg-[#001F3F] hover:bg-neutral-905 text-teal-400 text-xs font-bold rounded-xl cursor-pointer shadow-md disabled:opacity-50"
+                    >
+                      {invActionLoading === inv.id ? 'Connecting...' : 'Accept & Onboard'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Dynamic Notification Panel */}
+        {notifications.filter(n => !n.read).length > 0 && (
+          <div className="mb-6 bg-slate-900 text-white rounded-2xl p-4 shadow-sm border border-slate-800 flex gap-4 items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-xl animate-bounce">🔔</span>
+              <div className="text-left">
+                <p className="text-xs font-semibold text-slate-300">In-App Notification</p>
+                <p className="text-xs text-white font-bold">{notifications.filter(n => !n.read)[0].message}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => handleMarkRead(notifications.filter(n => !n.read)[0].id)}
+              className="text-[10px] text-teal-400 hover:text-teal-300 font-bold tracking-wider uppercase underline cursor-pointer shrink-0 font-sans"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
         
         {/* Welcome Block & Quick Stats */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-8 gap-4">
