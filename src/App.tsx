@@ -7,6 +7,7 @@ import TrainerDashboard from './components/TrainerDashboard';
 import TrainerFinder from './components/TrainerFinder';
 import ChatMessenger from './components/ChatMessenger';
 import InvoicesList from './components/InvoicesList';
+import TraineeHistory from './components/TraineeHistory';
 import { LogIn, Compass, Shield, Database, MessageCircle, X } from 'lucide-react';
 import { dbService } from './lib/dbService';
 import { isSupabaseConfigured } from './lib/supabase';
@@ -222,6 +223,11 @@ export default function App() {
           <TrainerDashboard trainerProfile={trainerProfile} activeTab={activeTab} />
         )}
 
+        {/* Physical Session History Page routing */}
+        {activeTab === 'session-history' && currentUser && trainerProfile && (
+          <TrainerDashboard trainerProfile={trainerProfile} activeTab={activeTab} />
+        )}
+
         {/* Client Management Page route split */}
         {activeTab === 'client-management' && currentUser && trainerProfile && (
           <TrainerDashboard trainerProfile={trainerProfile} activeTab={activeTab} />
@@ -235,6 +241,20 @@ export default function App() {
         {/* Trainer Revenue Page route split */}
         {activeTab === 'revenue' && currentUser && trainerProfile && (
           <TrainerDashboard trainerProfile={trainerProfile} activeTab={activeTab} />
+        )}
+
+        {/* Trainee combined history page route split */}
+        {activeTab === 'trainee-history' && currentUser && (
+          <TraineeHistory 
+            traineeUserId={currentUser.id} 
+            onNavigateToTab={(tab) => {
+              if (tab === 'chats') {
+                setShowFloatingChat(true);
+              } else {
+                setActiveTab(tab);
+              }
+            }}
+          />
         )}
 
         {activeTab === 'chats' && currentUser && (

@@ -51,6 +51,11 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
   const [prescribedWorkouts, setPrescribedWorkouts] = useState<PrescribedWorkout[]>([]);
   const [checkingInWorkout, setCheckingInWorkout] = useState<PrescribedWorkout | null>(null);
   const [checkInNotes, setCheckInNotes] = useState('');
+  const [checkInDifficulties, setCheckInDifficulties] = useState('');
+  const [checkInPainLevel, setCheckInPainLevel] = useState('None');
+  const [checkInGeneralComments, setCheckInGeneralComments] = useState('');
+  const [checkInVideoUrl, setCheckInVideoUrl] = useState('');
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
 
   // Form states: Workout
   const [showWorkoutForm, setShowWorkoutForm] = useState(false);
@@ -242,13 +247,31 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
     e.preventDefault();
     if (!checkingInWorkout) return;
 
+    // Check if video is required
+    const isRequired = checkingInWorkout.videoProofRequired !== false;
+    if (isRequired && !checkInVideoUrl) {
+      alert("Please upload or simulate selecting an exercise proof video before checking in!");
+      return;
+    }
+
     try {
-      const ok = await dbService.checkInPrescribedWorkout(checkingInWorkout.id);
+      const ok = await dbService.checkInPrescribedWorkout(checkingInWorkout.id, {
+        notes: checkInNotes,
+        videoUrl: checkInVideoUrl,
+        difficulties: checkInDifficulties,
+        painLevel: checkInPainLevel,
+        generalComments: checkInGeneralComments
+      });
 
       if (ok) {
         setCheckingInWorkout(null);
         setCheckInNotes('');
+        setCheckInDifficulties('');
+        setCheckInPainLevel('None');
+        setCheckInGeneralComments('');
+        setCheckInVideoUrl('');
         fetchTraineeData();
+        alert("Workout checked in successfully! Your coach has been notified to review your video proof.");
       }
     } catch (err) {
       console.error(err);
@@ -507,15 +530,18 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
             {/* Check-In Dialog Modal */}
             {checkingInWorkout && (
               <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100 text-left">
-                  <h3 className="font-display font-medium text-lg text-slate-900 mb-1">
-                    Check In to Prescribed Session
-                  </h3>
-                  <p className="text-xs text-slate-500 mb-4">
-                    Verify you finished this assigned workout. Your stats will live-update, and your coach will be notified.
-                  </p>
+                <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] md:max-h-[85vh] flex flex-col shadow-2xl relative border border-slate-100 text-left overflow-hidden">
+                  {/* Fixed Header */}
+                  <div className="p-5 border-b border-slate-100 shrink-0">
+                    <h3 className="font-display font-medium text-lg text-slate-900 mb-1">
+                      Check In to Prescribed Session
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Verify you finished this assigned workout. Your stats will live-update, and your coach will be notified.
+                    </p>
+                  </div>
 
-                  <form onSubmit={handleCheckInSubmit} className="space-y-4">
+                  <form onSubmit={handleCheckInSubmit} className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
                     <div className="bg-teal-50 border border-teal-100 rounded-xl p-3.5 text-xs text-slate-800">
                       <p className="font-bold text-teal-950 text-sm mb-1">{checkingInWorkout.workoutType}</p>
                       <p className="text-slate-500 mb-2">Prescribed Duration: <strong>{checkingInWorkout.duration} minutes</strong></p>
@@ -530,30 +556,166 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                        Active Feedback / Posture Notes
-                      </label>
-                      <textarea
-                        value={checkInNotes}
-                        onChange={(e) => setCheckInNotes(e.target.value)}
-                        placeholder="E.g. Completed all reps! Felt strong in squats, but slight pull in my hamstring..."
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-teal-500 h-24 text-slate-800"
-                        required
-                      />
+                    <div className="space-y-3">
+                      <div className="border border-slate-200 rounded-xl p-3 bg-neutral-50 text-left">
+                        <div className="flex justify-between items-center mb-1.5 text-left">
+                          <label className="block text-2xs font-extrabold text-indigo-950 uppercase tracking-wider">
+                            📹 Workout Video Proof
+                          </label>
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                            checkingInWorkout.videoProofRequired !== false
+                              ? 'bg-rose-50 text-rose-700 border border-rose-100'
+                              : 'bg-slate-100 text-slate-500'
+                          }`}>
+                            {checkingInWorkout.videoProofRequired !== false ? 'Required by Coach' : 'Optional'}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 mb-2 leading-relaxed text-left">
+                          Please record or select a short exercise proof video (MP4, MOV, WebM, 5-15s). <span className="font-bold text-slate-700">Only ONE set of any exercise is required.</span>
+                        </p>
+
+                        {/* File selector and Simulator */}
+                        <div className="space-y-2 text-left">
+                          <div className="flex gap-2">
+                            <input 
+                              type="file" 
+                              accept="video/mp4,video/quicktime,video/webm"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setCheckInVideoUrl(URL.createObjectURL(file));
+                                }
+                              }}
+                              className="block w-full text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[10px] file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 text-2xs cursor-pointer"
+                            />
+                          </div>
+
+                          {/* Instant Test Simulator presets */}
+                          <div className="bg-white border border-slate-150 p-2.5 rounded-lg space-y-1.5 text-left">
+                            <span className="text-[9px] uppercase font-bold text-slate-400 block font-mono">⚡ QUICK TEST SIMULATOR</span>
+                            <div className="grid grid-cols-2 gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setCheckInVideoUrl('https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c054fb1d23eb5d9f07144e5ccb485c64&profile_id=139&oauth2_token_id=57447761')}
+                                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[9.5px] font-bold py-1.5 px-2 rounded border border-emerald-200 truncate cursor-pointer text-center"
+                              >
+                                🏋️ Squat Proof
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCheckInVideoUrl('https://player.vimeo.com/external/485002934.sd.mp4?s=d0f0c0879ee8ece55b72e0d37e6b02a2ec962a9a&profile_id=165&oauth2_token_id=57447761')}
+                                className="bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-[9.5px] font-bold py-1.5 px-2 rounded border border-indigo-200 truncate cursor-pointer text-center"
+                              >
+                                🧘 Pilates Proof
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Selected Video Preview */}
+                          {checkInVideoUrl && (
+                            <div className="mt-2 space-y-1.5">
+                              <div className="text-2xs bg-white border border-slate-200 px-2 py-1.5 rounded-xl text-left font-sans flex items-center justify-between">
+                                <span className="text-slate-600 truncate max-w-[200px] font-semibold text-[10px]">✓ Video selected & ready</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setCheckInVideoUrl('')}
+                                  className="text-rose-600 hover:text-rose-800 text-3xs font-extrabold cursor-pointer"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                              <div className="relative w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video max-h-[220px] md:max-h-[280px] flex items-center justify-center">
+                                <video
+                                  src={checkInVideoUrl}
+                                  controls
+                                  className="w-full h-full object-contain"
+                                  preload="metadata"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Active notes */}
+                      <div className="text-left">
+                        <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                          Coach Active Note Checklist
+                        </label>
+                        <textarea
+                          value={checkInNotes}
+                          onChange={(e) => setCheckInNotes(e.target.value)}
+                          placeholder="Your tactical check-in notes..."
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-teal-500 h-16 text-slate-800 focus:outline-[#001F3F]"
+                          required
+                        />
+                      </div>
+
+                      {/* Difficulties */}
+                      <div className="text-left">
+                        <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                          Difficulties Encountered?
+                        </label>
+                        <textarea
+                          value={checkInDifficulties}
+                          onChange={(e) => setCheckInDifficulties(e.target.value)}
+                          placeholder="E.g. Struggled keeping posture straight on reps..."
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-teal-500 h-16 text-slate-800 focus:outline-[#001F3F]"
+                        />
+                      </div>
+
+                      {/* Discomfort / Pain Rating */}
+                      <div className="text-left">
+                        <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                          Discomfort / Pain Experienced
+                        </label>
+                        <div className="grid grid-cols-4 gap-2">
+                          {['None', 'Mild', 'Moderate', 'Severe'].map((lvl) => (
+                            <button
+                              key={lvl}
+                              type="button"
+                              onClick={() => setCheckInPainLevel(lvl)}
+                              className={`py-1.5 rounded-lg text-2xs font-bold border transition cursor-pointer text-center ${
+                                checkInPainLevel === lvl
+                                  ? 'bg-rose-500 border-rose-600 text-white'
+                                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                              }`}
+                            >
+                              {lvl}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* General comments */}
+                      <div className="text-left">
+                        <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                          General Comments
+                        </label>
+                        <textarea
+                          value={checkInGeneralComments}
+                          onChange={(e) => setCheckInGeneralComments(e.target.value)}
+                          placeholder="Any extra comments or queries for your coach..."
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-teal-500 h-16 text-slate-800 focus:outline-[#001F3F]"
+                        />
+                      </div>
                     </div>
 
-                    <div className="flex gap-2 justify-end pt-2 border-t border-slate-100">
+                    <div className="flex gap-2 justify-end pt-3 border-t border-slate-100 text-left sticky bottom-0 bg-white">
                       <button
                         type="button"
-                        onClick={() => setCheckingInWorkout(null)}
-                        className="px-4 py-2 border border-slate-200 rounded-xl text-xs text-slate-600 hover:bg-slate-100 cursor-pointer"
+                        onClick={() => {
+                          setCheckingInWorkout(null);
+                          setCheckInVideoUrl('');
+                        }}
+                        className="px-4 py-2 border border-slate-200 rounded-xl text-xs text-slate-600 hover:bg-slate-100 cursor-pointer font-bold"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-5 py-2 rounded-xl text-xs cursor-pointer"
+                        className="bg-teal-600 hover:bg-teal-700 text-white font-extrabold px-5 py-2 rounded-xl text-xs cursor-pointer shadow-sm"
                       >
                         Complete Check In
                       </button>

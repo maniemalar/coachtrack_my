@@ -105,6 +105,17 @@ export default function BrandingHeader({
                   Coaches near me
                 </button>
                 <button
+                  id="tab-trainee-history"
+                  onClick={() => setActiveTab('trainee-history')}
+                  className={`py-1 text-sm font-semibold transition-all pr-1 whitespace-nowrap ${
+                    activeTab === 'trainee-history'
+                      ? 'text-teal-650 border-b-2 border-teal-600 pb-1 font-bold text-teal-600'
+                      : 'text-slate-600 hover:text-teal-600'
+                  }`}
+                >
+                  Session & Workout History
+                </button>
+                <button
                   id="tab-payments"
                   onClick={() => setActiveTab('payments')}
                   className={`py-1 text-sm font-semibold transition-all ${
@@ -139,6 +150,17 @@ export default function BrandingHeader({
                   }`}
                 >
                   Clients
+                </button>
+                <button
+                  id="tab-session-history"
+                  onClick={() => setActiveTab('session-history')}
+                  className={`py-1 text-sm font-semibold transition-all whitespace-nowrap ${
+                    activeTab === 'session-history'
+                      ? 'text-teal-600 border-b-2 border-teal-600 pb-1 font-bold'
+                      : 'text-slate-600 hover:text-teal-600'
+                  }`}
+                >
+                  Session History
                 </button>
                 <button
                   id="tab-coaching-hub"

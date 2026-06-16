@@ -51,6 +51,12 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
   const [traineeDetailTab, setTraineeDetailTab] = useState<'history' | 'body' | 'photos' | 'ai' | 'chat' | 'nutrition'>('body');
   const [clientFilterMode, setClientFilterMode] = useState<'consistency' | 'payment'>('consistency');
 
+  // Client Removal States
+  const [showRemoveClientModal, setShowRemoveClientModal] = useState(false);
+  const [removeClientSearch, setRemoveClientSearch] = useState('');
+  const [removingTrainee, setRemovingTrainee] = useState<TraineeProfile | null>(null);
+  const [actionProcessing, setActionProcessing] = useState(false);
+
   // Schedule Session states for Group Scheduling
   const [scheduleType, setScheduleType] = useState<'individual' | 'group'>('individual');
   const [scheduleSelectedTraineeIds, setScheduleSelectedTraineeIds] = useState<string[]>([]);
@@ -97,6 +103,82 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
   const [filterPackage, setFilterPackage] = useState<string>('All');
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
   const [selectedInvoiceDocMode, setSelectedInvoiceDocMode] = useState<'invoice' | 'receipt'>('invoice');
+
+  // Session History Page States
+  const [sessionFilter, setSessionFilter] = useState<'All' | 'Upcoming' | 'Completed' | 'Cancelled/Missed'>('All');
+  const [activeQRModalSession, setActiveQRModalSession] = useState<any>(null);
+  const [activeFeedbackSession, setActiveFeedbackSession] = useState<any>(null);
+  const [feedbackSessionId, setFeedbackSessionId] = useState<string | null>(null);
+  const [feedbackInput, setFeedbackInput] = useState('');
+  const [expandedVideoWorkoutId, setExpandedVideoWorkoutId] = useState<string | null>(null);
+  const [sessions, setSessions] = useState([
+    {
+      id: 'sess_1',
+      title: 'HIIT Hypertrophy Booster',
+      date: '2026-06-20',
+      timeSlot: '09:00 AM - 10:00 AM',
+      location: 'Studio A (Kuala Lumpur)',
+      type: 'Strength',
+      status: 'Upcoming',
+      registeredTrainees: [
+        { name: 'Ahmad bin Ibrahim', presence: 'Present' },
+        { name: 'Mei Ling Tan', presence: 'Present' }
+      ]
+    },
+    {
+      id: 'sess_2',
+      title: 'Yoga Recovery Flow',
+      date: '2026-06-18',
+      timeSlot: '11:30 AM - 12:30 PM',
+      location: 'Zoom Virtual Chamber',
+      type: 'Mobility',
+      status: 'Upcoming',
+      registeredTrainees: [
+        { name: 'Muhammad Faizul', presence: 'Present' }
+      ]
+    },
+    {
+      id: 'sess_3',
+      title: 'Olympic Weightlifting Foundation',
+      date: '2026-06-15',
+      timeSlot: '03:00 PM - 04:30 PM',
+      location: 'Gym Floor Power Racks',
+      type: 'Power',
+      status: 'Completed',
+      registeredTrainees: [
+        { name: 'Ahmad bin Ibrahim', presence: 'Present' },
+        { name: 'Muhammad Faizul', presence: 'Present' },
+        { name: 'Mei Ling Tan', presence: 'Absent' }
+      ],
+      feedback: 'Excellent power generation from Ahmad bin Ibrahim today. Faizul needs minor ankle routing tweaks.'
+    },
+    {
+      id: 'sess_4',
+      title: 'Outdoor Metabolic Conditioning',
+      date: '2026-06-10',
+      timeSlot: '07:30 AM - 08:30 AM',
+      location: 'Lake Gardens Running Track',
+      type: 'Cardio',
+      status: 'Cancelled',
+      registeredTrainees: [
+        { name: 'Ahmad bin Ibrahim', presence: 'Absent' }
+      ],
+      cancelReason: 'Heavy rain in Kuala Lumpur. Rescheduled to virtual session.'
+    },
+    {
+      id: 'sess_5',
+      title: 'Anatomical Kettlebell Drills',
+      date: '2026-06-08',
+      timeSlot: '04:00 PM - 05:00 PM',
+      location: 'Studio B (Functional Zone)',
+      type: 'Mobility',
+      status: 'Missed',
+      registeredTrainees: [
+        { name: 'Mei Ling Tan', presence: 'Absent' }
+      ],
+      notes: 'No show. Checked out with 24-hr late notice waiver.'
+    }
+  ]);
   
   // Feedback popup alerts
   const [alertBanner, setAlertBanner] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
@@ -133,6 +215,7 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
     { name: '', sets: 3, reps: 10, weight: 0 }
   ]);
   const [prescribeSuccess, setPrescribeSuccess] = useState(false);
+  const [prescribeVideoProofRequired, setPrescribeVideoProofRequired] = useState(true);
 
   // New States for redesigned Trainer Dashboard & Coaching Hub
   const [showAddClientForm, setShowAddClientForm] = useState(false);
@@ -515,15 +598,15 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
     }
   };
 
-  const handleWorkoutReply = async (workoutId: string) => {
+  const handleWorkoutReply = async (workoutId: string, status: string = 'Approved') => {
     if (!workoutFeedbackText.trim()) return;
 
     try {
-      const ok = await dbService.addWorkoutFeedback(workoutId, workoutFeedbackText);
+      const ok = await dbService.addWorkoutFeedback(workoutId, workoutFeedbackText, status);
       if (ok) {
         setReplyingWorkoutId(null);
         setWorkoutFeedbackText('');
-        triggerToast('Workout feedback dispatched to trainee timeline!');
+        triggerToast(`Workout flagged as ${status.toLowerCase()} and feedback dispatched!`);
         fetchTrainerData();
       }
     } catch (err) {
@@ -645,7 +728,8 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
         workoutType: prescribeWorkoutType,
         duration: prescribeDuration,
         exercises: prescribeExercises.filter(ex => ex.name.trim() !== ''),
-        notes: prescribeNotes
+        notes: prescribeNotes,
+        videoProofRequired: prescribeVideoProofRequired
       };
 
       const res = await dbService.createPrescribedWorkout(payload);
@@ -661,11 +745,61 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
           setAssignOption('individual');
           setSelectedTraineeIdsForPrescription([]);
           fetchTrainerData();
-        }, 1200);
+        }, 1205);
       }
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleRemoveClientExecute = async (traineeId: string) => {
+    setActionProcessing(true);
+    try {
+      const success = await dbService.unassignTrainee(traineeId);
+      if (success) {
+        triggerToast("Client removed from your active coaching roster successfully", "success");
+        await fetchTrainerData();
+        setRemovingTrainee(null);
+      } else {
+        alert("Failed to unassign client. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error occurred while removing client.");
+    } finally {
+      setActionProcessing(false);
+    }
+  };
+
+  const handleMarkSessionCompleted = (sessionId: string) => {
+    setSessions(prev => prev.map(s => {
+      if (s.id === sessionId) {
+        return {
+          ...s,
+          status: 'Completed',
+          registeredTrainees: s.registeredTrainees.map(t => ({ ...t, presence: 'Present' })),
+          feedback: s.feedback || 'Trainee physical exercise routines audited and checked off completely.'
+        };
+      }
+      return s;
+    }));
+    triggerToast("Session marked as Completed! Presence records compiled.", "success");
+  };
+
+  const handleSaveSessionFeedback = () => {
+    if (!feedbackSessionId) return;
+    setSessions(prev => prev.map(s => {
+      if (s.id === feedbackSessionId) {
+        return {
+          ...s,
+          feedback: feedbackInput
+        };
+      }
+      return s;
+    }));
+    triggerToast("Session audit details updated successfully!", "success");
+    setFeedbackSessionId(null);
+    setFeedbackInput('');
   };
 
   // Trainee Deep Stats Helper (Gives realistic mock values for extra trainees)
@@ -910,17 +1044,6 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
             </div>
           </div>
           <div className="flex gap-2">
-            {activeTab !== 'client-management' && (
-              <button
-                onClick={() => {
-                  setSelectedTraineeId('te_ahmad');
-                  setShowInvoiceForm(true);
-                }}
-                className="bg-[#001F3F] hover:bg-slate-900 text-teal-400 font-bold text-xs py-2.5 px-4 rounded-xl flex items-center gap-1.5 transition cursor-pointer"
-              >
-                <Plus className="w-4 h-4" /> Issue Custom Invoice
-              </button>
-            )}
           </div>
         </div>
 
@@ -1318,22 +1441,36 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
         {/* Schedule Session Modal */}
         {showScheduleModal && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100 text-left">
-              <h3 className="font-display font-medium text-slate-900 text-lg mb-1">
-                📅 Schedule Client Session
-              </h3>
-              <p className="text-xs text-slate-500 mb-4">
-                Schedule a coaching slot in our certified studio calendars.
-              </p>
+            <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] md:max-h-[85vh] flex flex-col shadow-2xl relative border border-slate-100 text-left overflow-hidden">
+              {/* Fixed Header */}
+              <div className="p-5 border-b border-slate-100 shrink-0">
+                <h3 className="font-display font-medium text-slate-900 text-lg mb-1">
+                  📅 Schedule Client Session
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Schedule a coaching slot in our certified studio calendars.
+                </p>
+              </div>
 
               {scheduleSuccess ? (
-                <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-4 text-center my-6">
-                  <span className="text-xl">📅</span>
-                  <p className="font-bold mt-1">Session Slotted Successfully!</p>
-                  <p className="text-xs text-slate-550 font-sans">The client notification checklists have been synchronised.</p>
+                <div className="p-5 overflow-y-auto flex-1 text-center my-auto">
+                  <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-4">
+                    <span className="text-xl">📅</span>
+                    <p className="font-bold mt-1">Session Slotted Successfully!</p>
+                    <p className="text-xs text-slate-550 font-sans">The client notification checklists have been synchronised.</p>
+                  </div>
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowScheduleModal(false)}
+                      className="px-5 py-2 bg-[#001F3F] text-teal-400 font-extrabold rounded-xl text-xs cursor-pointer"
+                    >
+                      Close Window
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <form onSubmit={handleScheduleSubmit} className="space-y-4">
+                <form onSubmit={handleScheduleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
                   {/* Step 1: Session Type Selection */}
                   <div>
                     <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-2 font-sans text-slate-600">
@@ -1383,7 +1520,7 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                   ) : (
                     <div className="space-y-3 font-sans text-xs">
                       <div>
-                        <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-1.5 text-slate-600">
+                        <label className="block text-2xs font-bold text-slate-555 uppercase tracking-wider mb-1.5 text-slate-600">
                           Select Participants
                         </label>
                         
@@ -1501,7 +1638,7 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                       />
                     </div>
                     <div>
-                      <label className="block text-2xs font-bold text-slate-550 uppercase tracking-wider mb-1 font-sans text-slate-600">
+                      <label className="block text-2xs font-bold text-slate-555 uppercase tracking-wider mb-1 font-sans text-slate-600">
                         Time Slot
                       </label>
                       <select
@@ -1570,7 +1707,7 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                       {scheduleType === 'group' ? (
                         <div>
                           <span className="text-slate-400">Participants Checklist:</span>
-                          <strong className="block text-slate-850 font-sans font-black text-slate-900">
+                          <strong className="block text-slate-900 font-black">
                             {registeredTraineesForSlot.length + scheduleSelectedTraineeIds.length} Total ({registeredTraineesForSlot.length} Reg, {scheduleSelectedTraineeIds.length} Add)
                           </strong>
                         </div>
@@ -1585,7 +1722,8 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                     </div>
                   </div>
 
-                  <div className="flex gap-2 justify-end pt-2 border-t border-slate-100 font-sans">
+                  {/* Sticky footer action buttons */}
+                  <div className="flex gap-2 justify-end pt-3 border-t border-slate-100 font-sans sticky bottom-0 bg-white">
                     <button
                       type="button"
                       onClick={() => setShowScheduleModal(false)}
@@ -1841,6 +1979,22 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                       placeholder="E.g. Keep spine flat, focus on pelvis alignment"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-teal-500 text-slate-800"
                     />
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex justify-between items-center text-left">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">Require Video Evidence</p>
+                      <p className="text-[10px] text-slate-500">Trainees must upload video proof of workout completion.</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={prescribeVideoProofRequired} 
+                        onChange={(e) => setPrescribeVideoProofRequired(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-8 h-4 bg-slate-200 rounded-full peer peer-checked:bg-teal-600 after:content-[''] after:absolute after:top-[4px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4"></div>
+                    </label>
                   </div>
 
                   {/* Exercises dynamic builder rows */}
@@ -2269,7 +2423,7 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                             </div>
                             <div className="text-right shrink-0">
                               <span className="text-2xs font-extrabold text-[#001F3F] bg-[#001F3F]/5 px-2 py-0.5 rounded-lg inline-block">⏱ {w.duration} mins</span>
-                              <p className="text-[8.5px] text-slate-400 font-bold uppercase mt-1 font-mono font-sans font-sans">Submitted: {w.date || '11 Jun 2026'}</p>
+                              <p className="text-[8.5px] text-slate-400 font-bold uppercase mt-1 font-mono">Submitted: {w.date || '11 Jun 2026'}</p>
                             </div>
                           </div>
 
@@ -2282,14 +2436,54 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                           </div>
 
                           {w.notes && (
-                            <p className="text-2xs text-slate-550 italic bg-white p-2.5 rounded border border-slate-150 mb-3 block text-left">
-                              &ldquo;{w.notes}&rdquo;
-                            </p>
+                            <div className="text-2xs text-slate-700 bg-white p-3 rounded-lg border border-slate-150 mb-3 space-y-2">
+                              <p className="font-semibold text-slate-800">📋 Trainee Active Notes:</p>
+                              <p className="italic font-normal text-slate-600">&ldquo;{w.notes}&rdquo;</p>
+                              
+                              {/* Display extra fields */}
+                              {(w.difficulties || w.painLevel || w.generalComments) && (
+                                <div className="border-t border-slate-100 pt-2 space-y-1.5 mt-2 font-sans font-medium text-slate-500">
+                                  {w.difficulties && (
+                                    <p>⚠️ <strong className="text-slate-800">Difficulties:</strong> {w.difficulties}</p>
+                                  )}
+                                  {w.painLevel && (
+                                    <p>
+                                      ❗️ <strong className="text-slate-800">Discomfort Level:</strong>{' '}
+                                      <span className={`px-2 py-0.5 rounded-full text-3xs font-extrabold ${
+                                        w.painLevel === 'Severe' || w.painLevel === 'Moderate'
+                                          ? 'bg-rose-100 text-rose-700'
+                                          : 'bg-slate-100 text-slate-600'
+                                      }`}>
+                                        {w.painLevel}
+                                      </span>
+                                    </p>
+                                  )}
+                                  {w.generalComments && (
+                                    <p>💭 <strong className="text-slate-800">Additional Comments:</strong> {w.generalComments}</p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Render Video Evidence Playback */}
+                          {w.videoUrl && (
+                            <div className="mb-3 space-y-1">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase font-mono tracking-wider">📹 Submitter Video Proof :</span>
+                              <div className="aspect-video max-w-sm rounded-xl overflow-hidden bg-slate-900 border border-slate-205">
+                                <video 
+                                  src={w.videoUrl} 
+                                  controls 
+                                  className="w-full h-full object-cover"
+                                  preload="metadata"
+                                />
+                              </div>
+                            </div>
                           )}
 
                           {w.trainerFeedback ? (
                             <div className="mt-2 bg-slate-100 border border-slate-150 text-slate-850 rounded-lg p-2.5 text-2xs text-left">
-                              <p className="font-black mb-0.5 text-[9px] uppercase tracking-wider text-slate-500 font-sans">Your Dispatched Feedback Review:</p>
+                              <p className="font-black mb-0.5 text-[9px] uppercase tracking-wider text-slate-500 font-sans">Your Dispatched Feedback Review ({w.status || 'Approved'}):</p>
                               <p className="italic font-sans">&ldquo;{w.trainerFeedback}&rdquo;</p>
                             </div>
                           ) : (
@@ -2299,30 +2493,42 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                                   <textarea
                                     value={workoutFeedbackText}
                                     onChange={(e) => setWorkoutFeedbackText(e.target.value)}
-                                    placeholder="Provide coaching advice, alignment adjustments, or water weight comments..."
+                                    placeholder="Provide coaching advice, alignment adjustments, or prescription directive amendments..."
                                     className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs text-slate-800 focus:outline-[#001F3F] font-sans text-left"
                                   />
                                   <div className="flex gap-2 justify-end">
                                     <button
                                       type="button"
                                       onClick={() => setReplyingWorkoutId(null)}
-                                      className="px-3 py-1 text-2xs font-bold text-slate-500 hover:bg-slate-100 rounded"
+                                      className="px-3 py-1 text-2xs font-bold text-slate-500 hover:bg-slate-100 rounded cursor-pointer"
                                     >
                                       Cancel
                                     </button>
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        handleWorkoutReply(w.id);
-                                        // add to Activity Feed
+                                        handleWorkoutReply(w.id, 'Revision Requested');
                                         setCoachingFeed(prev => [
-                                          { id: Date.now(), type: 'workout', text: `Workout feedback sent to Ahmad Ibrahim: "${workoutFeedbackText}"`, time: 'Just now' },
+                                          { id: Date.now(), type: 'workout', text: `Revision requested on Ahmad Ibrahim's workout. Instructions: "${workoutFeedbackText}"`, time: 'Just now' },
                                           ...prev
                                         ]);
                                       }}
-                                      className="bg-indigo-900 border border-indigo-950 font-bold hover:bg-slate-955 text-white text-2xs py-1.5 px-3.5 rounded"
+                                      className="bg-rose-500 hover:bg-rose-600 border border-rose-600 font-extrabold text-[#fff] text-2xs py-1.5 px-3.5 rounded-lg cursor-pointer transition shadow-sm"
                                     >
-                                      Send Review
+                                      ⚠️ Request Revision
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleWorkoutReply(w.id, 'Approved');
+                                        setCoachingFeed(prev => [
+                                          { id: Date.now(), type: 'workout', text: `Approved Ahmad Ibrahim's workout. Feedback: "${workoutFeedbackText}"`, time: 'Just now' },
+                                          ...prev
+                                        ]);
+                                      }}
+                                      className="bg-teal-600 hover:bg-teal-750 border border-teal-700 font-extrabold text-[#fff] text-2xs py-1.5 px-3.5 rounded-lg cursor-pointer transition shadow-sm"
+                                    >
+                                      ✓ Approve Workout
                                     </button>
                                   </div>
                                 </div>
@@ -2333,14 +2539,14 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                                       setReplyingWorkoutId(w.id);
                                       setWorkoutFeedbackText('');
                                     }}
-                                    className="bg-indigo-900 hover:bg-slate-955 text-white text-[10px] font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer font-sans"
+                                    className="bg-[#001F3F] hover:bg-indigo-950 text-white text-[10px] font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer font-sans"
                                   >
                                     <MessageSquare className="w-3.5 h-3.5 text-white" /> Review Workout & Send Feedback
                                   </button>
                                   <button
                                     onClick={() => {
-                                      dbService.addWorkoutFeedback(w.id, "Excellent job completing this entire physical prescription. Your tempo and posture look incredibly aligned. Keep up the high standard!");
-                                      triggerToast("Workout marked as reviewed! Automatic appraisal dispatched.", "success");
+                                      dbService.addWorkoutFeedback(w.id, "Excellent job completing this entire physical prescription. Your tempo and posture look incredibly aligned. Keep up the high standard!", "Approved");
+                                      triggerToast("Workout marked as Approved! Automatic appraisal dispatched.", "success");
                                       fetchTrainerData();
                                       setCoachingFeed(prev => [
                                         { id: Date.now(), type: 'workout', text: `Workout log marked as Reviewed & Approved for ${w.workoutType}`, time: 'Just now' },
@@ -2349,7 +2555,7 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                                     }}
                                     className="border border-slate-150 bg-white hover:bg-slate-100 text-slate-655 text-[10px] font-bold py-1.5 px-3 rounded-lg transition cursor-pointer font-sans"
                                   >
-                                    ✓ Instant Mark Reviewed
+                                    ✓ Instant Approve
                                   </button>
                                 </div>
                               )}
@@ -3037,6 +3243,146 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
               )}
             </div>
 
+            {/* Remove Client Option banner/trigger */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4 text-left font-sans mt-8 shadow-sm">
+              <div>
+                <h4 className="text-sm font-bold text-slate-800">Need to Unassign a Client?</h4>
+                <p className="text-xs text-slate-500">Unassign any client from your active list. The client user account is preserved, and historical logs, bills, and check-ins are protected.</p>
+              </div>
+              <button
+                onClick={() => {
+                  setRemoveClientSearch('');
+                  setShowRemoveClientModal(true);
+                }}
+                className="bg-rose-50 border border-rose-250 text-rose-700 hover:bg-rose-100/80 font-extrabold px-5 py-2.5 rounded-xl text-xs cursor-pointer shadow-sm shrink-0 transition"
+              >
+                🗑 Remove Client Option
+              </button>
+            </div>
+
+            {/* Remove Client Modal */}
+            {showRemoveClientModal && (
+              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl relative border border-slate-100 text-left overflow-hidden">
+                  {/* Header */}
+                  <div className="p-5 border-b border-slate-100 shrink-0">
+                    <h3 className="font-display font-medium text-slate-900 text-lg mb-1">
+                      🗑 Manage & Remove Trainer-Client Affiliations
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Search and remove clients from your active roster.
+                    </p>
+                  </div>
+
+                  {/* Search Bar */}
+                  <div className="p-5 border-b border-slate-50 bg-slate-50/50 shrink-0">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Search assigned client by name..."
+                        value={removeClientSearch}
+                        onChange={(e) => setRemoveClientSearch(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-800 focus:outline-[#001F3F]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Scrollable list */}
+                  <div className="flex-1 overflow-y-auto p-5 space-y-3 min-h-0">
+                    {trainees
+                      .filter(t => t.name.toLowerCase().includes(removeClientSearch.toLowerCase()))
+                      .map((t) => {
+                        const stats = getTraineeStats(t.id);
+                        return (
+                          <div key={t.id} className="border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white hover:border-slate-300 transition shadow-2xs">
+                            <div className="space-y-1 text-left">
+                              <div className="flex items-center gap-2">
+                                <img referrerPolicy="no-referrer" src={t.avatarUrl} className="w-8 h-8 rounded-full border border-slate-100 object-cover" />
+                                <h4 className="font-bold text-sm text-slate-850">{t.name}</h4>
+                              </div>
+                              <p className="text-2xs text-slate-600 pt-0.5">
+                                <span className="font-extrabold text-slate-700">Goal:</span> {t.goals || 'Weight Loss & Cardio'}
+                              </p>
+                              <p className="text-2xs text-slate-600">
+                                <span className="font-extrabold text-slate-700">Package:</span> {stats.packageName || 'PT Package'}
+                              </p>
+                              <div className="flex items-center gap-1.5 pt-1">
+                                <span className="text-[10px] text-slate-400 font-bold">Billing:</span>
+                                <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full ${
+                                  stats.paymentStatus === 'Paid' ? 'bg-emerald-50 border border-emerald-150 text-emerald-800' : 'bg-rose-50 border border-rose-150 text-rose-800'
+                                }`}>
+                                  {stats.paymentStatus}
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => setRemovingTrainee(t)}
+                              className="bg-rose-50 hover:bg-rose-100 border border-rose-200 hover:border-rose-300 text-rose-700 font-extrabold px-3.5 py-2 rounded-xl text-xs cursor-pointer tracking-wide self-end sm:self-center transition"
+                            >
+                              🗑 Remove Client Link
+                            </button>
+                          </div>
+                        );
+                      })}
+
+                    {trainees.filter(t => t.name.toLowerCase().includes(removeClientSearch.toLowerCase())).length === 0 && (
+                      <p className="text-slate-400 text-xs italic text-center py-6">No matching rostered clients found.</p>
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="p-5 border-t border-slate-100 flex justify-end shrink-0 bg-slate-50/50">
+                    <button
+                      type="button"
+                      onClick={() => setShowRemoveClientModal(false)}
+                      className="px-5 py-2.5 bg-[#001F3F] text-teal-400 hover:bg-slate-900 border border-transparent rounded-xl text-xs font-black cursor-pointer shadow-md"
+                    >
+                      Close Window
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Nested Removal Confirmation Dialog */}
+            {removingTrainee && (
+              <div className="fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+                <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100 text-left">
+                  <span className="text-3xl block">⚠️</span>
+                  <h3 className="font-display font-black text-lg text-rose-700 mt-2 mb-1.5">
+                    Confirm Client Roster Removal
+                  </h3>
+                  <p className="text-xs text-slate-700 font-medium mb-4 leading-relaxed">
+                    Are you sure you want to remove this client from your coaching roster?
+                  </p>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-2xs text-slate-500 space-y-1 mb-5">
+                    <p>✔ Trainee's general user account will <strong className="text-slate-800">NOT</strong> be deleted.</p>
+                    <p>✔ All history including nutrition inputs, invoices, receipts, and workout history are preserved.</p>
+                  </div>
+
+                  <div className="flex gap-2.5 justify-end pt-3 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setRemovingTrainee(null)}
+                      className="px-4 py-2 border border-slate-200 rounded-xl text-xs text-slate-600 hover:bg-slate-100 cursor-pointer font-bold"
+                      disabled={actionProcessing}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveClientExecute(removingTrainee.id)}
+                      className="bg-rose-600 hover:bg-rose-700 text-white font-extrabold px-5 py-2 rounded-xl text-xs cursor-pointer shadow-md transition"
+                      disabled={actionProcessing}
+                    >
+                      {actionProcessing ? 'Removing...' : 'Confirm Removal'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* TRAINEE OVERLAY SIDE-DRAWER PANEL */}
             <AnimatePresence>
               {selectedTrainee && (
@@ -3315,10 +3661,47 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                                   </div>
                                   
                                   {w.notes && (
-                                    <p className="text-slate-500 italic text-[11px] bg-slate-50 p-2.5 rounded-lg border-l-2 border-teal-500">
+                                    <p className="text-slate-500 italic text-[11px] bg-slate-50 p-2.5 rounded-lg border-l-2 border-teal-500 text-left">
                                       &ldquo;{w.notes}&rdquo;
                                     </p>
                                   )}
+
+                                  {/* Workout Video Evidence Proof Section */}
+                                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-2 text-left">
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                                        📹 Workout Verification Video
+                                      </span>
+                                      {w.videoUrl ? (
+                                        <button
+                                          onClick={() => {
+                                            setExpandedVideoWorkoutId(expandedVideoWorkoutId === w.id ? null : w.id);
+                                          }}
+                                          className="text-[10px] bg-emerald-100 text-[#001F3F] hover:bg-emerald-250 px-2.5 py-1 rounded-full font-extrabold cursor-pointer flex items-center gap-1 transition shadow-2xs"
+                                        >
+                                          <span>✓ Video Proof Available</span>
+                                          <span className="font-extrabold">({expandedVideoWorkoutId === w.id ? 'Hide' : 'Play Preview'})</span>
+                                        </button>
+                                      ) : (
+                                        <span className="text-[10px] text-amber-700 font-semibold bg-amber-50 border border-amber-100/60 px-2 py-0.5 rounded-full inline-block">
+                                          No proof video submitted for this session.
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Playable Video Frame */}
+                                    {w.videoUrl && expandedVideoWorkoutId === w.id && (
+                                      <div className="relative w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video max-h-[220px] md:max-h-[280px] flex items-center justify-center mt-2">
+                                        <video
+                                          src={w.videoUrl}
+                                          controls
+                                          playsInline
+                                          className="w-full h-full object-contain"
+                                          referrerPolicy="no-referrer"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
 
                                   {/* Contextual Reply to Workout button */}
                                   <div className="flex justify-end pt-2 border-t border-slate-50">
@@ -4286,6 +4669,236 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
                 </div>
               )}
             </AnimatePresence>
+          </motion.div>
+        )}
+
+        {/* 3.1 COMPREHENSIVE COACHING SESSION HISTORY REGISTER */}
+        {activeTab === 'session-history' && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8 animate-fade-in text-left"
+          >
+            {/* Page Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h3 className="text-2xl font-black font-display text-slate-900">📅 Coaching Session History Registry</h3>
+                <p className="text-xs text-slate-500">Log, audit, and track booking attendance sheets, QR checkless sign-ins, and physical classroom feedback notes.</p>
+              </div>
+              
+              {/* Filter controls */}
+              <div className="flex bg-slate-150 p-1 rounded-xl shrink-0">
+                {(['All', 'Upcoming', 'Completed', 'Cancelled/Missed'] as const).map((filterOption) => (
+                  <button
+                    key={filterOption}
+                    onClick={() => setSessionFilter(filterOption)}
+                    className={`px-3 py-1.5 rounded-lg text-2xs font-extrabold transition cursor-pointer ${
+                      sessionFilter === filterOption 
+                        ? 'bg-[#001F3F] text-teal-400 shadow-sm font-black' 
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {filterOption}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* LOWER SESSION HISTORY LIST GRID */}
+            <div className="space-y-4">
+              {sessions
+                .filter(s => {
+                  if (sessionFilter === 'All') return true;
+                  if (sessionFilter === 'Upcoming') return s.status === 'Upcoming';
+                  if (sessionFilter === 'Completed') return s.status === 'Completed';
+                  if (sessionFilter === 'Cancelled/Missed') return s.status === 'Cancelled' || s.status === 'Missed';
+                  return true;
+                })
+                .map((s) => (
+                  <div 
+                    key={s.id}
+                    className="bg-white border border-slate-200 hover:border-teal-500/30 rounded-2xl p-5 shadow-sm hover:shadow-md transition text-left flex flex-col md:flex-row md:items-center justify-between gap-6"
+                  >
+                    {/* Session main specs */}
+                    <div className="space-y-3 flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                          s.status === 'Upcoming' ? 'bg-yellow-50 border border-yellow-250 text-yellow-850' :
+                          s.status === 'Completed' ? 'bg-emerald-50 border border-emerald-250 text-emerald-850' :
+                          s.status === 'Cancelled' ? 'bg-rose-50 border border-rose-250 text-rose-850' :
+                          'bg-indigo-50 border border-indigo-200 text-indigo-850'
+                        }`}>
+                          ● {s.status}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-150 px-2.5 py-0.5 rounded-full">
+                          🏃 {s.type} Class
+                        </span>
+                      </div>
+
+                      <div className="min-w-0">
+                        <h4 className="font-display font-black text-slate-850 text-base leading-tight truncate">{s.title}</h4>
+                        <p className="text-xs text-slate-550 pt-0.5 font-sans flex items-center gap-1.5 flex-wrap">
+                          <span>📅 {s.date}</span>
+                          <span className="text-slate-300">|</span>
+                          <span>⏰ {s.timeSlot}</span>
+                          <span className="text-slate-300">|</span>
+                          <span className="font-medium text-slate-600">📍 {s.location}</span>
+                        </p>
+                      </div>
+
+                      {/* Registered Trainees */}
+                      <div className="pt-2 border-t border-slate-100 text-left">
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1">
+                          Registered Trainees & Presence Checked:
+                        </span>
+                        <div className="flex flex-wrap gap-2 pt-0.5">
+                          {s.registeredTrainees.map((st, idx) => {
+                            let badgeStyle = "bg-slate-55 border border-slate-150 text-slate-600";
+                            if (s.status === 'Upcoming') {
+                              badgeStyle = "bg-teal-50/50 border border-teal-100/50 text-teal-705";
+                            } else if (st.presence === 'Present') {
+                              badgeStyle = "bg-emerald-50 border border-emerald-150 text-emerald-800";
+                            } else if (st.presence === 'Absent') {
+                              badgeStyle = "bg-rose-50 border border-rose-150 text-rose-800 font-bold";
+                            }
+                            return (
+                              <span key={idx} className={`text-[10px] font-extrabold px-3 py-1 rounded-lg ${badgeStyle}`}>
+                                🙎 {st.name} {st.presence !== 'Registered' && `• ${st.presence}`}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Audit Details */}
+                      {(s.feedback || s.cancelReason || s.notes) && (
+                        <div className="bg-slate-50 border border-slate-150 rounded-xl p-3 text-2xs text-slate-600 block mt-3 font-sans leading-relaxed text-left">
+                          {s.feedback && <p><strong>Coach Review:</strong> {s.feedback}</p>}
+                          {s.cancelReason && <p className="text-rose-700"><strong>Cancellation Trigger:</strong> {s.cancelReason}</p>}
+                          {s.notes && <p><strong>Auditor Notes:</strong> {s.notes}</p>}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Operational trigger buttons */}
+                    <div className="shrink-0 flex items-center gap-2 mt-2 md:mt-0">
+                      {s.status === 'Upcoming' ? (
+                        <>
+                          <button
+                            onClick={() => setActiveQRModalSession(s)}
+                            className="bg-slate-100 hover:bg-slate-200 border border-slate-250 text-slate-805 text-2xs font-extrabold px-3.5 py-2.5 rounded-xl cursor-pointer transition shadow-2xs"
+                          >
+                            📷 Show QR Code
+                          </button>
+                          <button
+                            onClick={() => handleMarkSessionCompleted(s.id)}
+                            className="bg-[#001F3F] hover:bg-slate-900 border border-transparent text-teal-400 text-2xs font-black px-4 py-2.5 rounded-xl cursor-pointer transition shadow-md"
+                          >
+                            ✓ Mark Completed
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setFeedbackSessionId(s.id);
+                            setFeedbackInput(s.feedback || '');
+                          }}
+                          className="bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 hover:text-slate-905 text-2xs font-extrabold px-3.5 py-2.5 rounded-xl cursor-pointer transition"
+                        >
+                          ✏ {s.feedback ? 'Edit Audit Notes' : 'Apply Feedback'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+              {sessions.filter(s => {
+                if (sessionFilter === 'All') return true;
+                if (sessionFilter === 'Upcoming') return s.status === 'Upcoming';
+                if (sessionFilter === 'Completed') return s.status === 'Completed';
+                if (sessionFilter === 'Cancelled/Missed') return s.status === 'Cancelled' || s.status === 'Missed';
+                return true;
+              }).length === 0 && (
+                <div className="bg-white p-12 text-center rounded-xl border border-dashed border-slate-200">
+                  <span className="text-2xl">📅</span>
+                  <p className="font-bold text-slate-600 mt-2">No matching sessions in filter context.</p>
+                  <p className="text-xs text-slate-400">All logs are safely seeded for your viewing.</p>
+                </div>
+              )}
+            </div>
+
+            {/* QR Code Presentation Modal */}
+            {activeQRModalSession && (
+              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative border border-slate-100 text-center text-slate-800">
+                  <h3 className="font-display font-black text-slate-900 text-base mb-1.5">
+                    📱 Sign-in QR Attendance Code
+                  </h3>
+                  <p className="text-xs text-slate-400 mb-4 uppercase tracking-wide font-semibold">
+                    {activeQRModalSession.title}
+                  </p>
+                  
+                  {/* Styled simulated QR SVG */}
+                  <div className="bg-slate-50 border border-slate-150 p-6 rounded-2xl flex justify-center mb-4">
+                    <svg className="w-40 h-40" viewBox="0 0 100 100">
+                      <rect width="100" height="100" fill="#f8fafc" />
+                      <path d="M5 5h30v30H5V5zm10 10v10h10V15H15zm50-10h30v30H65V5zm10 10v10h10V15H75zM5 65h30v30H5V65zm10 10v10h10V75H15zm55-5h5v5h-5v-5zm10 10h10v10H80V80zm-10 10h10v5H70v-5zm0-15h5v5h-5v-5zm15-5h10v5H85v-5zm-5 5h5v5h-5v-5zm-15-5h5v5h-5v-5zm0 15h5v5h-5v-5zm-10-10h5v10h-5V70zm-5 5h5v5h-5v-5zm15-15h5v5h-5v-5zm15 0h5v5h-5v-5zm-30-20h5v10h-5V35zm10-5h5v5h-5v-5zm5 10h5v5h-5v-5zm10-15h5v5h-5V20zm-5 15h5v10h-5V35zm-25 15h5v5h-5v-5zm5 15h10v5H45v-5zm15 5h5v5h-5v-5zm5-15h5v5h-5v-5zm-15-5h10v5H50v-5zm30-5h5v10h-5V45zm-10 10h5v5h-5v-5z" fill="#001f3f" />
+                    </svg>
+                  </div>
+
+                  <p className="text-2xs text-slate-550 leading-snug">
+                    Point your trainee's CoachTrack mobile camera here to instantly record and check-in attendance.
+                  </p>
+
+                  <div className="mt-5 border-t border-slate-100 pt-4">
+                    <button
+                      onClick={() => setActiveQRModalSession(null)}
+                      className="w-full bg-[#001F3F] hover:bg-slate-900 border border-transparent text-teal-400 text-xs font-black py-2.5 rounded-xl cursor-pointer shadow-md transition animate-fade-in"
+                    >
+                      Close Scanner Code
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Change Feedback Text Dialog Modal */}
+            {feedbackSessionId && (
+              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100 text-left text-slate-850">
+                  <h3 className="font-display font-medium text-slate-900 text-base mb-1.5 flex items-center gap-1">
+                    ✏ Physical Practice Review Notes
+                  </h3>
+                  <p className="text-xs text-slate-450 mb-4">
+                    Provide specialized biometric comments or review logs for this class.
+                  </p>
+
+                  <textarea
+                    rows={4}
+                    value={feedbackInput}
+                    onChange={(e) => setFeedbackInput(e.target.value)}
+                    placeholder="Enter stance accuracy, heart rate intervals comments, or weight execution feedback..."
+                    className="w-full rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 p-3 mb-4 focus:outline-teal-500 font-medium"
+                  />
+
+                  <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100 bg-white">
+                    <button
+                      onClick={() => setFeedbackSessionId(null)}
+                      className="px-4 py-2 border border-slate-200 text-xs text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer font-bold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveSessionFeedback}
+                      className="bg-[#001F3F] text-teal-400 text-xs font-black px-5 py-2 rounded-xl cursor-pointer shadow-md"
+                    >
+                      Save Audit Review
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </motion.div>
         )}
 

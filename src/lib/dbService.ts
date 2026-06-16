@@ -330,6 +330,13 @@ export const dbService = {
     return [];
   },
 
+  async unassignTrainee(traineeId: string): Promise<boolean> {
+    const res = await fetch(`/api/trainees/${traineeId}/unassign`, {
+      method: 'POST'
+    });
+    return res.ok;
+  },
+
   // --- WORKOUT LOGS ---
   async getWorkouts(filters: { traineeId?: string; trainerId?: string }): Promise<WorkoutLog[]> {
     if (isSupabaseConfigured && supabase) {
@@ -390,7 +397,7 @@ export const dbService = {
     return null;
   },
 
-  async addWorkoutFeedback(workoutId: string, feedback: string): Promise<boolean> {
+  async addWorkoutFeedback(workoutId: string, feedback: string, status?: string): Promise<boolean> {
     if (isSupabaseConfigured && supabase) {
       const { error } = await supabase
         .from('workouts')
@@ -402,7 +409,7 @@ export const dbService = {
     const res = await fetch(`/api/workouts/${workoutId}/reply`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ feedback })
+      body: JSON.stringify({ feedback, status })
     });
     return res.ok;
   },
@@ -601,7 +608,16 @@ export const dbService = {
     return null;
   },
 
-  async checkInPrescribedWorkout(pwId: string): Promise<boolean> {
+  async checkInPrescribedWorkout(
+    pwId: string, 
+    details?: { 
+      videoUrl?: string; 
+      notes?: string; 
+      difficulties?: string; 
+      painLevel?: string; 
+      generalComments?: string;
+    }
+  ): Promise<boolean> {
     if (isSupabaseConfigured && supabase) {
       const { error } = await supabase
         .from('prescribed_workouts')
@@ -611,7 +627,9 @@ export const dbService = {
     }
 
     const res = await fetch(`/api/prescribed-workouts/${pwId}/checkin`, {
-      method: 'POST'
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(details || {})
     });
     return res.ok;
   },

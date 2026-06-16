@@ -61,6 +61,7 @@ export interface WorkoutLog {
   notes: string;
   trainerFeedback?: string;
   feedbackAt?: string;
+  videoUrl?: string;
 }
 
 export interface NutritionLog {

@@ -172,7 +172,8 @@ const DEFAULT_WORKOUTS: WorkoutLog[] = [
     ],
     notes: 'Pushed hard in squats! Felt slight tightness in upper shoulders during planks.',
     trainerFeedback: 'Awesome squat form today, Ahmad! Let’s keep track of that shoulder tightness. Do 5 minutes of target rotator stretch tomorrow.',
-    feedbackAt: '2026-06-10T09:30:00Z'
+    feedbackAt: '2026-06-10T09:30:00Z',
+    videoUrl: 'https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c054fb1d23eb5d9f07144e5ccb485c64&profile_id=139&oauth2_token_id=57447761'
   }
 ];
 
@@ -555,6 +556,17 @@ app.post('/api/trainees/:traineeId/profile', (req, res) => {
   res.json(trainee);
 });
 
+// Remove trainee-trainer association / relationship
+app.post('/api/trainees/:traineeId/unassign', (req, res) => {
+  const { traineeId } = req.params;
+  const trainee = dbData.trainees.find(t => t.id === traineeId || t.userId === traineeId);
+  if (!trainee) return res.status(404).json({ message: 'Trainee profile not found' });
+  
+  trainee.assignedTrainerId = '';
+  writeDb();
+  res.json({ success: true, message: 'Client removed from coaching roster' });
+});
+
 // Workout Logs
 app.get('/api/workouts', (req, res) => {
   const { traineeId, trainerId } = req.query;
@@ -589,12 +601,17 @@ app.post('/api/workouts', (req, res) => {
 
 app.post('/api/workouts/:id/reply', (req, res) => {
   const { id } = req.params;
-  const { feedback } = req.body;
+  const { feedback, status } = req.body;
   const workout = dbData.workouts.find(w => w.id === id);
   if (!workout) return res.status(404).json({ message: 'Workout not found' });
 
   workout.trainerFeedback = feedback;
   workout.feedbackAt = new Date().toISOString();
+  if (status) {
+    workout.status = status;
+  } else {
+    workout.status = 'Approved';
+  }
 
   // Connect user account to create an in-app chat message automatically from Trainer
   const trainer = dbData.trainers.find(t => t.id === workout.trainerId);
@@ -767,7 +784,7 @@ app.get('/api/prescribed-workouts', (req, res) => {
 });
 
 app.post('/api/prescribed-workouts', (req, res) => {
-  const { trainerId, traineeId, traineeIds, workoutType, duration, exercises, notes } = req.body;
+  const { trainerId, traineeId, traineeIds, workoutType, duration, exercises, notes, videoProofRequired } = req.body;
   
   // Resolve list of target trainee IDs
   let ids: string[] = [];
@@ -798,7 +815,8 @@ app.post('/api/prescribed-workouts', (req, res) => {
       exercises: exercises || [],
       notes: notes || '',
       status: 'Pending',
-      assignedDate: new Date().toISOString().split('T')[0]
+      assignedDate: new Date().toISOString().split('T')[0],
+      videoProofRequired: videoProofRequired !== false
     };
     dbData.prescribedWorkouts.push(newPW as any);
     created.push(newPW);
@@ -810,7 +828,7 @@ app.post('/api/prescribed-workouts', (req, res) => {
 
 app.post('/api/prescribed-workouts/:id/checkin', (req, res) => {
   const { id } = req.params;
-  const { notes } = req.body;
+  const { notes, videoUrl, difficulties, painLevel, generalComments, sessionFeedback } = req.body;
   
   const pwList = dbData.prescribedWorkouts || [];
   const pw = pwList.find(p => p.id === id);
@@ -821,7 +839,7 @@ app.post('/api/prescribed-workouts/:id/checkin', (req, res) => {
   // Update status
   pw.status = 'Logged';
 
-  // Create completed workout log
+  // Create completed workout log with Pending Review status
   const newLog: WorkoutLog = {
     id: `w_logged_${Date.now()}`,
     traineeId: pw.traineeId,
@@ -830,7 +848,15 @@ app.post('/api/prescribed-workouts/:id/checkin', (req, res) => {
     workoutType: pw.workoutType,
     duration: pw.duration,
     exercises: pw.exercises,
-    notes: notes || `Check-in completed successfully! Coach advice adhered to.`
+    notes: notes || `Check-in completed successfully! Video evidence captured.`,
+    
+    // Trainee feedback telemetry
+    videoUrl: videoUrl || 'https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c054fb1d23eb5d9f07144e5ccb485c64&profile_id=139&oauth2_token_id=57447761',
+    sessionFeedback: sessionFeedback || '',
+    difficulties: difficulties || '',
+    painLevel: painLevel || 'None',
+    generalComments: generalComments || '',
+    status: 'Pending Review'
   };
 
   dbData.workouts.push(newLog);
@@ -839,6 +865,30 @@ app.post('/api/prescribed-workouts/:id/checkin', (req, res) => {
   const trainee = dbData.trainees.find(t => t.id === pw.traineeId || t.userId === pw.traineeId);
   if (trainee) {
     trainee.streakCount += 1;
+  }
+
+  // Notify trainer automatically
+  if (!dbData.notifications) dbData.notifications = [];
+  
+  // Find trainer userId
+  const trainerObj = dbData.trainers.find(t => t.id === pw.trainerId || t.userId === pw.trainerId);
+  if (trainerObj) {
+    dbData.notifications.push({
+      id: 'not_tr_' + Date.now(),
+      userId: trainerObj.userId,
+      title: 'New Video Evidence Uploaded!',
+      message: `Your client ${trainee ? trainee.name : 'Ahmad Ibrahim'} submitted workout proof for: ${pw.workoutType}. Review execution now.`,
+      date: new Date().toISOString().split('T')[0],
+      read: false
+    });
+    dbData.notifications.push({
+      id: 'not_tr_id_' + Date.now(),
+      userId: trainerObj.id,
+      title: 'New Video Evidence Uploaded!',
+      message: `Your client ${trainee ? trainee.name : 'Ahmad Ibrahim'} submitted workout proof for: ${pw.workoutType}. Review execution now.`,
+      date: new Date().toISOString().split('T')[0],
+      read: false
+    });
   }
 
   writeDb();
