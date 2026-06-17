@@ -335,7 +335,10 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
             avatar_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120'
           });
 
-          if (pErr) console.error('Error profile insert:', pErr);
+          if (pErr) {
+            console.error('Supabase Profile Insert Error:', pErr);
+            throw new Error(`Profile creation failed: ${pErr.message}`);
+          }
 
           // 2. Create Trainer Profile
           const { error: tErr } = await supabase.from('trainer_profiles').insert({
@@ -358,7 +361,10 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
             phone_number: trainerPhone
           });
 
-          if (tErr) console.error('Error trainer profile insert:', tErr);
+          if (tErr) {
+            console.error('Supabase Trainer Profile Insert Error:', tErr);
+            throw new Error(`Trainer profile creation failed: ${tErr.message}`);
+          }
 
           // Also write to 'trainers' table so core legacy find-coach searches keep running cleanly!
           const { error: trLegacyErr } = await supabase.from('trainers').insert({
@@ -379,7 +385,9 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
             avatar_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120'
           });
 
-          if (trLegacyErr) console.error('Legacy trainers insert failed:', trLegacyErr);
+          if (trLegacyErr) {
+            console.error('Supabase Legacy Trainers Insert Error:', trLegacyErr);
+          }
 
           onAuthSuccess({
             id: authUserId,
@@ -484,7 +492,10 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
             avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
           });
 
-          if (pErr) console.error('Profile error:', pErr);
+          if (pErr) {
+            console.error('Supabase Profile Insert Error:', pErr);
+            throw new Error(`Profile creation failed: ${pErr.message}`);
+          }
 
           // 2. Create Trainee Profile
           const { error: teErr } = await supabase.from('trainee_profiles').insert({
@@ -496,7 +507,10 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
             current_fitness_level: traineeLevel
           });
 
-          if (teErr) console.error('Trainee profile table error:', teErr);
+          if (teErr) {
+            console.error('Supabase Trainee Profile Insert Error:', teErr);
+            throw new Error(`Trainee profile creation failed: ${teErr.message}`);
+          }
 
           // Also write to legacy 'trainees' so search and chat works
           const { error: legacyTeErr } = await supabase.from('trainees').insert({
@@ -511,7 +525,9 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
             streak_count: 0
           });
 
-          if (legacyTeErr) console.error('Legacy trainee insert error:', legacyTeErr);
+          if (legacyTeErr) {
+            console.error('Supabase Legacy Trainees Insert Error:', legacyTeErr);
+          }
 
           onAuthSuccess({
             id: authUserId,
@@ -610,19 +626,19 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           </div>
 
           {/* Connected state indicators */}
-          <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-4 relative z-10">
+          <div className="mt-8 bg-teal-500/10 border border-teal-500/20 rounded-2xl p-4 relative z-10">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1.5">
                 <span className={`w-2.5 h-2.5 rounded-full ${isSupabaseConfigured ? 'bg-teal-400 animate-pulse' : 'bg-amber-400'}`}></span>
-                <span className="text-[10px] font-black tracking-wider uppercase text-slate-200">Supabase Connection</span>
+                <span className="text-[10px] font-black tracking-wider uppercase text-teal-350">Supabase Connection</span>
               </div>
-              <span className="text-[9px] font-medium text-slate-400 bg-white/10 px-2 py-0.5 rounded-lg">
-                {isSupabaseConfigured ? 'CONNECTED' : 'LOCAL EMULATOR'}
+              <span className="text-[9px] font-bold text-teal-300 bg-teal-505/20 px-2.5 py-0.5 rounded-lg border border-teal-500/30">
+                {isSupabaseConfigured ? 'Connected to Supabase Cloud' : 'LOCAL EMULATOR'}
               </span>
             </div>
-            <p className="text-[9px] text-slate-400 mt-1.5 leading-normal">
+            <p className="text-[9px] text-emerald-300 mt-1.5 leading-normal">
               {isSupabaseConfigured 
-                ? 'Excellent! Remote Supabase environment detected. All user configurations write to live postgres tables.' 
+                ? 'Success! Connected to Supabase Cloud database and Auth services. All operations sync directly with the live database tables.' 
                 : 'Offline sandbox active. All tables will mock successfully in local container memory.'}
             </p>
           </div>
