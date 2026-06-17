@@ -32,6 +32,9 @@ export default function App() {
 
   const [isLiveMode, setIsLiveMode] = useState<boolean>(() => {
     try {
+      if (!isSupabaseConfigured) {
+        return false;
+      }
       return localStorage.getItem('coach_track_mode') === 'live';
     } catch (e) {
       return false;
@@ -39,6 +42,10 @@ export default function App() {
   });
 
   const toggleLiveMode = (live: boolean) => {
+    if (live && (!isSupabaseConfigured || !supabase)) {
+      alert('Supabase is not configured yet! Please define VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY first (for example, in your Netlify site settings or .env file) to unlock Live Supabase Mode.\n\nUntil then, the highly polished offline Demo Sandbox Mode is fully active and ready to use!');
+      return;
+    }
     try {
       localStorage.setItem('coach_track_mode', live ? 'live' : 'sandbox');
     } catch (e) {}
@@ -147,21 +154,54 @@ export default function App() {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
             console.log('Session restored from Supabase');
-            const { data: userProfile, error: profErr } = await supabase
+            let { data: userProfile, error: profErr } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
               .single();
             
+            if (profErr && (profErr.code === 'PGRST116' || profErr.message?.includes('coerce') || profErr.message?.includes('zero rows'))) {
+              console.log('Session restore: Profile record missing. Healing...');
+              const { data: maybeTrainer } = await supabase
+                .from('trainer_profiles')
+                .select('id')
+                .eq('id', session.user.id)
+                .maybeSingle();
+
+              const isTrainerByTable = !!maybeTrainer;
+              const isTrainerByEmail = session.user.email?.toLowerCase().includes('trainer') || session.user.email?.toLowerCase().includes('sarah');
+              const determinedRole = (isTrainerByTable || isTrainerByEmail) ? 'trainer' : 'trainee';
+
+              const { data: newProf, error: insertErr } = await supabase
+                .from('profiles')
+                .insert({
+                  id: session.user.id,
+                  email: session.user.email || '',
+                  role: determinedRole,
+                  name: session.user.user_metadata?.name || (determinedRole === 'trainer' ? 'Coach' : 'Trainee Athlete'),
+                  avatar_url: determinedRole === 'trainer'
+                    ? 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120'
+                    : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
+                })
+                .select()
+                .single();
+
+              if (!insertErr && newProf) {
+                userProfile = newProf;
+                profErr = null;
+              }
+            }
+
             if (!profErr && userProfile) {
+              const mappedRole = (userProfile.role ? userProfile.role.toUpperCase() : 'TRAINEE') as UserRole;
               setCurrentUser({
                 id: session.user.id,
                 email: userProfile.email,
-                role: userProfile.role as UserRole,
+                role: mappedRole,
                 name: userProfile.name || 'User',
                 avatarUrl: userProfile.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
               });
-              if (userProfile.role === UserRole.TRAINER) {
+              if (mappedRole === UserRole.TRAINER) {
                 setActiveTab('trainer-dashboard');
               } else {
                 setActiveTab('trainee-dashboard');
@@ -419,27 +459,27 @@ export default function App() {
           <InvoicesList traineeId={currentUser.id} />
         )}
 
-        {activeTab === 'trainer-dashboard' && currentUser && trainerProfile && (
+        {activeTab === 'trainer-dashboard' && currentUser && (
           <TrainerDashboard trainerProfile={trainerProfile} activeTab={activeTab} />
         )}
 
         {/* Physical Session History Page routing */}
-        {activeTab === 'session-history' && currentUser && trainerProfile && (
+        {activeTab === 'session-history' && currentUser && (
           <TrainerDashboard trainerProfile={trainerProfile} activeTab={activeTab} />
         )}
 
         {/* Client Management Page route split */}
-        {activeTab === 'client-management' && currentUser && trainerProfile && (
+        {activeTab === 'client-management' && currentUser && (
           <TrainerDashboard trainerProfile={trainerProfile} activeTab={activeTab} />
         )}
 
         {/* Coaching Hub Page route split */}
-        {activeTab === 'coaching-hub' && currentUser && trainerProfile && (
+        {activeTab === 'coaching-hub' && currentUser && (
           <TrainerDashboard trainerProfile={trainerProfile} activeTab={activeTab} />
         )}
 
         {/* Trainer Revenue Page route split */}
-        {activeTab === 'revenue' && currentUser && trainerProfile && (
+        {activeTab === 'revenue' && currentUser && (
           <TrainerDashboard trainerProfile={trainerProfile} activeTab={activeTab} />
         )}
 

@@ -33,9 +33,10 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { TrainerProfile, TraineeProfile, WorkoutLog, NutritionLog, BookingSession, Payment, Invoice } from '../types';
 import { dbService } from '../lib/dbService';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface TrainerDashboardProps {
-  trainerProfile: TrainerProfile;
+  trainerProfile?: any | TrainerProfile;
   activeTab?: string;
 }
 
@@ -74,7 +75,234 @@ export default function TrainerDashboard(props: TrainerDashboardProps) {
   );
 }
 
-export function TrainerDashboardInner({ trainerProfile, activeTab = 'trainer-dashboard' }: TrainerDashboardProps) {
+export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, activeTab = 'trainer-dashboard' }: TrainerDashboardProps) {
+  // Load profile from profiles and trainer_profiles using supabase.auth.getUser()
+  const [loadingProfile, setLoadingProfile] = useState<boolean>(true);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [resolvedTrainerProfile, setResolvedTrainerProfile] = useState<any>(null);
+  const [isOnboarding, setIsOnboarding] = useState<boolean>(false);
+
+  const [onboardDiscipline, setOnboardDiscipline] = useState('HIIT & Calorie Burning');
+  const [onboardLocation, setOnboardLocation] = useState('Kuala Lumpur');
+  const [onboardType, setOnboardType] = useState('Freelance');
+  const [onboardExperience, setOnboardExperience] = useState('3');
+  const [onboardPlan, setOnboardPlan] = useState('Starter Trainer Plan');
+  const [onboardPhone, setOnboardPhone] = useState('');
+  const [onboardVerification, setOnboardVerification] = useState('Pending Verification');
+  const [savingOnboard, setSavingOnboard] = useState(false);
+
+  const isSupActive = useMemo(() => {
+    try {
+      const mode = localStorage.getItem('coach_track_mode');
+      return mode === 'live' && isSupabaseConfigured && !!supabase;
+    } catch (e) {
+      return false;
+    }
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      setLoadingProfile(true);
+      setProfileError(null);
+      
+      console.log('Fetching logged-in user profile...');
+      if (isSupActive) {
+        const { data: { user }, error: authErr } = await supabase.auth.getUser();
+        if (authErr) {
+          throw authErr;
+        }
+        if (!user) {
+          throw new Error("No authenticated Supabase session found.");
+        }
+        console.log("Current auth user ID:", user.id);
+
+        // Fetch from profiles
+        const { data: prof, error: profErr } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        console.log("Loaded profile row:", prof);
+
+        // Fetch from trainer_profiles
+        const { data: tProf, error: tProfErr } = await supabase
+          .from('trainer_profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        console.log("Loaded trainer profile row:", tProf);
+
+        if (tProf) {
+          const combined = {
+            id: user.id,
+            userId: user.id,
+            name: prof?.name || user.user_metadata?.name || 'Coach',
+            email: prof?.email || user.email || '',
+            avatarUrl: prof?.avatar_url || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120',
+            discipline: tProf.discipline || 'Not set',
+            experienceYears: Number(tProf.experience_years) || 0,
+            location: tProf.location || 'Not set',
+            freelanceStatus: tProf.freelance_status || 'Not set',
+            pricePerHour: Number(tProf.price_per_hour) || 0,
+            bio: tProf.bio || '',
+            selectedPlan: tProf.selected_plan || 'Starter',
+            traineeLimit: tProf.trainee_limit || 5,
+            subscriptionStatus: tProf.subscription_status || 'Active',
+            phoneNumber: tProf.phone_number || 'Not set',
+            verificationStatus: tProf.verification_status || 'Pending Verification',
+            certificates: tProf.certificates || [],
+            idProofUrl: tProf.id_proof_url || ''
+          };
+          setResolvedTrainerProfile(combined);
+          setIsOnboarding(false);
+          console.log("Dashboard render mode: real data");
+        } else {
+          setIsOnboarding(true);
+          console.log("Dashboard render mode: onboarding");
+        }
+      } else {
+        // Offline / Sandbox Demo mode
+        console.log("Dashboard render mode: default sandbox");
+        setResolvedTrainerProfile(initialTrainerProfile || {
+          id: 'tr_sarah',
+          userId: 'u_sarah',
+          name: 'Sarah Tan',
+          discipline: 'Yoga & Pilates Instructor',
+          experienceYears: 6,
+          location: 'SS15, Subang Jaya',
+          freelanceStatus: 'Freelance',
+          pricePerHour: 110,
+          bio: 'Dedicated to helping office workers improve flexibility, core strength, and mindfulness near Subang Jaya.',
+          selectedPlan: 'Starter',
+          phoneNumber: '+60 12-345 6789',
+          verificationStatus: 'Verified',
+          traineeLimit: 5
+        });
+        setIsOnboarding(false);
+      }
+    } catch (err: any) {
+      console.error("Failed to load trainer profile:", err);
+      setProfileError("Failed to load trainer profile. Please try again. Details: " + (err.message || err));
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProfile();
+  }, [initialTrainerProfile, isSupActive]);
+
+  const handleSaveOnboarding = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSavingOnboard(true);
+      if (!isSupActive) {
+        setIsOnboarding(false);
+        setSavingOnboard(false);
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No authenticated session found.");
+
+      const planLower = onboardPlan.toLowerCase();
+      let limit = 5;
+      let price = 0;
+      if (planLower.includes('growth')) {
+        limit = 20;
+        price = 149;
+      } else if (planLower.includes('pro')) {
+        limit = 50;
+        price = 299;
+      }
+
+      // Check if profile exists; insert if not
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!existingProfile) {
+        await supabase.from('profiles').insert({
+          id: user.id,
+          email: user.email || '',
+          role: 'trainer',
+          name: user.user_metadata?.name || 'Trainer',
+          avatar_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120'
+        });
+      }
+
+      // 1. Insert into trainer_profiles
+      const { error: tErr } = await supabase.from('trainer_profiles').insert({
+        id: user.id,
+        discipline: onboardDiscipline,
+        experience_years: Number(onboardExperience),
+        location: onboardLocation,
+        freelance_status: onboardType,
+        price_per_hour: onboardDiscipline.toLowerCase().includes('yoga') ? 110 : 130,
+        bio: `${onboardDiscipline} trainer based in ${onboardLocation}.`,
+        selected_plan: onboardPlan,
+        trainee_limit: limit,
+        subscription_price: price,
+        subscription_status: 'Active',
+        subscription_start_date: new Date().toISOString().split('T')[0],
+        subscription_renewal_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        verification_status: onboardVerification,
+        certificates: ['Fitness license'],
+        id_proof_url: 'Self-certified onboarding',
+        phone_number: onboardPhone
+      });
+
+      if (tErr) throw tErr;
+
+      // 2. Insert into trainers for legacy searches
+      await supabase.from('trainers').insert({
+        id: `tr_${user.id.substring(0, 10)}`,
+        userId: user.id,
+        name: user.user_metadata?.name || user.email || 'Trainer',
+        discipline: onboardDiscipline,
+        experience_years: Number(onboardExperience),
+        location: onboardLocation,
+        freelance_status: onboardType,
+        price_per_hour: onboardDiscipline.toLowerCase().includes('yoga') ? 110 : 130,
+        bio: `${onboardDiscipline} trainer based in ${onboardLocation}.`,
+        lat: 3.0792,
+        lng: 101.5950,
+        verified: onboardVerification.includes('Verified'),
+        avatar_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120'
+      });
+
+      triggerToast("Trainer profile completed successfully!");
+      // Reload profile
+      await loadProfile();
+    } catch (err: any) {
+      console.error("Failed to save onboarding profile:", err);
+      alert("Error saving trainer profile: " + err.message);
+    } finally {
+      setSavingOnboard(false);
+    }
+  };
+
+  const p = resolvedTrainerProfile || {
+    id: 'unknown-id',
+    name: 'Trainer',
+    email: 'trainer@coachtrack.my',
+    discipline: 'Not set',
+    location: 'Not set',
+    experienceYears: 0,
+    freelanceStatus: 'Not set',
+    pricePerHour: 0,
+    bio: '',
+    selectedPlan: 'Not set',
+    phoneNumber: 'Not set',
+    verificationStatus: 'Pending Verification'
+  };
+
+  const trainerProfile = p;
+
   // Lists
   const [trainees, setTrainees] = useState<TraineeProfile[]>([]);
   const [workouts, setWorkouts] = useState<WorkoutLog[]>([]);
@@ -361,63 +589,83 @@ export function TrainerDashboardInner({ trainerProfile, activeTab = 'trainer-das
 
   const fetchTrainerData = async () => {
     try {
-      // Bookings related to this instructor
-      const dataBk = await dbService.getBookings({ trainerId: trainerProfile.id });
-      setBookings(dataBk);
+      if (isSupActive) {
+        // Bookings related to this instructor
+        const dataBk = await dbService.getBookings({ trainerId: trainerProfile.id });
+        setBookings(dataBk || []);
 
-      // Workouts logged by clients
-      const dataWorkouts = await dbService.getWorkouts({ trainerId: trainerProfile.id });
-      setWorkouts(dataWorkouts);
+        // Workouts logged by clients
+        const dataWorkouts = await dbService.getWorkouts({ trainerId: trainerProfile.id });
+        setWorkouts(dataWorkouts || []);
 
-      // Get all assigned trainees
-      const dataTr = await dbService.getTraineesForTrainer(trainerProfile.id);
-      if (dataTr && dataTr.length > 0) {
-        setTrainees(dataTr);
-      } else {
-        const dataSingle = await dbService.getTraineeProfile('u_ahmad');
-        if (dataSingle) setTrainees([dataSingle]);
-      }
+        // Get all assigned trainees
+        const dataTr = await dbService.getTraineesForTrainer(trainerProfile.id);
+        setTrainees(dataTr || []);
 
-      // Payments from backend
-      const dataPay = await dbService.getPayments({ trainerId: trainerProfile.id });
-      setPayments(dataPay);
-      if (dataPay && dataPay.length > 0) {
-        const mappedBackendPayments = dataPay.map((p: any) => {
-          const traineeInfo = (dataTr || []).find((t: any) => t.id === p.traineeId) || { name: 'Ahmad bin Ibrahim', email: 'ahmad@coachtrack.my' };
-          return {
-            id: p.id,
-            traineeName: traineeInfo.name,
-            traineeId: p.traineeId,
-            packageName: p.packageName || p.itemDescription || 'Monthly Coaching Plan',
-            packageType: (p.packageName || p.itemDescription || '').toLowerCase().includes('monthly') ? 'Monthly' : 'Single',
-            amount: p.amount,
-            dueDate: p.dueDate || '2026-06-25',
-            status: p.status || 'Pending',
-            month: 'June 2026',
-            invoiceNo: p.invoiceNo || `COACH-2026-${String(Math.floor(Math.random() * 9000 + 1000))}`,
-            email: traineeInfo.email || 'ahmad@coachtrack.my'
-          };
-        });
-
-        setBillingList(prev => {
-          const combined = [...mappedBackendPayments];
-          prev.forEach(item => {
-            if (!combined.some(c => c.id === item.id)) {
-              combined.push(item);
-            }
+        // Payments from backend
+        const dataPay = await dbService.getPayments({ trainerId: trainerProfile.id });
+        setPayments(dataPay || []);
+        if (dataPay && dataPay.length > 0) {
+          const mappedBackendPayments = dataPay.map((p: any) => {
+            const traineeInfo = (dataTr || []).find((t: any) => t.id === p.traineeId) || { name: 'Ahmad bin Ibrahim', email: 'ahmad@coachtrack.my' };
+            return {
+              id: p.id,
+              traineeName: traineeInfo.name,
+              traineeId: p.traineeId,
+              packageName: p.packageName || p.itemDescription || 'Monthly Coaching Plan',
+              packageType: (p.packageName || p.itemDescription || '').toLowerCase().includes('monthly') ? 'Monthly' : 'Single',
+              amount: p.amount,
+              dueDate: p.dueDate || '2026-06-25',
+              status: p.status || 'Pending',
+              month: 'June 2026',
+              invoiceNo: p.invoiceNo || `COACH-2026-${String(Math.floor(Math.random() * 9000 + 1000))}`,
+              email: traineeInfo.email || 'ahmad@coachtrack.my'
+            };
           });
-          return combined;
-        });
+          setBillingList(mappedBackendPayments);
+        } else {
+          setBillingList([]);
+        }
+
+        // Fetch trainer invitations
+        const dataInv = await dbService.getInvitations({ trainerId: trainerProfile.id });
+        setTrainerInvitations(dataInv || []);
+
+        setNutrition([]);
+      } else {
+        // Demo sandbox mode - Fallback to demo items
+        const dataBk = await dbService.getBookings({ trainerId: trainerProfile.id });
+        setBookings(dataBk);
+
+        const dataWorkouts = await dbService.getWorkouts({ trainerId: trainerProfile.id });
+        setWorkouts(dataWorkouts);
+
+        const dataTr = await dbService.getTraineesForTrainer(trainerProfile.id);
+        if (dataTr && dataTr.length > 0) {
+          setTrainees(dataTr);
+        } else {
+          const dataSingle = await dbService.getTraineeProfile('u_ahmad');
+          if (dataSingle) setTrainees([dataSingle]);
+        }
+
+        const dataPay = await dbService.getPayments({ trainerId: trainerProfile.id });
+        setPayments(dataPay);
+        
+        setBillingList([
+          { id: "pay_1", traineeName: "Ahmad bin Ibrahim", traineeId: "te_ahmad", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-06-05", status: "Paid", month: "June 2026", invoiceNo: "INV-MY-0098", email: "ahmad@coachtrack.my" },
+          { id: "pay_2", traineeName: "Ahmad bin Ibrahim", traineeId: "te_ahmad", packageName: "Single Slot Fee", packageType: "Single", amount: 150, dueDate: "2026-06-12", status: "Pending", month: "June 2026", invoiceNo: "INV-MY-0102", email: "ahmad@coachtrack.my" },
+          { id: "pay_3", traineeName: "Mei Ling Tan", traineeId: "te_ling", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-06-25", status: "Pending", month: "June 2026", invoiceNo: "INV-MY-0105", email: "ling@coachtrack.my" },
+          { id: "pay_4", traineeName: "Muhammad Faizul", traineeId: "te_faizul", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-05-28", status: "Overdue", month: "May 2026", invoiceNo: "INV-MY-0081", email: "faizul@coachtrack.my" },
+          { id: "pay_5", traineeName: "Mei Ling Tan", traineeId: "te_ling", packageName: "Single Slot Fee", packageType: "Single", amount: 150, dueDate: "2026-05-15", status: "Paid", month: "May 2026", invoiceNo: "INV-MY-0075", email: "ling@coachtrack.my" },
+          { id: "pay_6", traineeName: "Ahmad bin Ibrahim", traineeId: "te_ahmad", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-05-02", status: "Paid", month: "May 2026", invoiceNo: "INV-MY-0062", email: "ahmad@coachtrack.my" }
+        ]);
+
+        const dataInv = await dbService.getInvitations({ trainerId: trainerProfile.id });
+        setTrainerInvitations(dataInv);
+
+        const dataNutr = await dbService.getNutrition('te_ahmad');
+        setNutrition(dataNutr);
       }
-
-      // Fetch trainer invitations
-      const dataInv = await dbService.getInvitations({ trainerId: trainerProfile.id });
-      setTrainerInvitations(dataInv);
-
-      // Populate nutrition from Ahmad bin Ibrahim
-      const dataNutr = await dbService.getNutrition('te_ahmad');
-      setNutrition(dataNutr);
-
     } catch (e) {
       console.error('Error loading coach dashboard data:', e);
     }
@@ -1053,6 +1301,165 @@ export function TrainerDashboardInner({ trainerProfile, activeTab = 'trainer-das
   const totalInvoiced = paidSumRevenue + pendingSumRevenue + overdueSumRevenue;
   const singleSessionsCount = billingList.filter(b => b.packageType === 'Single').length;
   const monthlyPacksCount = billingList.filter(b => b.packageType === 'Monthly').length;
+
+  if (loadingProfile) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[500px] p-8 space-y-4 font-sans bg-slate-100/50 rounded-2xl border border-slate-200">
+        <RefreshCw className="w-10 h-10 text-indigo-700 animate-spin" />
+        <p className="text-sm font-semibold text-slate-800">Loading trainer profile...</p>
+      </div>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <div className="max-w-md mx-auto my-12 p-6 bg-rose-50 border border-rose-200 rounded-2xl text-center shadow-lg font-sans">
+        <ShieldAlert className="w-12 h-12 text-rose-500 mx-auto mb-3 animate-bounce" />
+        <h3 className="text-base font-bold text-slate-900 mb-2">Profile Loading Failed</h3>
+        <p className="text-xs text-rose-700 mb-4">{profileError}</p>
+        <button 
+          onClick={loadProfile}
+          className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl uppercase tracking-wider cursor-pointer"
+        >
+          Troubleshoot or Try Again
+        </button>
+      </div>
+    );
+  }
+
+  if (isOnboarding) {
+    return (
+      <div className="max-w-2xl mx-auto my-8 p-8 bg-white border border-slate-200 rounded-3xl shadow-xl font-sans">
+        <div className="text-center mb-8">
+          <div className="inline-flex p-3 bg-indigo-50 text-indigo-700 rounded-full mb-3">
+            <ClipboardList className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-black font-display text-slate-900">Complete Your Trainer Profile</h2>
+          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+            Welcome to CoachTrack! We need a few more details to set up your business command center and roster live fitness plans.
+          </p>
+        </div>
+
+        <form onSubmit={handleSaveOnboarding} className="space-y-6 text-left">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-2xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
+                Discipline / Specialty
+              </label>
+              <input 
+                type="text" 
+                value={onboardDiscipline} 
+                onChange={(e) => setOnboardDiscipline(e.target.value)}
+                placeholder="e.g., HIIT & Calorie Burning, Strength Training"
+                required
+                className="w-full text-xs font-medium px-4 py-3 bg-slate-50 border border-slate-250 rounded-xl focus:border-indigo-600 text-slate-800 font-sans"
+              />
+            </div>
+
+            <div>
+              <label className="block text-2xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
+                Location
+              </label>
+              <input 
+                type="text" 
+                value={onboardLocation} 
+                onChange={(e) => setOnboardLocation(e.target.value)}
+                placeholder="e.g., Subang Jaya, PJ, KL"
+                required
+                className="w-full text-xs font-medium px-4 py-3 bg-slate-50 border border-slate-250 rounded-xl focus:border-indigo-650 text-slate-800 font-sans"
+              />
+            </div>
+
+            <div>
+              <label className="block text-2xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
+                Trainer Type (Freelance / Studio)
+              </label>
+              <select 
+                value={onboardType} 
+                onChange={(e) => setOnboardType(e.target.value)}
+                className="w-full text-xs font-semibold px-4 py-3 bg-slate-50 border border-slate-250 rounded-xl focus:border-indigo-600 text-slate-800 font-sans"
+              >
+                <option value="Freelance">Freelance Personal Trainer</option>
+                <option value="Full-Time Club Trainer">Full-Time Club Trainer</option>
+                <option value="Studio Owner">Commercial Studio Owner</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-2xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
+                Years of Experience
+              </label>
+              <input 
+                type="number" 
+                value={onboardExperience} 
+                onChange={(e) => setOnboardExperience(e.target.value)}
+                min="0"
+                max="50"
+                required
+                className="w-full text-xs font-medium px-4 py-3 bg-slate-50 border border-slate-250 rounded-xl focus:border-indigo-600 text-slate-800 font-sans"
+              />
+            </div>
+
+            <div>
+              <label className="block text-2xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
+                Selected Trainer Plan
+              </label>
+              <select 
+                value={onboardPlan} 
+                onChange={(e) => setOnboardPlan(e.target.value)}
+                className="w-full text-xs font-semibold px-4 py-3 bg-slate-50 border border-slate-250 rounded-xl focus:border-indigo-600 text-slate-800 font-sans"
+              >
+                <option value="Starter Trainer Plan">Starter Trainer Plan (Up to 5 clients • RM0)</option>
+                <option value="Growth Trainer Plan">Growth Trainer Plan (Up to 20 clients • RM149)</option>
+                <option value="Pro Trainer Plan">Pro Trainer Plan (Up to 50 clients • RM299)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-2xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
+                Phone Number
+              </label>
+              <input 
+                type="tel" 
+                value={onboardPhone} 
+                onChange={(e) => setOnboardPhone(e.target.value)}
+                placeholder="e.g., +60 14-948 4056"
+                required
+                className="w-full text-xs font-medium px-4 py-3 bg-slate-50 border border-slate-250 rounded-xl focus:border-[#001F3F] text-slate-800 font-sans"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-2xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
+                Verification Status
+              </label>
+              <input 
+                type="text" 
+                value={onboardVerification} 
+                readOnly
+                className="w-full text-xs font-semibold px-4 py-3 bg-slate-100 border border-slate-200 text-slate-500 rounded-xl font-sans cursor-not-allowed select-none"
+              />
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={savingOnboard}
+            className="w-full mt-4 py-4 bg-indigo-900 hover:bg-slate-900 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition duration-150 ease-in-out cursor-pointer flex items-center justify-center gap-2"
+          >
+            {savingOnboard ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Saving Profile...</span>
+              </>
+            ) : (
+              <span>Save Trainer Profile</span>
+            )}
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-slate-50 min-h-screen pb-24 pt-6 text-left relative">
@@ -2161,14 +2568,14 @@ export function TrainerDashboardInner({ trainerProfile, activeTab = 'trainer-das
                   <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-1">Total Active Clients</span>
                   <div className="flex justify-between items-baseline mt-1.5 animate-pulse">
                     <span className="text-2xl font-black text-slate-800 font-display">
-                      {trainees.length || 6}
+                      {isSupActive ? trainees.length : (trainees.length || 6)}
                     </span>
                     <span className="text-[10px] text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full font-bold border border-teal-200 uppercase font-sans">
                       👥 Active
                     </span>
                   </div>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-2 font-sans">Verified Subang Jaya trainees</p>
+                <p className="text-[10px] text-slate-400 mt-2 font-sans">Verified active trainee roster</p>
               </div>
 
               {/* Card 2: Monthly Revenue */}
@@ -2196,7 +2603,7 @@ export function TrainerDashboardInner({ trainerProfile, activeTab = 'trainer-das
                       RM {(pendingSumRevenue + overdueSumRevenue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                     <span className="text-[10px] text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full font-bold border border-rose-250 text-2xs">
-                      {billingList.filteredMock ? 2 : billingList.filter(b => b.status === 'Overdue').length} Overdue
+                      {isSupActive ? billingList.filter(b => b.status === 'Overdue').length : 2} Overdue
                     </span>
                   </div>
                 </div>
@@ -2208,7 +2615,9 @@ export function TrainerDashboardInner({ trainerProfile, activeTab = 'trainer-das
                 <div>
                   <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-1">Upcoming Sessions Today</span>
                   <div className="flex justify-between items-baseline mt-1.5">
-                    <span className="text-2xl font-black text-slate-800 font-display">3</span>
+                    <span className="text-2xl font-black text-slate-800 font-display">
+                      {isSupActive ? bookings.filter(b => b.status === "Confirmed" || b.status?.toLowerCase().includes("confirm") || b.status === "Upcoming").length : 3}
+                    </span>
                     <span className="text-[10px] text-indigo-650 bg-indigo-50 px-2 py-0.5 rounded-full font-bold border border-indigo-250 font-sans">
                       📅 Scheduled
                     </span>
@@ -2239,77 +2648,120 @@ export function TrainerDashboardInner({ trainerProfile, activeTab = 'trainer-das
                   </div>
 
                   <div className="space-y-4 font-sans">
-                    {/* Ahmad Ibrahim */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-101 border-slate-100 rounded-xl transition duration-150 hover:bg-slate-100">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-[#001F3F]/10 text-[#001F3F] font-bold w-12 h-12 rounded-xl flex flex-col justify-center items-center shrink-0">
-                          <span className="text-[10px] tracking-tight leading-none text-slate-505 font-mono">10:00</span>
-                          <span className="text-xs uppercase font-black font-mono">AM</span>
+                    {isSupActive ? (
+                      bookings.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 px-4 text-center border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
+                          <Calendar className="w-8 h-8 text-slate-300 mb-2.5" />
+                          <p className="text-xs font-bold text-slate-600">No sessions scheduled yet.</p>
+                          <p className="text-[10px] text-slate-400 mt-1">Book sessions with your trainees to organize your calendar.</p>
                         </div>
-                        <div>
-                          <strong className="text-slate-855 text-sm block">Ahmad Ibrahim</strong>
-                          <span className="text-[10px] text-slate-450 flex items-center gap-1 mt-0.5 font-sans">
-                            📍 SS15 Studio • Selangor
-                          </span>
+                      ) : (
+                        bookings.map((b: any) => {
+                          const time = b.timeSlot || b.time_slot || '10:00 AM';
+                          const title = b.title || b.discipline || 'Personal Training Session';
+                          const traineeName = b.traineeName || 'Trainee';
+                          const loc = b.location || 'SS15 Studio';
+                          return (
+                            <div key={b.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-100 rounded-xl transition duration-150 hover:bg-slate-100 font-sans">
+                              <div className="flex items-center gap-3">
+                                <div className="bg-[#001F3F]/10 text-[#001F3F] font-bold w-12 h-12 rounded-xl flex flex-col justify-center items-center shrink-0">
+                                  <span className="text-[10px] tracking-tight leading-none text-slate-505 font-mono">{time.split(' ')[0] || '10:00'}</span>
+                                  <span className="text-xs uppercase font-black font-mono">{time.split(' ')[1] || 'AM'}</span>
+                                </div>
+                                <div>
+                                  <strong className="text-slate-855 text-sm block">{traineeName}</strong>
+                                  <span className="text-[10px] text-slate-450 flex items-center gap-1 mt-0.5">
+                                    📍 {loc}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="mt-2 sm:mt-0 flex items-center justify-between w-full sm:w-auto gap-4">
+                                <span className="text-2xs text-[#001F3F] bg-[#001F3F]/10 px-2.5 py-1 rounded-md font-extrabold uppercase font-sans">
+                                  {title}
+                                </span>
+                                <span className={`text-2xs font-bold px-2 py-0.5 rounded ${b.status === 'Completed' ? 'text-blue-800 bg-blue-105 bg-blue-100/60' : 'text-emerald-800 bg-emerald-100/60'}`}>
+                                  {b.status || 'Confirmed'} ✓
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )
+                    ) : (
+                      <>
+                        {/* Ahmad Ibrahim */}
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-101 border-slate-100 rounded-xl transition duration-150 hover:bg-slate-100">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-[#001F3F]/10 text-[#001F3F] font-bold w-12 h-12 rounded-xl flex flex-col justify-center items-center shrink-0">
+                              <span className="text-[10px] tracking-tight leading-none text-slate-505 font-mono">10:00</span>
+                              <span className="text-xs uppercase font-black font-mono">AM</span>
+                            </div>
+                            <div>
+                              <strong className="text-slate-855 text-sm block">Ahmad Ibrahim</strong>
+                              <span className="text-[10px] text-slate-450 flex items-center gap-1 mt-0.5 font-sans">
+                                📍 SS15 Studio • Selangor
+                              </span>
+                            </div>
+                          </div>
+                          <div className="mt-2 sm:mt-0 flex items-center justify-between w-full sm:w-auto gap-4 font-sans">
+                            <span className="text-2xs text-[#001F3F] bg-[#001F3F]/10 px-2.5 py-1 rounded-md font-extrabold uppercase font-sans">
+                              HIIT Core Strength
+                            </span>
+                            <span className="text-2xs font-bold text-emerald-850 bg-emerald-100/60 px-2 py-0.5 rounded font-sans">
+                              Confirmed ✓
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="mt-2 sm:mt-0 flex items-center justify-between w-full sm:w-auto gap-4 font-sans">
-                        <span className="text-2xs text-[#001F3F] bg-[#001F3F]/10 px-2.5 py-1 rounded-md font-extrabold uppercase font-sans">
-                          HIIT Core Strength
-                        </span>
-                        <span className="text-2xs font-bold text-emerald-850 bg-emerald-100/60 px-2 py-0.5 rounded font-sans">
-                          Confirmed ✓
-                        </span>
-                      </div>
-                    </div>
 
-                    {/* Mei Ling Tan */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-100 rounded-xl transition duration-150 hover:bg-slate-100 font-sans">
-                      <div className="flex items-center gap-3 font-sans">
-                        <div className="bg-[#001F3F]/10 text-[#001F3F] font-bold w-12 h-12 rounded-xl flex flex-col justify-center items-center shrink-0 font-sans">
-                          <span className="text-[10px] tracking-tight leading-none text-slate-505 font-mono">02:30</span>
-                          <span className="text-xs uppercase font-black font-mono">PM</span>
+                        {/* Mei Ling Tan */}
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-100 rounded-xl transition duration-150 hover:bg-slate-100 font-sans">
+                          <div className="flex items-center gap-3 font-sans">
+                            <div className="bg-[#001F3F]/10 text-[#001F3F] font-bold w-12 h-12 rounded-xl flex flex-col justify-center items-center shrink-0 font-sans">
+                              <span className="text-[10px] tracking-tight leading-none text-slate-505 font-mono">02:30</span>
+                              <span className="text-xs uppercase font-black font-mono">PM</span>
+                            </div>
+                            <div>
+                              <strong className="text-slate-855 text-sm block font-sans font-bold">Mei Ling Tan</strong>
+                              <span className="text-[10px] text-slate-450 flex items-center gap-1 mt-0.5 font-sans">
+                                📍 Subang Gym • Selangor
+                              </span>
+                            </div>
+                          </div>
+                          <div className="mt-2 sm:mt-0 flex items-center justify-between w-full sm:w-auto gap-4 font-sans">
+                            <span className="text-2xs text-[#001F3F] bg-[#001F3F]/5 px-2.5 py-1 rounded-md font-extrabold uppercase">
+                              Pilates Slimming
+                            </span>
+                            <span className="text-2xs font-bold text-emerald-850 bg-emerald-100/60 px-2 py-0.5 rounded">
+                              Confirmed ✓
+                            </span>
+                          </div>
                         </div>
-                        <div>
-                          <strong className="text-slate-855 text-sm block font-sans font-bold">Mei Ling Tan</strong>
-                          <span className="text-[10px] text-slate-450 flex items-center gap-1 mt-0.5 font-sans">
-                            📍 Subang Gym • Selangor
-                          </span>
-                        </div>
-                      </div>
-                      <div className="mt-2 sm:mt-0 flex items-center justify-between w-full sm:w-auto gap-4 font-sans">
-                        <span className="text-2xs text-[#001F3F] bg-[#001F3F]/5 px-2.5 py-1 rounded-md font-extrabold uppercase">
-                          Pilates Slimming
-                        </span>
-                        <span className="text-2xs font-bold text-emerald-850 bg-emerald-100/60 px-2 py-0.5 rounded">
-                          Confirmed ✓
-                        </span>
-                      </div>
-                    </div>
 
-                    {/* Amy Wong */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-100 rounded-xl transition duration-150 hover:bg-slate-100 font-sans">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-[#001F3F]/10 text-[#001F3F] font-bold w-12 h-12 rounded-xl flex flex-col justify-center items-center shrink-0">
-                          <span className="text-[10px] tracking-tight leading-none text-slate-505 font-mono">05:00</span>
-                          <span className="text-xs uppercase font-black font-mono">PM</span>
+                        {/* Amy Wong */}
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-100 rounded-xl transition duration-150 hover:bg-slate-100 font-sans">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-[#001F3F]/10 text-[#001F3F] font-bold w-12 h-12 rounded-xl flex flex-col justify-center items-center shrink-0">
+                              <span className="text-[10px] tracking-tight leading-none text-slate-505 font-mono">05:00</span>
+                              <span className="text-xs uppercase font-black font-mono">PM</span>
+                            </div>
+                            <div>
+                              <strong className="text-slate-855 text-sm block">Amy Wong</strong>
+                              <span className="text-[10px] text-slate-450 flex items-center gap-1 mt-0.5">
+                                📍 PJ Peak Performance
+                              </span>
+                            </div>
+                          </div>
+                          <div className="mt-2 sm:mt-0 flex items-center justify-between w-full sm:w-auto gap-4">
+                            <span className="text-2xs text-indigo-950 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-md font-extrabold uppercase">
+                              Athletic Strength
+                            </span>
+                            <span className="text-2xs font-bold text-emerald-850 bg-emerald-100/60 px-2 py-0.5 rounded font-sans">
+                              Confirmed ✓
+                            </span>
+                          </div>
                         </div>
-                        <div>
-                          <strong className="text-slate-855 text-sm block">Amy Wong</strong>
-                          <span className="text-[10px] text-slate-450 flex items-center gap-1 mt-0.5">
-                            📍 PJ Peak Performance
-                          </span>
-                        </div>
-                      </div>
-                      <div className="mt-2 sm:mt-0 flex items-center justify-between w-full sm:w-auto gap-4">
-                        <span className="text-2xs text-indigo-950 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-md font-extrabold uppercase">
-                          Athletic Strength
-                        </span>
-                        <span className="text-2xs font-bold text-emerald-850 bg-emerald-100/60 px-2 py-0.5 rounded font-sans">
-                          Confirmed ✓
-                        </span>
-                      </div>
-                    </div>
+                      </>
+                    )}
                   </div>
                 </div>
 

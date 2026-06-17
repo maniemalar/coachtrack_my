@@ -177,23 +177,59 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
         if (data?.user) {
           console.log('Login success');
           // Fetch demographic from profiles
-          const { data: prof, error: profErr } = await supabase
+          let { data: prof, error: profErr } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', data.user.id)
             .single();
 
-          if (profErr) {
+          if (profErr && (profErr.code === 'PGRST116' || profErr.message?.includes('coerce') || profErr.message?.includes('zero rows'))) {
+            console.log('Profile record missing for existing auth user during login. Healing profile...');
+            
+            // Check if they are a trainer by checking trainer_profiles table
+            const { data: maybeTrainer } = await supabase
+              .from('trainer_profiles')
+              .select('id')
+              .eq('id', data.user.id)
+              .maybeSingle();
+
+            const isTrainerByTable = !!maybeTrainer;
+            const isTrainerByEmail = data.user.email?.toLowerCase().includes('trainer') || data.user.email?.toLowerCase().includes('sarah');
+            const determinedRole = (isTrainerByTable || isTrainerByEmail) ? 'trainer' : 'trainee';
+
+            // Insert matching profile row to heal the schema mismatch
+            const { data: newProf, error: insertErr } = await supabase
+              .from('profiles')
+              .insert({
+                id: data.user.id,
+                email: data.user.email || '',
+                role: determinedRole,
+                name: data.user.user_metadata?.name || (determinedRole === 'trainer' ? 'Coach' : 'Trainee Athlete'),
+                avatar_url: determinedRole === 'trainer'
+                  ? 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120'
+                  : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
+              })
+              .select()
+              .single();
+
+            if (insertErr) {
+              console.error('Failed to auto-heal missing profile:', insertErr);
+              throw new Error(`Profile creation / healing query failed: ${insertErr.message}`);
+            }
+            prof = newProf;
+            profErr = null;
+          } else if (profErr) {
             console.error('Supabase Profile fetch error:', profErr);
             throw new Error(`Profile query failed: ${profErr.message}`);
           }
 
           if (prof) {
             console.log('Role redirect success');
+            const mappedRole = (prof.role ? prof.role.toUpperCase() : 'TRAINEE') as UserRole;
             onAuthSuccess({
               id: data.user.id,
               email: prof.email,
-              role: prof.role as UserRole,
+              role: mappedRole,
               name: prof.name || 'Athlete Name',
               avatarUrl: prof.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
             });
@@ -351,7 +387,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           const { error: pErr } = await supabase.from('profiles').insert({
             id: authUserId,
             email: trainerEmail,
-            role: UserRole.TRAINER,
+            role: 'trainer', // Lowercase to pass check constraint
             name: trainerName,
             avatar_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120'
           });
@@ -505,7 +541,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           const { error: pErr } = await supabase.from('profiles').insert({
             id: authUserId,
             email: traineeEmail,
-            role: UserRole.TRAINEE,
+            role: 'trainee', // Lowercase to pass check constraint
             name: traineeName,
             avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
           });
@@ -644,8 +680,21 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
                 </div>
               </div>
             ) : (
-              <div className="text-rose-400 font-extrabold text-xs flex items-center gap-2">
-                <span>🔴 SUPABASE NOT CONFIGURED</span>
+              <div className="space-y-3">
+                <div className="text-rose-400 font-extrabold text-xs flex items-center gap-2">
+                  <span>🔴 SUPABASE NOT KEYED IN</span>
+                </div>
+                <div className="text-[10px] text-slate-300 leading-normal font-sans space-y-1 bg-slate-950/60 p-2.5 rounded-lg border border-rose-500/10">
+                  <p className="font-semibold text-amber-300 uppercase tracking-wider text-[9px]">How to configure on Netlify:</p>
+                  <p>1. Go to your <span className="font-semibold text-white">Netlify Dashboard</span> &rarr; Site configuration &rarr; <span className="font-semibold text-white">Environment variables</span>.</p>
+                  <p>2. Define two keys:</p>
+                  <div className="bg-slate-950 p-1.5 rounded text-[9px] font-mono select-all text-teal-300 space-y-0.5 border border-slate-900 leading-tight">
+                    <p>VITE_SUPABASE_URL</p>
+                    <p>VITE_SUPABASE_ANON_KEY</p>
+                  </div>
+                  <p>3. Go to <span className="font-semibold text-white">Deploys</span> &rarr; Trigger deploy &rarr; <span className="font-semibold text-white">Clear cache and deploy site</span>.</p>
+                  <p className="text-teal-400 font-bold block pt-1 border-t border-slate-800 tracking-wide">🟢 DEMO SANDBOX MODE ACTIVE OFFLINE FOR ALL FEATURES</p>
+                </div>
               </div>
             )}
           </div>
