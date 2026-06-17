@@ -8,3 +8,7 @@ export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
+
+if (isSupabaseConfigured && supabase) {
+  console.log('Supabase client initialized');
+}

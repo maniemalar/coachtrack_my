@@ -97,23 +97,34 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
     const password = 'demo1234';
     
     try {
-      // If supabase is configured, we can try logging in or fallback to in-memory login simulation.
       if (isSupabaseConfigured && supabase) {
-        // Try authenticating through supabase, or fallback if account doesn't exist
+        console.log('Attempting Supabase Demo login for:', email);
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password
         });
         
-        if (!error && data?.user) {
+        if (error) {
+          console.error('Supabase Demo Auth error:', error);
+          throw error;
+        }
+
+        if (data?.user) {
+          console.log('Login success');
           // fetch profiles
-          const { data: prof } = await supabase
+          const { data: prof, error: profErr } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', data.user.id)
             .single();
             
+          if (profErr) {
+            console.error('Error fetching profile for auth user:', profErr);
+            throw profErr;
+          }
+
           if (prof) {
+            console.log('Role redirect success');
             onAuthSuccess({
               id: data.user.id,
               email: prof.email,
@@ -125,20 +136,9 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
             return;
           }
         }
-      }
-
-      // Fallback local API
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      
-      if (res.ok) {
-        const payload = await res.json();
-        onAuthSuccess(payload.user);
       } else {
-        // Mock direct demo login successfully for standard layout testing
+        // Fallback in-memory mock login for offline testing
+        console.log('Supabase not configured, using local sandbox credentials for demo:', role);
         onAuthSuccess({
           id: role === 'trainer' ? 'u_sarah' : 'te_ahmad',
           email,
@@ -150,8 +150,8 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
         });
       }
     } catch (e: any) {
-      console.error(e);
-      setLoginError('Local network error. Performing sandbox demo-login instead.');
+      console.error('Demo auth failed:', e);
+      setLoginError(e.message || 'Supabase auth failed.');
     } finally {
       setIsLoggingIn(false);
     }
@@ -164,16 +164,19 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
 
     try {
       if (isSupabaseConfigured && supabase) {
+        console.log('Attempting Supabase login for:', loginEmail);
         const { data, error } = await supabase.auth.signInWithPassword({
           email: loginEmail,
           password: loginPassword,
         });
 
         if (error) {
+          console.error('Supabase Login error:', error);
           throw new Error(error.message);
         }
 
         if (data?.user) {
+          console.log('Login success');
           // Fetch demographic from profiles
           const { data: prof, error: profErr } = await supabase
             .from('profiles')
@@ -181,7 +184,13 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
             .eq('id', data.user.id)
             .single();
 
-          if (!profErr && prof) {
+          if (profErr) {
+            console.error('Supabase Profile fetch error:', profErr);
+            throw new Error(`Profile query failed: ${profErr.message}`);
+          }
+
+          if (prof) {
+            console.log('Role redirect success');
             onAuthSuccess({
               id: data.user.id,
               email: prof.email,
@@ -191,26 +200,24 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
             });
             setIsLoggingIn(false);
             return;
+          } else {
+            throw new Error('User profile record not found in database.');
           }
         }
-      }
-
-      // Fallback or custom local login API
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword })
-      });
-
-      if (res.ok) {
-        const payload = await res.json();
-        onAuthSuccess(payload.user);
       } else {
-        const errJson = await res.json().catch(() => ({}));
-        setLoginError(errJson.message || 'Invalid email or password. Feel free to use the Fast Demo triggers.');
+        // Mock success fallback for offline testing if keys are absent
+        console.log('Supabase keys not configured, fallback offline auth');
+        onAuthSuccess({
+          id: 'u_offline_fallback',
+          email: loginEmail,
+          role: loginEmail.includes('trainer') ? UserRole.TRAINER : UserRole.TRAINEE,
+          name: 'Sandbox User',
+          avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
+        });
       }
     } catch (err: any) {
-      setLoginError(err.message || 'Connection error. Check your Supabase server settings or use the Quick Demo access.');
+      console.error('Login submit error:', err);
+      setLoginError(err.message || 'Invalid email or password.');
     } finally {
       setIsLoggingIn(false);
     }
@@ -312,6 +319,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
 
     try {
       if (isSupabaseConfigured && supabase) {
+        console.log('Starting Supabase Trainer signup for:', trainerEmail);
         // Create user in Auth
         const { data: authData, error: authErr } = await supabase.auth.signUp({
           email: trainerEmail,
@@ -321,10 +329,14 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           }
         });
 
-        if (authErr) throw authErr;
+        if (authErr) {
+          console.error('Supabase Auth SignUp Error:', authErr);
+          throw authErr;
+        }
 
         if (authData?.user) {
           const authUserId = authData.user.id;
+          console.log('Signup auth success');
 
           // 1. Create Profile
           const { error: pErr } = await supabase.from('profiles').insert({
@@ -339,6 +351,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
             console.error('Supabase Profile Insert Error:', pErr);
             throw new Error(`Profile creation failed: ${pErr.message}`);
           }
+          console.log('Profile insert success');
 
           // 2. Create Trainer Profile
           const { error: tErr } = await supabase.from('trainer_profiles').insert({
@@ -400,43 +413,20 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           setIsSubmitting(false);
           return;
         }
-      }
-
-      // Rest API Fallback
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(trainerPayload)
-      });
-
-      if (res.ok) {
-        const successUser = await res.json();
-        // Decorate with sub package details
-        const enrichedUser = {
-          ...successUser.user,
-          selected_plan: selectedPlanName,
-          trainee_limit: selectedLimit,
-          subscription_price: selectedPrice,
-          subscription_status: 'Active',
-          verification_status: 'Pending Verification'
-        };
-        onAuthSuccess(enrichedUser);
       } else {
-        const errJson = await res.json().catch(() => ({}));
-        setSignupError(errJson.message || 'Something went wrong during local profile creation.');
+        // Fallback bypass API call
+        console.log('Supabase keys not configured, fallback offline trainer registration');
+        onAuthSuccess({
+          id: `u_${Date.now()}`,
+          email: trainerEmail,
+          role: UserRole.TRAINER,
+          name: trainerName,
+          avatarUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120'
+        });
       }
     } catch (e: any) {
-      console.error(e);
-      setSignupError(e.message || 'Authentication offline. Successfully simulated Trainer onboarding sandbox profile!');
-      
-      // Complete mock sandbox transition anyway so the client stays fully usable!
-      onAuthSuccess({
-        id: `u_${Date.now()}`,
-        email: trainerEmail,
-        role: UserRole.TRAINER,
-        name: trainerName,
-        avatarUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120'
-      });
+      console.error('Trainer signup error:', e);
+      setSignupError(e.message || 'Trainer profile creation failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -469,6 +459,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
 
     try {
       if (isSupabaseConfigured && supabase) {
+        console.log('Starting Supabase Trainee signup for:', traineeEmail);
         // Create auth user
         const { data: authData, error: authErr } = await supabase.auth.signUp({
           email: traineeEmail,
@@ -478,10 +469,14 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           }
         });
 
-        if (authErr) throw authErr;
+        if (authErr) {
+          console.error('Supabase Auth SignUp Error:', authErr);
+          throw authErr;
+        }
 
         if (authData?.user) {
           const authUserId = authData.user.id;
+          console.log('Signup auth success');
 
           // 1. Create Profile
           const { error: pErr } = await supabase.from('profiles').insert({
@@ -496,6 +491,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
             console.error('Supabase Profile Insert Error:', pErr);
             throw new Error(`Profile creation failed: ${pErr.message}`);
           }
+          console.log('Profile insert success');
 
           // 2. Create Trainee Profile
           const { error: teErr } = await supabase.from('trainee_profiles').insert({
@@ -540,32 +536,20 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           setIsSubmitting(false);
           return;
         }
-      }
-
-      // Rest API Fallback
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(traineePayload)
-      });
-
-      if (res.ok) {
-        const successUser = await res.json();
-        onAuthSuccess(successUser.user);
       } else {
-        const errJson = await res.json().catch(() => ({}));
-        setSignupError(errJson.message || 'Something went wrong during local profile registry.');
+        // Fallback bypass API call
+        console.log('Supabase keys not configured, fallback offline trainee registration');
+        onAuthSuccess({
+          id: `u_${Date.now()}`,
+          email: traineeEmail,
+          role: UserRole.TRAINEE,
+          name: traineeName,
+          avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
+        });
       }
     } catch (e: any) {
-      console.error(e);
-      setSignupError('Authentication offline. Creating sandbox Athlete account instead.');
-      onAuthSuccess({
-        id: `u_${Date.now()}`,
-        email: traineeEmail,
-        role: UserRole.TRAINEE,
-        name: traineeName,
-        avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
-      });
+      console.error('Trainee signup error:', e);
+      setSignupError(e.message || 'Trainee profile creation failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -633,13 +617,13 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
                 <span className="text-[10px] font-black tracking-wider uppercase text-teal-350">Supabase Connection</span>
               </div>
               <span className="text-[9px] font-bold text-teal-300 bg-teal-505/20 px-2.5 py-0.5 rounded-lg border border-teal-500/30">
-                {isSupabaseConfigured ? 'Connected to Supabase Cloud' : 'LOCAL EMULATOR'}
+                {isSupabaseConfigured ? 'Connected to Supabase Cloud' : 'Supabase Not Configured'}
               </span>
             </div>
             <p className="text-[9px] text-emerald-300 mt-1.5 leading-normal">
               {isSupabaseConfigured 
                 ? 'Success! Connected to Supabase Cloud database and Auth services. All operations sync directly with the live database tables.' 
-                : 'Offline sandbox active. All tables will mock successfully in local container memory.'}
+                : 'Offline sandbox fallback active. Setup your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY variables.'}
             </p>
           </div>
         </div>

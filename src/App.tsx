@@ -13,7 +13,7 @@ import TraineeProfilePage from './components/TraineeProfilePage';
 import AuthForm from './components/AuthForm';
 import { LogIn, Compass, Shield, Database, MessageCircle, X } from 'lucide-react';
 import { dbService } from './lib/dbService';
-import { isSupabaseConfigured } from './lib/supabase';
+import { supabase, isSupabaseConfigured } from './lib/supabase';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<{
@@ -31,9 +31,42 @@ export default function App() {
   const [showSupabaseModal, setShowSupabaseModal] = useState(false);
   const [showFloatingChat, setShowFloatingChat] = useState(false);
 
-  const [emailInput, setEmailInput] = useState('ahmad@coachtrack.my');
-  const [passwordInput, setPasswordInput] = useState('password123');
-  const [loginRole, setLoginRole] = useState<UserRole>(UserRole.TRAINEE);
+  useEffect(() => {
+    const restoreSession = async () => {
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            console.log('Session restored from Supabase');
+            const { data: userProfile, error: profErr } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (!profErr && userProfile) {
+              setCurrentUser({
+                id: session.user.id,
+                email: userProfile.email,
+                role: userProfile.role as UserRole,
+                name: userProfile.name || 'User',
+                avatarUrl: userProfile.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
+              });
+              if (userProfile.role === UserRole.TRAINER) {
+                setActiveTab('trainer-dashboard');
+              } else {
+                setActiveTab('trainee-dashboard');
+              }
+              console.log('Role redirect success');
+            }
+          }
+        } catch (err) {
+          console.error('Error recovering Supabase session:', err);
+        }
+      }
+    };
+    restoreSession();
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -97,7 +130,15 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.auth.signOut();
+        console.log('Supabase user signed out successfully');
+      } catch (e) {
+        console.error('Error signing out of Supabase:', e);
+      }
+    }
     setCurrentUser(null);
     setTrainerProfile(null);
     setTraineeProfile(null);
@@ -105,44 +146,12 @@ export default function App() {
     setActiveTab('landing');
   };
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailInput, password: passwordInput })
-      });
-      if (res.ok) {
-        const user = await res.json();
-        setCurrentUser(user);
-        if (user.role === UserRole.TRAINEE) {
-          setActiveTab('trainee-dashboard');
-        } else {
-          setActiveTab('trainer-dashboard');
-        }
-      } else {
-        alert('Invalid demo credentials. Feel free to use the Sandbox Instant Swappers at the very top of the bar!');
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // Perform a full database reset back to initial seed state
-  const resetDatabaseSeed = async () => {
-    const confirmation = window.confirm("Reset SQL/JSON sandbox back to initial defaults? This wipes any changes you made in current test and starts fresh.");
+  const resetDatabaseSeed = () => {
+    const confirmation = window.confirm("Reset your local sandbox session defaults? This refreshes your view.");
     if (!confirmation) return;
-
-    try {
-      const res = await fetch('/api/admin/reset', { method: 'POST' });
-      if (res.ok) {
-        alert("Database successfully reset! Reloading application...");
-        window.location.reload();
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    localStorage.clear();
+    alert("Local view reset completed!");
+    window.location.reload();
   };
 
   return (
