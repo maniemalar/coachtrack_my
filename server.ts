@@ -544,16 +544,42 @@ app.get('/api/trainees/:userId', (req, res) => {
 // Update Trainee Target Info
 app.post('/api/trainees/:traineeId/profile', (req, res) => {
   const { traineeId } = req.params;
-  const { weight, height, goals } = req.body;
+  const data = req.body;
   const trainee = dbData.trainees.find(t => t.id === traineeId || t.userId === traineeId);
   if (!trainee) return res.status(404).json({ message: 'Trainee not found' });
 
-  if (weight) trainee.weight = Number(weight);
-  if (height) trainee.height = Number(height);
-  if (goals) trainee.goals = goals;
+  if (data.name !== undefined) trainee.name = data.name;
+  if (data.weight !== undefined) trainee.weight = Number(data.weight);
+  if (data.height !== undefined) trainee.height = Number(data.height);
+  if (data.goals !== undefined) trainee.goals = data.goals;
+  if (data.avatarUrl !== undefined) trainee.avatarUrl = data.avatarUrl;
+  if (data.streakCount !== undefined) trainee.streakCount = Number(data.streakCount);
 
   writeDb();
   res.json(trainee);
+});
+
+// Update Trainer Info / Profile
+app.post('/api/trainers/:trainerId/profile', (req, res) => {
+  const { trainerId } = req.params;
+  const data = req.body;
+  const trainer = dbData.trainers.find(t => t.id === trainerId || t.userId === trainerId);
+  if (!trainer) return res.status(404).json({ message: 'Trainer not found' });
+
+  if (data.name !== undefined) trainer.name = data.name;
+  if (data.discipline !== undefined) trainer.discipline = data.discipline;
+  if (data.experienceYears !== undefined) trainer.experienceYears = Number(data.experienceYears);
+  if (data.location !== undefined) trainer.location = data.location;
+  if (data.freelanceStatus !== undefined) trainer.freelanceStatus = data.freelanceStatus;
+  if (data.pricePerHour !== undefined) trainer.pricePerHour = Number(data.pricePerHour);
+  if (data.bio !== undefined) trainer.bio = data.bio;
+  if (data.rating !== undefined) trainer.rating = Number(data.rating);
+  if (data.verified !== undefined) trainer.verified = Boolean(data.verified);
+  if (data.certificates !== undefined) trainer.certificates = data.certificates;
+  if (data.avatarUrl !== undefined) trainer.avatarUrl = data.avatarUrl;
+
+  writeDb();
+  res.json(trainer);
 });
 
 // Remove trainee-trainer association / relationship

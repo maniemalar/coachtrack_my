@@ -8,6 +8,8 @@ import TrainerFinder from './components/TrainerFinder';
 import ChatMessenger from './components/ChatMessenger';
 import InvoicesList from './components/InvoicesList';
 import TraineeHistory from './components/TraineeHistory';
+import TrainerProfilePage from './components/TrainerProfilePage';
+import TraineeProfilePage from './components/TraineeProfilePage';
 import { LogIn, Compass, Shield, Database, MessageCircle, X } from 'lucide-react';
 import { dbService } from './lib/dbService';
 import { isSupabaseConfigured } from './lib/supabase';
@@ -23,6 +25,8 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<string>('landing');
   const [trainerProfile, setTrainerProfile] = useState<any>(null);
+  const [traineeProfile, setTraineeProfile] = useState<any>(null);
+  const [assignedTrainer, setAssignedTrainer] = useState<any>(null);
   const [showSupabaseModal, setShowSupabaseModal] = useState(false);
   const [showFloatingChat, setShowFloatingChat] = useState(false);
 
@@ -31,9 +35,12 @@ export default function App() {
   const [loginRole, setLoginRole] = useState<UserRole>(UserRole.TRAINEE);
 
   useEffect(() => {
-    // Attempt automatic discovery of current trainer profile metadata
-    if (currentUser && currentUser.role === UserRole.TRAINER) {
-      fetchTrainerProfile(currentUser.id);
+    if (currentUser) {
+      if (currentUser.role === UserRole.TRAINER) {
+        fetchTrainerProfile(currentUser.id);
+      } else {
+        fetchTraineeProfile(currentUser.id);
+      }
     }
   }, [currentUser]);
 
@@ -42,6 +49,23 @@ export default function App() {
       const data = await dbService.getTrainerProfile(userId);
       if (data) {
         setTrainerProfile(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const fetchTraineeProfile = async (userId: string) => {
+    try {
+      const data = await dbService.getTraineeProfile(userId);
+      if (data) {
+        setTraineeProfile(data);
+        if (data.assignedTrainerId) {
+          const tr = await dbService.getTrainerProfile(data.assignedTrainerId);
+          setAssignedTrainer(tr);
+        } else {
+          setAssignedTrainer(null);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -75,6 +99,8 @@ export default function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     setTrainerProfile(null);
+    setTraineeProfile(null);
+    setAssignedTrainer(null);
     setActiveTab('landing');
   };
 
@@ -262,6 +288,38 @@ export default function App() {
             currentUserId={currentUser.id} 
             senderRole={currentUser.role}
           />
+        )}
+
+        {activeTab === 'profile' && currentUser && (
+          currentUser.role === UserRole.TRAINER ? (
+            trainerProfile && (
+              <TrainerProfilePage 
+                trainerProfile={trainerProfile} 
+                onUpdateProfile={(updated) => {
+                  setTrainerProfile(updated);
+                  setCurrentUser(prev => prev ? { ...prev, name: updated.name, avatarUrl: updated.avatarUrl } : null);
+                }} 
+              />
+            )
+          ) : (
+            traineeProfile && (
+              <TraineeProfilePage 
+                traineeProfile={traineeProfile} 
+                assignedTrainer={assignedTrainer}
+                onUpdateProfile={(updated) => {
+                  setTraineeProfile(updated);
+                  setCurrentUser(prev => prev ? { ...prev, name: updated.name, avatarUrl: updated.avatarUrl } : null);
+                }}
+                onNavigateToTab={(tab) => {
+                  if (tab === 'chats') {
+                    setShowFloatingChat(true);
+                  } else {
+                    setActiveTab(tab);
+                  }
+                }}
+              />
+            )
+          )
         )}
       </main>
 

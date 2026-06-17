@@ -209,11 +209,17 @@ export default function BrandingHeader({
 
         {/* Profile Card Info Box */}
         {currentUser && (
-          <div className="flex items-center gap-2.5 border-l border-slate-200 pl-4 py-1.5 shrink-0">
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`flex items-center gap-2.5 border-l border-slate-200 pl-4 py-1.5 shrink-0 hover:bg-slate-100/80 rounded-xl cursor-pointer text-left transition-all ${
+              activeTab === 'profile' ? 'bg-slate-100 ring-2 ring-teal-500/20 px-2' : 'px-1'
+            }`}
+            title="My Personal Command Hub"
+          >
             <img 
               referrerPolicy="no-referrer"
               src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'} 
-              className="w-10 h-10 rounded-full border-2 border-teal-500 object-cover" 
+              className="w-10 h-10 rounded-full border-2 border-teal-500 object-cover shrink-0" 
               alt={currentUser.name}
             />
             <div className="flex flex-col text-left">
@@ -228,7 +234,7 @@ export default function BrandingHeader({
                 {currentUser.role === UserRole.TRAINER ? 'Coach Profile' : 'Trainee Active'}
               </span>
             </div>
-          </div>
+          </button>
         )}
       </div>
     </header>
