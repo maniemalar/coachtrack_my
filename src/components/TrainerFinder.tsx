@@ -982,25 +982,50 @@ export default function TrainerFinder({ traineeId, onNavigateToTab }: TrainerFin
                       We secure all trainer commitments via instant escrow deposits. An official printable PDF receipt and SST Exempt custom tax invoice will be cleared.
                     </p>
 
-                    <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200 text-xs text-slate-700 space-y-1">
-                      <div className="flex justify-between">
-                        <span>Payable Package:</span>
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 text-xs text-slate-700 space-y-2.5">
+                      <div className="flex justify-between pb-1.5 border-b border-slate-200/60">
+                        <span className="font-medium text-slate-500">Payable Package:</span>
                         <span className="font-bold text-slate-900">{selectedPackage === 'single' ? '1x Trainer Session' : selectedPackage === 'bundle4' ? '4x Sessions Bundle' : 'Monthly Unlimited'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Target Coach:</span>
+                        <span className="font-medium text-slate-500">Target Coach:</span>
                         <span className="font-bold text-[#001F3F]">{activeDetailsTrainer.name}</span>
                       </div>
-                      <div className="flex justify-between border-t border-slate-300 pt-1.5 mt-1.5 text-slate-900 font-black">
-                        <span>Grand Total Payable:</span>
-                        <span>
-                          RM {selectedPackage === 'single' 
-                            ? activeDetailsTrainer.pricePerHour 
-                            : selectedPackage === 'bundle4' 
-                              ? Math.round((activeDetailsTrainer.pricePerHour * 4) * 0.9) 
-                              : Math.round((activeDetailsTrainer.pricePerHour * 8) * 0.8)}
-                        </span>
-                      </div>
+
+                      {/* Explicit 5% Commission Breakdown */}
+                      {(() => {
+                        const computedTotal = selectedPackage === 'single' 
+                          ? activeDetailsTrainer.pricePerHour 
+                          : selectedPackage === 'bundle4' 
+                            ? Math.round((activeDetailsTrainer.pricePerHour * 4) * 0.9) 
+                            : Math.round((activeDetailsTrainer.pricePerHour * 8) * 0.8);
+                        const commissionFee = Number((computedTotal * 0.05).toFixed(2));
+                        const tPayout = Number((computedTotal - commissionFee).toFixed(2));
+                        
+                        return (
+                          <>
+                            <div className="flex justify-between text-slate-600 font-medium">
+                              <span>Trainer Package Price:</span>
+                              <span>RM {computedTotal}</span>
+                            </div>
+                            <div className="flex justify-between text-slate-600 font-medium">
+                              <span>CoachTrack MY 5% Service Fee / Commission:</span>
+                              <span>RM {commissionFee}</span>
+                            </div>
+                            <div className="flex justify-between text-slate-600 font-medium pb-1.5 border-b border-slate-200">
+                              <span>Trainer Payout:</span>
+                              <span className="text-emerald-700 font-bold">RM {tPayout}</span>
+                            </div>
+                            <div className="flex justify-between text-[#001F3F] font-black text-sm pt-0.5">
+                              <span>Total Payment:</span>
+                              <span>RM {computedTotal}</span>
+                            </div>
+                            <p className="text-[10px] text-teal-600 font-bold bg-teal-50 rounded px-2 py-1 text-center mt-2 border border-teal-100/50">
+                              💡 Platform commission is included in this payment.
+                            </p>
+                          </>
+                        );
+                      })()}
                     </div>
 
                     <div className="space-y-2 text-xs">

@@ -10,6 +10,7 @@ import InvoicesList from './components/InvoicesList';
 import TraineeHistory from './components/TraineeHistory';
 import TrainerProfilePage from './components/TrainerProfilePage';
 import TraineeProfilePage from './components/TraineeProfilePage';
+import AuthForm from './components/AuthForm';
 import { LogIn, Compass, Shield, Database, MessageCircle, X } from 'lucide-react';
 import { dbService } from './lib/dbService';
 import { isSupabaseConfigured } from './lib/supabase';
@@ -163,56 +164,22 @@ export default function App() {
         )}
 
         {activeTab === 'login' && (
-          <div className="max-w-md mx-auto my-16 bg-white border border-slate-100 rounded-2xl shadow-xl p-8 text-left">
-            <h3 className="font-display font-black text-2xl text-slate-900 mb-2 flex items-center gap-1.5 justify-center">
-              <LogIn className="w-6 h-6 text-teal-600" />
-              <span>Login to CoachTrack MY</span>
-            </h3>
-            <p className="text-xs text-slate-500 text-center mb-6">
-              Enter demo credentials below or use the fast-switcher above
-            </p>
-
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
-                  Email Address
-                </label>
-                <input 
-                  type="email" 
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:ring-teal-500 font-medium"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
-                  Password Check
-                </label>
-                <input 
-                  type="password" 
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:ring-teal-500 font-medium"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl text-xs shadow-md mt-6 transition duration-150"
-              >
-                Sign In & Get Strong
-              </button>
-            </form>
-
-            <div className="border-t border-slate-150 pt-4 mt-6 text-center text-[11px] text-slate-400">
-              <span className="font-bold block text-slate-550 mb-1">Demo quick credentials:</span>
-              <p>Trainee: <span>ahmad@coachtrack.my</span> / password123</p>
-              <p>Trainer: <span>sarah@coachtrack.my</span> / password123</p>
-            </div>
-          </div>
+          <AuthForm 
+            onAuthSuccess={(user, trainerPrf, traineePrf) => {
+              setCurrentUser(user);
+              if (trainerPrf) setTrainerProfile(trainerPrf);
+              if (traineePrf) setTraineeProfile(traineePrf);
+              
+              if (user.role === UserRole.TRAINEE) {
+                setActiveTab('trainee-dashboard');
+              } else {
+                setActiveTab('trainer-dashboard');
+              }
+            }}
+            onNavigateToTab={(tab) => {
+              setActiveTab(tab);
+            }}
+          />
         )}
 
         {activeTab === 'trainee-dashboard' && currentUser && (

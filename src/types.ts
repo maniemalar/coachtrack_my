@@ -30,6 +30,15 @@ export interface TrainerProfile {
   certificates: string[];
   idProofUrl?: string;
   avatarUrl: string;
+  phoneNumber?: string;
+  // Trainer subscription details
+  selectedPlan?: string; // 'Starter' | 'Growth' | 'Pro'
+  traineeLimit?: number; // 5 | 20 | 50
+  subscriptionPrice?: number; // 29 | 59 | 99
+  subscriptionStatus?: string; // 'Active' | ...
+  subscriptionStartDate?: string;
+  subscriptionRenewalDate?: string;
+  verificationStatus?: string; // 'Pending Verification' | 'Verified'
 }
 
 export interface TraineeProfile {
@@ -43,6 +52,12 @@ export interface TraineeProfile {
   goals: string;
   assignedTrainerId?: string;
   streakCount: number;
+  phoneNumber?: string;
+  location?: string;
+  // Trainee profile questions
+  fitnessGoal?: string;
+  preferredWorkoutType?: string;
+  currentFitnessLevel?: string;
 }
 
 export interface WorkoutLog {

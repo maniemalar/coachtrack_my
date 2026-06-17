@@ -392,6 +392,25 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
     setInviteError('');
     setInviteSuccess(false);
 
+    // Enforce subscription-based trainee client limits
+    const currentTraineesCount = trainees.length;
+    let maxClients = 5; // Starter limit fallback
+    const planName = String(trainerProfile.selectedPlan || (trainerProfile as any).selected_plan || 'Starter').toLowerCase();
+    
+    if (planName.includes('growth')) {
+      maxClients = 20;
+    } else if (planName.includes('pro')) {
+      maxClients = 50;
+    } else {
+      maxClients = 5;
+    }
+
+    if (currentTraineesCount >= maxClients) {
+      setInviteError(`Client limit reached! Your current "${trainerProfile.selectedPlan || (trainerProfile as any).selected_plan || 'Starter Trainer Plan'}" supports up to ${maxClients} active trainees. Please upgrade your trainer plan in the Profile page to add more clients.`);
+      setInviteLoading(false);
+      return;
+    }
+
     try {
       let packageName = invitePkgOption;
       let sessions = 8;
