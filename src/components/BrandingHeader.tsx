@@ -7,56 +7,16 @@ interface BrandingHeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onLogout: () => void;
-  onQuickLogin: (role: UserRole) => void;
 }
 
 export default function BrandingHeader({
   currentUser,
   activeTab,
   setActiveTab,
-  onLogout,
-  onQuickLogin
+  onLogout
 }: BrandingHeaderProps) {
   return (
     <header className="w-full bg-white border-b border-slate-200 shadow-sm relative z-40">
-      {/* Demo Multi-role Switcher bar */}
-      <div className="bg-slate-950 text-white text-xs px-4 py-2 flex flex-wrap justify-between items-center gap-2">
-        <div className="flex items-center gap-1.5 font-medium">
-          <span className="inline-block w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
-          <span>DEMO SANDBOX ACTIVE: Switch accounts instantly to test workflows</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => onQuickLogin(UserRole.TRAINEE)}
-            className={`px-2.5 py-1 rounded transition text-[11px] font-semibold ${
-              currentUser?.role === UserRole.TRAINEE 
-                ? 'bg-teal-500 text-white font-bold ring-1 ring-white/20' 
-                : 'bg-white/10 hover:bg-white/20 text-slate-200'
-            }`}
-          >
-            🧑 Ahmad Ibrahim (Trainee)
-          </button>
-          <button 
-            onClick={() => onQuickLogin(UserRole.TRAINER)}
-            className={`px-2.5 py-1 rounded transition text-[11px] font-semibold ${
-              currentUser?.role === UserRole.TRAINER 
-                ? 'bg-teal-500 text-white font-bold ring-1 ring-white/20' 
-                : 'bg-white/10 hover:bg-white/20 text-slate-200'
-            }`}
-          >
-            🏋️ Sarah Tan (Trainer)
-          </button>
-          {currentUser && (
-            <button 
-              onClick={onLogout}
-              className="bg-rose-500/80 hover:bg-rose-600 px-2 py-0.5 text-[10px] rounded text-white font-medium flex items-center gap-1 ml-2 transition border border-rose-400"
-            >
-              <LogOut className="w-3 h-3" /> Log Out
-            </button>
-          )}
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         {/* Brand Block */}
         <div className="flex items-center gap-4">
@@ -209,32 +169,42 @@ export default function BrandingHeader({
 
         {/* Profile Card Info Box */}
         {currentUser && (
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`flex items-center gap-2.5 border-l border-slate-200 pl-4 py-1.5 shrink-0 hover:bg-slate-100/80 rounded-xl cursor-pointer text-left transition-all ${
-              activeTab === 'profile' ? 'bg-slate-100 ring-2 ring-teal-500/20 px-2' : 'px-1'
-            }`}
-            title="My Personal Command Hub"
-          >
-            <img 
-              referrerPolicy="no-referrer"
-              src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'} 
-              className="w-10 h-10 rounded-full border-2 border-teal-500 object-cover shrink-0" 
-              alt={currentUser.name}
-            />
-            <div className="flex flex-col text-left">
-              <span className="text-xs font-bold text-slate-900 leading-tight block truncate max-w-[120px]">
-                {currentUser.name}
-              </span>
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full text-center mt-1 w-max ${
-                currentUser.role === UserRole.TRAINER 
-                  ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' 
-                  : 'bg-teal-100 text-teal-700 border border-teal-200'
-              }`}>
-                {currentUser.role === UserRole.TRAINER ? 'Coach Profile' : 'Trainee Active'}
-              </span>
-            </div>
-          </button>
+          <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`flex items-center gap-2.5 py-1.5 shrink-0 hover:bg-slate-100/80 rounded-xl cursor-pointer text-left transition-all ${
+                activeTab === 'profile' ? 'bg-slate-100 ring-2 ring-teal-500/20 px-2' : 'px-1'
+              }`}
+              title="My Personal Command Hub"
+            >
+              <img 
+                referrerPolicy="no-referrer"
+                src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'} 
+                className="w-10 h-10 rounded-full border-2 border-teal-500 object-cover shrink-0" 
+                alt={currentUser.name}
+              />
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-bold text-slate-900 leading-tight block truncate max-w-[120px]">
+                  {currentUser.name}
+                </span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full text-center mt-1 w-max ${
+                  currentUser.role === UserRole.TRAINER 
+                    ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' 
+                    : 'bg-teal-100 text-teal-700 border border-teal-200'
+                }`}>
+                  {currentUser.role === UserRole.TRAINER ? 'Coach Profile' : 'Trainee Active'}
+                </span>
+              </div>
+            </button>
+
+            <button 
+              onClick={onLogout}
+              className="px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:text-white border border-rose-200 hover:border-rose-600 hover:bg-rose-600 rounded-lg transition-all flex items-center gap-1 cursor-pointer shrink-0"
+              title="Log Out of your CoachTrack account"
+            >
+              <LogOut className="w-3.5 h-3.5" /> Log Out
+            </button>
+          </div>
         )}
       </div>
     </header>

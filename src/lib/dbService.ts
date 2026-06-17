@@ -12,6 +12,15 @@ import {
   UserRole
 } from '../types';
 
+export function isSupabaseActive(): boolean {
+  try {
+    const mode = localStorage.getItem('coach_track_mode');
+    return mode === 'live' && isSupabaseConfigured && !!supabase;
+  } catch (e) {
+    return false;
+  }
+}
+
 // Helper to generate a unique random ID
 function genId(prefix: string) {
   return `${prefix}_${Math.random().toString(36).substr(2, 9)}`;
@@ -131,7 +140,7 @@ const DEMO_PRESCRIBED: PrescribedWorkout[] = [
 
 // Seed databases if they are detected to be empty
 export async function seedSupabaseIfNeeded() {
-  if (!isSupabaseConfigured || !supabase) return;
+  if (!isSupabaseActive()) return;
 
   try {
     // 1. Check trainers
@@ -200,7 +209,7 @@ export async function seedSupabaseIfNeeded() {
 export const dbService = {
   // --- TRAINERS ---
   async searchNearbyTrainers(lat: number, lng: number, radiusKm: number, discipline: string): Promise<(TrainerProfile & { distance: number })[]> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       await seedSupabaseIfNeeded();
       const { data, error } = await supabase.from('trainers').select('*');
       if (error) {
@@ -243,7 +252,7 @@ export const dbService = {
   },
 
   async getTrainerProfile(userId: string): Promise<TrainerProfile | null> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { data, error } = await supabase
         .from('trainers')
         .select('*')
@@ -276,7 +285,7 @@ export const dbService = {
 
   // --- TRAINEES ---
   async getTraineeProfile(userId: string): Promise<TraineeProfile | null> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { data, error } = await supabase
         .from('trainees')
         .select('*')
@@ -304,7 +313,7 @@ export const dbService = {
   },
 
   async getTraineesForTrainer(trainerId: string): Promise<TraineeProfile[]> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { data, error } = await supabase
         .from('trainees')
         .select('*')
@@ -339,7 +348,7 @@ export const dbService = {
 
   // --- WORKOUT LOGS ---
   async getWorkouts(filters: { traineeId?: string; trainerId?: string }): Promise<WorkoutLog[]> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       let q = supabase.from('workouts').select('*');
       if (filters.traineeId) q = q.eq('traineeId', filters.traineeId);
       if (filters.trainerId) q = q.eq('trainerId', filters.trainerId);
@@ -372,7 +381,7 @@ export const dbService = {
       id: genId('w_log')
     };
 
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { error } = await supabase.from('workouts').insert({
         id: payload.id,
         traineeId: payload.traineeId,
@@ -398,7 +407,7 @@ export const dbService = {
   },
 
   async addWorkoutFeedback(workoutId: string, feedback: string, status?: string): Promise<boolean> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { error } = await supabase
         .from('workouts')
         .update({ trainerFeedback: feedback, feedbackAt: new Date().toISOString() })
@@ -416,7 +425,7 @@ export const dbService = {
 
   // --- NUTRITION LOGS ---
   async getNutrition(traineeId: string): Promise<NutritionLog[]> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { data, error } = await supabase
         .from('nutrition')
         .select('*')
@@ -450,7 +459,7 @@ export const dbService = {
       id: genId('n_log')
     };
 
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { error } = await supabase.from('nutrition').insert(payload);
       if (!error) return payload;
     }
@@ -465,7 +474,7 @@ export const dbService = {
   },
 
   async addNutritionFeedback(nutritionId: string, feedback: string): Promise<boolean> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { error } = await supabase
         .from('nutrition')
         .update({ trainerFeedback: feedback, feedbackAt: new Date().toISOString() })
@@ -483,7 +492,7 @@ export const dbService = {
 
   // --- BOOKING SESSIONS ---
   async getBookings(filters: { traineeId?: string; trainerId?: string }): Promise<BookingSession[]> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       let q = supabase.from('bookings').select('*');
       if (filters.traineeId) q = q.eq('traineeId', filters.traineeId);
       if (filters.trainerId) q = q.eq('trainerId', filters.trainerId);
@@ -517,7 +526,7 @@ export const dbService = {
       id: genId('b_slot')
     };
 
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { error } = await supabase.from('bookings').insert(payload);
       if (!error) return payload;
     }
@@ -532,7 +541,7 @@ export const dbService = {
   },
 
   async updateBookingStatus(bookingId: string, status: 'Approved' | 'Cancelled' | 'Completed'): Promise<boolean> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { error } = await supabase
         .from('bookings')
         .update({ status })
@@ -550,7 +559,7 @@ export const dbService = {
 
   // --- PRESCRIBED WORKOUTS ---
   async getPrescribedWorkouts(traineeId: string, status = 'Pending'): Promise<PrescribedWorkout[]> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { data, error } = await supabase
         .from('prescribed_workouts')
         .select('*')
@@ -584,7 +593,7 @@ export const dbService = {
       assignedDate: new Date().toISOString().split('T')[0]
     };
 
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { error } = await supabase.from('prescribed_workouts').insert({
         id: payload.id,
         trainerId: payload.trainerId,
@@ -618,7 +627,7 @@ export const dbService = {
       generalComments?: string;
     }
   ): Promise<boolean> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { error } = await supabase
         .from('prescribed_workouts')
         .update({ status: 'Logged' })
@@ -636,7 +645,7 @@ export const dbService = {
 
   // --- CHATS MESSAGES ---
   async getChats(userA: string, userB: string): Promise<ChatMessage[]> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { data, error } = await supabase
         .from('chats')
         .select('*')
@@ -668,7 +677,7 @@ export const dbService = {
       timestamp: new Date().toISOString()
     };
 
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { error } = await supabase.from('chats').insert(payload);
       if (!error) return payload;
     }
@@ -684,7 +693,7 @@ export const dbService = {
 
   // --- PAYMENTS & INVOICES ---
   async getPayments(filters: { traineeId?: string; trainerId?: string }): Promise<Payment[]> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       let q = supabase.from('payments').select('*');
       if (filters.traineeId) q = q.eq('traineeId', filters.traineeId);
       if (filters.trainerId) q = q.eq('trainerId', filters.trainerId);
@@ -715,7 +724,7 @@ export const dbService = {
       id: genId('inv_sim')
     };
 
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { error } = await supabase.from('payments').insert({
         id: payload.id,
         trainerId: payload.trainerId,
@@ -739,7 +748,7 @@ export const dbService = {
   },
 
   async payInvoice(paymentId: string): Promise<boolean> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { error } = await supabase
         .from('payments')
         .update({ status: 'Paid' })
@@ -756,7 +765,7 @@ export const dbService = {
   },
 
   async getInvitations(filters: { traineeId?: string; trainerId?: string }): Promise<any[]> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       let q = supabase.from('invitations').select('*');
       if (filters.traineeId) q = q.eq('traineeId', filters.traineeId);
       if (filters.trainerId) q = q.eq('trainerId', filters.trainerId);
@@ -792,7 +801,7 @@ export const dbService = {
   },
 
   async getNotifications(userId: string): Promise<any[]> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       const { data } = await supabase.from('notifications').select('*').eq('userId', userId);
       if (data) return data;
     }
@@ -802,7 +811,7 @@ export const dbService = {
   },
 
   async markNotificationRead(id: string): Promise<boolean> {
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseActive()) {
       await supabase.from('notifications').update({ read: true }).eq('id', id);
     }
     const res = await fetch(`/api/notifications/${id}/read`, { method: 'POST' });

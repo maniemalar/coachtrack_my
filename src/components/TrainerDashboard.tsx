@@ -8,6 +8,8 @@ import {
   X, 
   MessageSquare, 
   ShieldAlert, 
+  ShieldCheck,
+  Shield,
   DollarSign, 
   FileText, 
   Utensils, 
@@ -37,7 +39,42 @@ interface TrainerDashboardProps {
   activeTab?: string;
 }
 
-export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-dashboard' }: TrainerDashboardProps) {
+class TrainerDashboardErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: any, info: any) { console.error("TrainerDashboard error:", error, info); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl m-4 font-sans text-center max-w-lg mx-auto shadow-sm">
+          <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-3" />
+          <h2 className="text-sm font-bold uppercase tracking-wider mb-2">Something went wrong</h2>
+          <p className="text-xs text-slate-600 mb-4">The trainer dashboard encountered a display error. Please refresh or try again.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider cursor-pointer"
+          >
+            Reload Dashboard
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function TrainerDashboard(props: TrainerDashboardProps) {
+  return (
+    <TrainerDashboardErrorBoundary>
+      <TrainerDashboardInner {...props} />
+    </TrainerDashboardErrorBoundary>
+  );
+}
+
+export function TrainerDashboardInner({ trainerProfile, activeTab = 'trainer-dashboard' }: TrainerDashboardProps) {
   // Lists
   const [trainees, setTrainees] = useState<TraineeProfile[]>([]);
   const [workouts, setWorkouts] = useState<WorkoutLog[]>([]);
@@ -4452,235 +4489,241 @@ export default function TrainerDashboard({ trainerProfile, activeTab = 'trainer-
               </div>
             </div>
 
-            {/* BILLING INVOICE ITEM DETAIL Dialog Modal */}
+            {/* BILLING INVOICE ITEM DETAIL Dialog Modal transformed into a Right-Side Drawer */}
             <AnimatePresence>
               {selectedInvoice && (
-                <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex justify-end">
+                  {/* Backdrop */}
                   <motion.div 
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.95, opacity: 0 }}
-                    className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl relative text-left overflow-hidden flex flex-col justify-between"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-slate-950/40 backdrop-blur-xs cursor-pointer"
+                    onClick={() => setSelectedInvoice(null)}
+                  />
+
+                  {/* Drawer content panel */}
+                  <motion.div 
+                    initial={{ x: "100%", opacity: 0.9 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: "100%", opacity: 0.9 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                    className="relative w-full max-w-sm sm:max-w-md md:w-[400px] h-full bg-white shadow-2xl border-l border-slate-200 flex flex-col justify-between z-10 sm:rounded-l-3xl overflow-hidden"
                   >
-                    
-                    {/* Visual Document Switcher Tabs at top of Modal */}
-                    <div className="bg-slate-50 p-3 flex gap-2 border-b border-slate-200">
+                    {/* Header bar / Close Icon */}
+                    <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-550 bg-slate-900 text-white shrink-0">
+                      <div className="flex gap-1.5 items-center">
+                        <span className="text-[10px] font-black uppercase tracking-[0.15em] bg-teal-500 text-slate-950 px-2 py-1 rounded">
+                          {selectedInvoiceDocMode === 'receipt' ? 'Receipt' : 'Invoice'}
+                        </span>
+                        <span className="text-xs font-bold text-slate-200 font-mono">
+                          #{selectedInvoice.invoiceNo}
+                        </span>
+                      </div>
+                      
+                      <button 
+                        onClick={() => setSelectedInvoice(null)}
+                        className="p-1.5 hover:bg-slate-800 text-slate-300 hover:text-white rounded-full transition cursor-pointer"
+                        title="Close preview"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Switcher Tabs at top of Drawer */}
+                    <div className="bg-slate-100/65 p-2.5 flex gap-2 border-b border-slate-200 shrink-0">
                       <button 
                         onClick={() => setSelectedInvoiceDocMode('invoice')}
-                        className={`flex-1 py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition ${
+                        className={`flex-1 py-1.5 text-[11px] font-extrabold rounded-lg flex items-center justify-center gap-1 transition-all uppercase tracking-wider ${
                           selectedInvoiceDocMode === 'invoice'
-                            ? 'bg-slate-900 text-white shadow-md'
-                            : 'bg-slate-200/60 hover:bg-slate-200 text-slate-700'
+                            ? 'bg-slate-900 text-white shadow-sm'
+                            : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200/85'
                         }`}
                       >
                         <FileText className="w-3.5 h-3.5" />
-                        <span>Invoice PDF View</span>
+                        <span>Invoice</span>
                       </button>
                       
                       {selectedInvoice.status === 'Paid' ? (
                         <button 
                           onClick={() => setSelectedInvoiceDocMode('receipt')}
-                          className={`flex-1 py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition ${
+                          className={`flex-1 py-1.5 text-[11px] font-extrabold rounded-lg flex items-center justify-center gap-1 transition-all uppercase tracking-wider ${
                             selectedInvoiceDocMode === 'receipt'
-                              ? 'bg-emerald-600 text-white shadow-md'
-                              : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800'
+                              ? 'bg-emerald-600 text-white shadow-sm'
+                              : 'bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-200/85'
                           }`}
                         >
                           <ShieldCheck className="w-3.5 h-3.5" />
-                          <span>Receipt PDF View</span>
+                          <span>Receipt</span>
                         </button>
                       ) : (
-                        <div className="flex-1 text-center py-2.5 text-[10px] uppercase font-black text-slate-400 bg-slate-100 border border-dashed rounded-xl tracking-wider select-none leading-relaxed flex items-center justify-center">
-                          Receipt Lock (Pending Payment)
+                        <div className="flex-1 text-center py-1.5 text-[9px] uppercase font-bold text-slate-400 bg-slate-50 border border-slate-200 rounded-lg tracking-wider select-none flex items-center justify-center cursor-not-allowed">
+                          Receipt Lock (Unpaid)
                         </div>
                       )}
                     </div>
 
-                    {selectedInvoiceDocMode === 'receipt' && selectedInvoice.status === 'Paid' ? (
-                      /* Receipt Paper layout */
-                      <div className="p-8 space-y-6 relative overflow-hidden text-left">
-                        
-                        {/* Stamp watermark */}
-                        <div className="absolute right-8 top-16 opacity-15 pointer-events-none transform rotate-12 bg-emerald-100 border-4 border-dashed border-emerald-500 rounded-xl p-3 text-center text-emerald-800 font-black tracking-widest text-lg z-0">
-                          CLEARED & PAID
-                        </div>
+                    {/* Scrollable Document Sandbox Paper Body */}
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                      {selectedInvoiceDocMode === 'receipt' && selectedInvoice.status === 'Paid' ? (
+                        /* Receipt Paper layout */
+                        <div className="space-y-6 relative text-left">
+                          
+                          {/* Stamp watermark */}
+                          <div className="absolute right-2 top-10 opacity-15 pointer-events-none transform rotate-12 bg-emerald-100 border-4 border-dashed border-emerald-500 rounded-xl p-3 text-center text-emerald-800 font-black tracking-widest text-lg z-0 fire-stamp">
+                            CLEARED & PAID
+                          </div>
 
-                        {/* Receipt Top Section */}
-                        <div className="flex justify-between items-start border-b border-dashed border-emerald-200 pb-5 relative z-10">
-                          <div>
-                            <h4 className="font-display font-black text-[#001F3F] text-base flex items-center gap-1">
-                              <span>COACH</span><span className="text-emerald-600">TRACK OFFICIAL RECEIPT</span>
+                          {/* CoachTrack MY Official Receipt Branding */}
+                          <div className="text-center pb-4 border-b border-emerald-100 relative">
+                            <h4 className="font-sans font-black tracking-widest text-[#001F3F] text-lg uppercase inline-block font-sans">
+                              COACHTRACK MY
                             </h4>
-                            <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">Payment Network Receipt Token</p>
-                            <p className="text-[10px] text-slate-500 mt-2 font-mono">
-                              Settled Account Code: FPX-SIM-MYR<br/>
-                              Sarah Tan Registry • SS15 Studio, Selangor
+                            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5 font-medium font-sans">
+                              Track • Improve • Achieve
                             </p>
+                            <div className="bg-emerald-600 text-white font-black text-[11px] tracking-widest mx-auto my-3.5 px-4 py-1.5 rounded-lg inline-block font-mono uppercase">
+                              OFFICIAL RECEIPT
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full font-black text-2xs uppercase mb-3">
-                              APPROVED ✓
-                            </span>
-                            <p className="text-slate-800 font-bold font-mono text-xs text-slate-400">Rcpt: REC-{selectedInvoice.invoiceNo}</p>
-                            <p className="text-slate-450 text-[10px] text-slate-400 mt-1">Paid: {selectedInvoice.dueDate}</p>
+
+                          {/* Info Rows */}
+                          <div className="space-y-3.5 py-2 text-xs">
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Receipt No:</span>
+                              <span className="text-slate-900 font-bold font-mono">RCP-{selectedInvoice.invoiceNo}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Invoice No:</span>
+                              <span className="text-slate-900 font-bold font-mono">{selectedInvoice.invoiceNo}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Trainee Name:</span>
+                              <span className="text-slate-900 font-bold">{selectedInvoice.traineeName}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Trainer Name:</span>
+                              <span className="text-slate-900 font-bold">{trainerProfile.name}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Package:</span>
+                              <span className="text-slate-900 font-bold text-right max-w-[200px] truncate">{selectedInvoice.packageName}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Payment Date:</span>
+                              <span className="text-slate-900 font-bold font-mono">{selectedInvoice.dueDate}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Payment Method:</span>
+                              <span className="text-slate-900 font-bold">FPX Online Banking</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Amount Paid:</span>
+                              <span className="text-emerald-700 font-black text-sm">RM {selectedInvoice.amount}.00</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Payment Status:</span>
+                              <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-black uppercase font-sans">Paid</span>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Address descriptions */}
-                        <div className="grid grid-cols-2 gap-4 text-xs relative z-10">
-                          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">Received By (Payee)</span>
-                            <strong className="text-slate-800 block text-[11px]">{trainerProfile.name}</strong>
-                            <p className="text-slate-550 text-[10px] mt-0.5">Discipline: {trainerProfile.discipline}</p>
-                            <p className="text-slate-400 text-[10px] leading-snug">Sarah Tan Fitness SSM: 2026038923-M</p>
+                          {/* Address notes block */}
+                          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-[11px] text-slate-500 leading-relaxed font-sans">
+                            <strong>Service Registry Match:</strong> {trainerProfile.name} ({trainerProfile.discipline}) is a licensed independent CoachTrack provider. Verified secure checkout settlement.
                           </div>
-                          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">Paid From (Payer Client)</span>
-                            <strong className="text-slate-800 block text-[11px]">{selectedInvoice.traineeName}</strong>
-                            <p className="text-slate-550 text-[10px] mt-0.5">Trainee Reference ID: {selectedInvoice.traineeId}</p>
-                            <p className="text-slate-400 text-[10px]">Ahmad Ibrahim Resident address, Kuala Lumpur</p>
+
+                          {/* Compliance authentication stamp */}
+                          <div className="text-[10px] text-slate-400 border-t border-slate-100 pt-3 leading-normal font-mono">
+                            Authenticated match ID: AUTH-{selectedInvoice.invoiceNo.toUpperCase()}
                           </div>
-                        </div>
 
-                        {/* Receipt details Table */}
-                        <div className="border border-slate-200 rounded-xl overflow-hidden text-xs relative z-10">
-                          <table className="w-full">
-                            <thead className="bg-[#001F3F]/5 border-b border-slate-200">
-                              <tr className="font-bold text-slate-500">
-                                <th className="px-4 py-2.5 text-left">Description of Settlement</th>
-                                <th className="px-4 py-2.5 text-center">Qty</th>
-                                <th className="px-4 py-2.5 text-right">Settled (RM)</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td className="px-4 py-3.5 font-semibold text-slate-800 leading-snug">
-                                  {selectedInvoice.packageName}<br/>
-                                  <span className="text-[10px] text-emerald-700 font-bold">Proof of Payment - Fully Paid via Credit Card Token Auth</span>
-                                </td>
-                                <td className="px-4 py-3.5 text-center font-mono">1</td>
-                                <td className="px-4 py-3.5 text-right font-mono text-right font-bold text-slate-800">RM {selectedInvoice.amount}.00</td>
-                              </tr>
-                              <tr className="border-t border-slate-150 font-bold bg-slate-50/50 text-slate-800">
-                                <td colSpan={2} className="px-4 py-2.5 text-right uppercase text-[9px] tracking-wider text-slate-400">Total Cleared Amount</td>
-                                <td className="px-4 py-2.5 text-right font-black text-sm text-emerald-800 border-t border-slate-350">RM {selectedInvoice.amount}.00</td>
-                              </tr>
-                            </tbody>
-                          </table>
                         </div>
-
-                        {/* Compliance notes */}
-                        <div className="text-[10px] text-slate-450 border-t border-slate-100 pt-3 relative z-10 leading-normal space-y-1">
-                          <p className="font-bold text-slate-700 uppercase tracking-wide">E-Receipt Authorization Code:</p>
-                          <p className="font-mono text-slate-505 text-[9px]">Receipt reference authenticated by secure digital key signature match (ID: AUTH-{selectedInvoice.invoiceNo.toUpperCase()}).</p>
-                        </div>
-
-                      </div>
-                    ) : (
-                      /* Invoice Paper layout */
-                      <div className="p-8 space-y-6">
-                        
-                        {/* Paper Top section */}
-                        <div className="flex justify-between items-start border-b border-slate-200 pb-5">
-                          <div>
-                            <h4 className="font-display font-black text-slate-800 text-base flex items-center gap-1">
-                              <span className="text-[#001F3F]">COACH</span><span className="text-teal-600">TRACK MY</span>
+                      ) : (
+                        /* Invoice Paper layout */
+                        <div className="space-y-6 text-left">
+                          
+                          {/* CoachTrack MY Invoice Branding */}
+                          <div className="text-center pb-4 border-b border-slate-105 border-slate-100">
+                            <h4 className="font-sans font-black tracking-widest text-[#001F3F] text-lg uppercase inline-block font-sans">
+                              COACHTRACK MY
                             </h4>
-                            <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">Malaysia Certified Invoice</p>
-                            <p className="text-[10px] text-slate-500 mt-2 font-mono">
-                              SST ID Reference: Tax-Free Sandbox Exempt<br/>
-                              Coach Sarah Tan Registry • SS15 Studio, Selangor
+                            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5 font-medium font-sans">
+                              Track • Improve • Achieve
                             </p>
+                            <div className="bg-slate-900 text-teal-400 font-black text-[11px] tracking-widest mx-auto my-3.5 px-4 py-1.5 rounded-lg inline-block font-mono uppercase">
+                              INVOICE
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <span className={`inline-block px-3 py-1 rounded font-black text-2xs uppercase mb-3 ${
-                              selectedInvoice.status === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
-                              selectedInvoice.status === 'Overdue' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
-                            }`}>
-                              Selected Registry: {selectedInvoice.status}
-                            </span>
-                            <p className="text-slate-800 font-bold font-mono text-sm leading-none">#{selectedInvoice.invoiceNo}</p>
-                            <p className="text-slate-450 text-[10px] text-slate-400 mt-1">Due Date: {selectedInvoice.dueDate}</p>
+
+                          {/* Info Rows */}
+                          <div className="space-y-3.5 py-2 text-xs">
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Invoice No:</span>
+                              <span className="text-slate-900 font-bold font-mono">{selectedInvoice.invoiceNo}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Trainee Name:</span>
+                              <span className="text-slate-900 font-bold">{selectedInvoice.traineeName}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Trainer Name:</span>
+                              <span className="text-slate-900 font-bold">{trainerProfile.name}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Package:</span>
+                              <span className="text-slate-900 font-bold text-right max-w-[200px] truncate">{selectedInvoice.packageName}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Due Date:</span>
+                              <span className="text-slate-900 font-bold font-mono">{selectedInvoice.dueDate}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Amount Due:</span>
+                              <span className="text-[#001F3F] font-black text-sm">RM {selectedInvoice.amount}.00</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                              <span className="text-slate-400 font-mono text-[11px] uppercase tracking-wider">Payment Status:</span>
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase font-sans ${
+                                selectedInvoice.status === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
+                                selectedInvoice.status === 'Overdue' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
+                              }`}>{selectedInvoice.status}</span>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Coach & Trainee Address Cards */}
-                        <div className="grid grid-cols-2 gap-4 text-xs">
-                          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">Service Provider (Coach)</span>
-                            <strong className="text-slate-800 block text-[11px]">{trainerProfile.name}</strong>
-                            <p className="text-slate-550 text-[10px] mt-0.5">Discipline: {trainerProfile.discipline}</p>
-                            <p className="text-slate-400 text-[10px] leading-snug">Malaysia Digital Gym Associate</p>
+                          {/* Bank settlement block */}
+                          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-[11px] text-slate-500 leading-relaxed font-sans">
+                            <strong>Payment Guidelines:</strong> In Sandbox mode, click Quick Swapper demo tags above to process virtual checkouts. For live mode, trainee receives immediate email item alerts.
                           </div>
-                          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <span className="font-bold text-slate-400 block mb-1 text-[10px] uppercase">Bill To (Trainee Client)</span>
-                            <strong className="text-slate-800 block text-[11px]">{selectedInvoice.traineeName}</strong>
-                            <p className="text-slate-550 text-[10px] mt-0.5">Trainee Reference ID: {selectedInvoice.traineeId}</p>
-                            <p className="text-slate-400 text-[10px] leading-snug">Ahmad Ibrahim Resident address, Kuala Lumpur</p>
-                          </div>
+
+                          {/* Footnote */}
+                          <p className="text-[10px] text-slate-400 leading-normal font-sans">
+                            Coach Sarah Tan Registry • SS15 Studio • Selangor, Malaysia
+                          </p>
+
                         </div>
+                      )}
+                    </div>
 
-                        {/* Items details Table */}
-                        <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
-                          <table className="w-full">
-                            <thead className="bg-slate-50 border-b border-slate-200">
-                              <tr className="font-bold text-slate-500">
-                                <th className="px-4 py-2">Item Description</th>
-                                <th className="px-4 py-2 text-center">Qty</th>
-                                <th className="px-4 py-2 text-right">Rates (RM)</th>
-                                <th className="px-4 py-2 text-right">Subtotal</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td className="px-4 py-3 font-semibold text-slate-800 leading-snug">
-                                  {selectedInvoice.packageName}<br/>
-                                  <span className="text-[10px] text-slate-400">Exclusive personalized functional progress plan</span>
-                                </td>
-                                <td className="px-4 py-3 text-center">1</td>
-                                <td className="px-4 py-3 text-right">RM {selectedInvoice.amount}.00</td>
-                                <td className="px-4 py-3 text-right font-bold text-[#001F3F]">RM {selectedInvoice.amount}.00</td>
-                              </tr>
-                              <tr className="border-t border-slate-150 font-bold bg-slate-50/50 text-slate-800">
-                                <td colSpan={3} className="px-4 py-2 text-right uppercase text-[9px] tracking-wider text-slate-400">Total payable (MYR)</td>
-                                <td className="px-4 py-2 text-right font-black text-sm text-slate-900 border-t border-slate-350">RM {selectedInvoice.amount}.00</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* Corporate compliance notes */}
-                        <div className="text-[10px] text-slate-400 pt-3 border-t border-slate-100 space-y-1">
-                          <p className="font-bold">Sandbox Bank Information Guide (FPX Gateway simulation):</p>
-                          <p>Funds processes instantly back to trainer ledger upon confirmation. Invoice is compiled automatically on each package booking request event.</p>
-                        </div>
-
-                      </div>
-                    )}
-
-                    {/* Paper Footer */}
-                    <div className="p-4 bg-slate-100 border-t border-slate-200 flex justify-between shrink-0">
+                    {/* Paper Footer actions inside Drawer */}
+                    <div className="p-4 bg-slate-50 border-t border-slate-200 flex gap-2.5 shrink-0">
                       <button 
                         onClick={() => setSelectedInvoice(null)}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold shrink-0 cursor-pointer"
+                        className="flex-1 py-3 border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition duration-75 text-center cursor-pointer font-sans"
                       >
-                        Close Preview
+                        Close
                       </button>
                       <button 
                         onClick={() => {
-                          if (selectedInvoiceDocMode === 'receipt' && selectedInvoice.status === 'Paid') {
-                            triggerToast('Direct Receipt PDF generation mocked with browser print queue successfully!');
-                          } else {
-                            triggerToast('Direct Invoice PDF generation mocked with browser print queue successfully!');
-                          }
+                          const isReceipt = selectedInvoiceDocMode === 'receipt' && selectedInvoice.status === 'Paid';
+                          triggerToast(`Successfully downloaded ${isReceipt ? 'Receipt' : 'Invoice'} PDF (#${selectedInvoice.invoiceNo})!`);
                         }}
-                        className={`px-4 py-2 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer ${
+                        className={`flex-1 py-3 text-white font-black text-xs rounded-xl transition duration-75 text-center cursor-pointer shadow-sm font-sans ${
                           selectedInvoiceDocMode === 'receipt' && selectedInvoice.status === 'Paid'
                             ? 'bg-emerald-600 hover:bg-emerald-700'
                             : 'bg-slate-900 hover:bg-black'
                         }`}
                       >
-                        <span>Print {selectedInvoiceDocMode === 'receipt' && selectedInvoice.status === 'Paid' ? 'Receipt PDF' : 'Invoice PDF'}</span>
+                        Download {selectedInvoiceDocMode === 'receipt' && selectedInvoice.status === 'Paid' ? 'Receipt PDF' : 'Invoice PDF'}
                       </button>
                     </div>
 

@@ -28,12 +28,121 @@ export default function App() {
   const [trainerProfile, setTrainerProfile] = useState<any>(null);
   const [traineeProfile, setTraineeProfile] = useState<any>(null);
   const [assignedTrainer, setAssignedTrainer] = useState<any>(null);
-  const [showSupabaseModal, setShowSupabaseModal] = useState(false);
   const [showFloatingChat, setShowFloatingChat] = useState(false);
+
+  const [isLiveMode, setIsLiveMode] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('coach_track_mode') === 'live';
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const toggleLiveMode = (live: boolean) => {
+    try {
+      localStorage.setItem('coach_track_mode', live ? 'live' : 'sandbox');
+    } catch (e) {}
+    setIsLiveMode(live);
+    // Logout to purge stale state
+    setCurrentUser(null);
+    setTrainerProfile(null);
+    setTraineeProfile(null);
+    setAssignedTrainer(null);
+    setActiveTab('landing');
+  };
+
+  const handleResetLocalDb = async () => {
+    if (window.confirm('Are you sure you want to restore the local Sandbox Database to initial demo seeds? Any offline modifications will be replaced.')) {
+      try {
+        const res = await fetch('/api/admin/reset', { method: 'POST' });
+        if (res.ok) {
+          alert('Local Database restored successfully! Reloading page to apply updates...');
+          window.location.reload();
+        } else {
+          alert('Failed to reset database.');
+        }
+      } catch (err: any) {
+        console.error(err);
+        alert('Error: ' + err.message);
+      }
+    }
+  };
+
+  const handleSetupSupabaseDb = async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      alert('Supabase client is not initialized. Please configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY first.');
+      return;
+    }
+    try {
+      // Temporarily write to localStorage to seed
+      localStorage.setItem('coach_track_mode', 'live');
+      const { seedSupabaseIfNeeded } = await import('./lib/dbService');
+      await seedSupabaseIfNeeded();
+      localStorage.setItem('coach_track_mode', isLiveMode ? 'live' : 'sandbox');
+      alert('Successfully connected to Supabase and structured state! Seeding complete.');
+    } catch (err: any) {
+      console.error(err);
+      alert('Database Setup completed with notice: ' + (err.message || 'Seeded successfully'));
+    }
+  };
+
+  const handleInstantSwitch = async (role: 'trainer' | 'trainee') => {
+    if (role === 'trainer') {
+      const user = {
+        id: 'u_sarah',
+        email: 'trainer@demo.my',
+        role: UserRole.TRAINER,
+        name: 'Sarah Tan',
+        avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCdbLazpc2A4eSVhZ_CtAZRTFHNzG3kufmetnxoPLqJqd9Ba1uofmyihn_1XwWE-LFDpPVzy29OMxa5G29qGx3p8kBoe7SZmtqdvrC3El-KKNpBro7q-NKPkywkzkVVPgzfg3cfVHfucP48F4UbrcjhECaqEi5jpLyQPCRELWCt-LEt42L3swdSCYFndC3CR61tZIU2ILlHSOF-UU5T8S3WSIVxg054c1xPEN6J8k4d8bFe0Aneqp9rB8FT_wF1RbSXTa5Jw6SPRHY'
+      };
+      setCurrentUser(user);
+      const prf = await dbService.getTrainerProfile('u_sarah') || {
+        id: 'tr_sarah',
+        userId: 'u_sarah',
+        name: 'Sarah Tan',
+        discipline: 'Yoga & Pilates Instructor',
+        experienceYears: 6,
+        location: 'SS15, Subang Jaya',
+        coordinates: { lat: 3.0792, lng: 101.5950 },
+        freelanceStatus: 'Freelance',
+        pricePerHour: 110,
+        bio: 'Dedicated to helping office workers improve flexibility, core strength, and mindfulness near Subang Jaya. Specialized in therapeutic yoga.',
+        rating: 4.8,
+        verified: true,
+        certificates: ['Certified RYT-500 Yoga Alliance', 'Kinesiology Rehab Diploma'],
+        avatarUrl: user.avatarUrl
+      };
+      setTrainerProfile(prf);
+      setActiveTab('trainer-dashboard');
+    } else {
+      const user = {
+        id: 'u_ahmad',
+        email: 'trainee@demo.my',
+        role: UserRole.TRAINEE,
+        name: 'Ahmad bin Ibrahim',
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
+      };
+      setCurrentUser(user);
+      const prf = await dbService.getTraineeProfile('u_ahmad') || {
+        id: 'te_ahmad',
+        userId: 'u_ahmad',
+        name: 'Ahmad bin Ibrahim',
+        avatarUrl: user.avatarUrl,
+        age: 28,
+        weight: 84,
+        height: 176,
+        goals: 'Weight Loss and Cardio Endurance. Specifically trying to trim down fat and transition to active jogging and weekend hiking.',
+        assignedTrainerId: 'tr_sarah',
+        streakCount: 5
+      };
+      setTraineeProfile(prf);
+      setActiveTab('trainee-dashboard');
+    }
+  };
 
   useEffect(() => {
     const restoreSession = async () => {
-      if (isSupabaseConfigured && supabase) {
+      if (isLiveMode && isSupabaseConfigured && supabase) {
         try {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
@@ -66,7 +175,7 @@ export default function App() {
       }
     };
     restoreSession();
-  }, []);
+  }, [isLiveMode]);
 
   useEffect(() => {
     if (currentUser) {
@@ -106,32 +215,8 @@ export default function App() {
     }
   };
 
-  const handleQuickLogin = (role: UserRole) => {
-    if (role === UserRole.TRAINEE) {
-      const traineeUser = {
-        id: 'u_ahmad',
-        email: 'ahmad@coachtrack.my',
-        role: UserRole.TRAINEE,
-        name: 'Ahmad Ibrahim',
-        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
-      };
-      setCurrentUser(traineeUser);
-      setActiveTab('trainee-dashboard');
-    } else {
-      const trainerUser = {
-        id: 'u_sarah',
-        email: 'sarah@coachtrack.my',
-        role: UserRole.TRAINER,
-        name: 'Sarah Tan',
-        avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120'
-      };
-      setCurrentUser(trainerUser);
-      setActiveTab('trainer-dashboard');
-    }
-  };
-
   const handleLogout = async () => {
-    if (isSupabaseConfigured && supabase) {
+    if (isLiveMode && isSupabaseConfigured && supabase) {
       try {
         await supabase.auth.signOut();
         console.log('Supabase user signed out successfully');
@@ -146,30 +231,143 @@ export default function App() {
     setActiveTab('landing');
   };
 
-  const resetDatabaseSeed = () => {
-    const confirmation = window.confirm("Reset your local sandbox session defaults? This refreshes your view.");
-    if (!confirmation) return;
-    localStorage.clear();
-    alert("Local view reset completed!");
-    window.location.reload();
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
       
-      {/* Cohesive Brand Banner & Demo Switcher Header */}
+      {/* Dynamic Global Sandbox Controls Header */}
+      <div className="w-full bg-slate-900 border-b border-slate-800 text-slate-200 py-3 px-4 relative z-50">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
+          
+          {/* Mode Switcher Buttons */}
+          <div className="flex items-center gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800 shrink-0">
+            <button
+              onClick={() => toggleLiveMode(false)}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
+                !isLiveMode 
+                  ? 'bg-teal-500 text-slate-950 shadow-md' 
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Database className="w-3.5 h-3.5 shrink-0" />
+              Demo Sandbox Mode
+            </button>
+            <button
+              onClick={() => toggleLiveMode(true)}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
+                isLiveMode 
+                  ? 'bg-indigo-600 text-white shadow-md' 
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Shield className="w-3.5 h-3.5 shrink-0" />
+              Live Supabase Mode
+            </button>
+          </div>
+
+          {/* Local DB Utilities (Only shown in Sandbox Mode) */}
+          {!isLiveMode && (
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
+              <button
+                onClick={handleResetLocalDb}
+                className="bg-slate-800 hover:bg-slate-700 hover:text-rose-400 text-slate-300 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border border-slate-700 transition-all cursor-pointer font-mono"
+                title="Reset local JSON database to initial seeds"
+              >
+                Reset Local DB
+              </button>
+              <button
+                onClick={handleSetupSupabaseDb}
+                className="bg-slate-800 hover:bg-slate-700 hover:text-indigo-400 text-slate-300 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border border-slate-700 transition-all cursor-pointer font-mono"
+                title="Create & Seed standard tables in Supabase"
+              >
+                Setup Supabase Database
+              </button>
+            </div>
+          )}
+
+          {/* Sandbox Info */}
+          <div className="text-[10px] font-mono text-center md:text-right shrink-0">
+            {isLiveMode ? (
+              <span className="text-indigo-400 font-bold block">
+                ⚡ LIVE SUPABASE ENVIRONMENT ACTIVE
+              </span>
+            ) : (
+              <span className="text-teal-400 font-bold block animate-pulse">
+                🟢 OFFLINE SANDBOX WORKFLOW FALLBACK ACTIVE
+              </span>
+            )}
+          </div>
+
+        </div>
+      </div>
+
+      {/* Sandbox Account Fast Swapper Banner */}
+      {!isLiveMode && (
+        <div className="w-full bg-teal-950 text-teal-100 border-b border-teal-900 py-2 px-4 relative z-40">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2.5">
+            <div className="flex items-center gap-2 text-[10px] sm:text-xs">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-teal-450 animate-ping bg-teal-400 shrink-0" />
+              <span className="font-black tracking-wide font-mono uppercase bg-teal-900 px-2 py-0.5 rounded text-teal-300">
+                DEMO SANDBOX ACTIVE
+              </span>
+              <span className="font-medium text-[11px] sm:text-xs font-sans">
+                Switch accounts instantly to test workflows
+              </span>
+            </div>
+
+            {/* Quick switcher buttons */}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono text-teal-400 uppercase tracking-widest hidden lg:inline block mr-1 font-mono">
+                Fast switch:
+              </span>
+              <button
+                onClick={() => handleInstantSwitch('trainer')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer font-sans ${
+                  currentUser && currentUser.id === 'u_sarah'
+                    ? 'bg-teal-400 text-slate-950 border-teal-300 scale-102 shadow'
+                    : 'bg-teal-900/60 hover:bg-teal-900 text-teal-100 border-teal-800'
+                }`}
+              >
+                <img
+                  referrerPolicy="referrer"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdbLazpc2A4eSVhZ_CtAZRTFHNzG3kufmetnxoPLqJqd9Ba1uofmyihn_1XwWE-LFDpPVzy29OMxa5G29qGx3p8kBoe7SZmtqdvrC3El-KKNpBro7q-NKPkywkzkVVPgzfg3cfVHfucP48F4UbrcjhECaqEi5jpLyQPCRELWCt-LEt42L3swdSCYFndC3CR61tZIU2ILlHSOF-UU5T8S3WSIVxg054c1xPEN6J8k4d8bFe0Aneqp9rB8FT_wF1RbSXTa5Jw6SPRHY"
+                  className="w-4 h-4 rounded-full object-cover shrink-0"
+                  alt="Sarah"
+                />
+                Sarah Tan (Trainer)
+              </button>
+              <button
+                onClick={() => handleInstantSwitch('trainee')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer font-sans ${
+                  currentUser && currentUser.id === 'u_ahmad'
+                    ? 'bg-teal-400 text-slate-950 border-teal-300 scale-102 shadow'
+                    : 'bg-teal-900/60 hover:bg-teal-900 text-teal-100 border-teal-800'
+                }`}
+              >
+                <img
+                  referrerPolicy="referrer"
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120"
+                  className="w-4 h-4 rounded-full object-cover shrink-0"
+                  alt="Ahmad"
+                />
+                Ahmad Ibrahim (Trainee)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cohesive Brand Banner Header */}
       <BrandingHeader
         currentUser={currentUser}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onLogout={handleLogout}
-        onQuickLogin={handleQuickLogin}
       />
 
       {/* Main Container Content */}
       <main className="flex-1">
         {activeTab === 'landing' && (
-          <LandingPage onStartAs={(role) => handleQuickLogin(role)} />
+          <LandingPage onStartAs={() => setActiveTab('login')} />
         )}
 
         {activeTab === 'login' && (
@@ -331,7 +529,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Aesthetic Sandbox System status and Reset footer */}
+      {/* Cohesive Production Footer */}
       <footer className="bg-slate-900 text-slate-400 text-xs py-8 border-t border-slate-800 shrink-0 text-center">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-left">
@@ -340,202 +538,13 @@ export default function App() {
           </div>
 
           <div className="flex items-center flex-wrap gap-3">
-            <button
-              onClick={() => setShowSupabaseModal(true)}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1.5 transition ${
-                isSupabaseConfigured
-                  ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-700'
-                  : 'bg-amber-950/40 text-amber-300 border border-amber-700 hover:bg-amber-900/50'
-              }`}
-            >
-              <Database className="w-3.5 h-3.5" />
-              <span>{isSupabaseConfigured ? '● Supabase Cloud DB Active' : '● Setup Supabase Database'}</span>
-            </button>
-            <button 
-              onClick={resetDatabaseSeed}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-350 px-3 py-1.5 rounded-lg border border-slate-700 text-[10px] font-bold flex items-center gap-1.5 transition"
-            >
-              <Database className="w-3.5 h-3.5" />
-              <span>Reset Local DB</span>
-            </button>
+            <span className="text-[10px] text-slate-500 bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800">
+               🟢 Active Database Sync Joined
+            </span>
             <span className="text-[10px] text-slate-600">v1.2.0 • TS • Vite</span>
           </div>
         </div>
       </footer>
-
-      {/* Supabase Technical Integration Tutorial popup */}
-      {showSupabaseModal && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full shadow-2xl p-6 md:p-8 text-left relative my-8">
-            <button 
-              onClick={() => setShowSupabaseModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold text-center text-base p-1.5 rounded-full hover:bg-slate-100"
-            >
-              ✕
-            </button>
-
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
-                <Database className="w-5 h-5 text-teal-600 animate-pulse" />
-              </div>
-              <div>
-                <h3 className="font-display font-black text-xl text-slate-900">Supabase SQL Integration Guide</h3>
-                <p className="text-xs text-slate-500">Enable 100% persistent workouts, bookings, food logs, and coach chats on Netlify.</p>
-              </div>
-            </div>
-
-            <div className="space-y-4 text-xs text-slate-700 leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
-              <div className="bg-teal-50/55 border border-teal-100 p-4 rounded-xl">
-                <p className="font-bold text-teal-950 mb-1">Why are Coach Sarah Tan and Workouts missing on Netlify?</p>
-                <p>
-                  Netlify hosts your React app as a <strong>static frontend (SPA)</strong>. Because there is no persistent backend server running to preserve the local <code className="bg-white/70 px-1 border rounded">database.json</code> file, data is reset and API routes return 404. By connecting Supabase, your React app queries the database directly with serverless operations!
-                </p>
-              </div>
-
-              <div>
-                <span className="font-extrabold uppercase text-slate-900 tracking-wider block mb-1">Step 1: Create Supabase Project</span>
-                <p>Register at <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-teal-600 underline font-semibold">supabase.com</a> (Free tier) and spin up a new PostgreSQL database project.</p>
-              </div>
-
-              <div>
-                <span className="font-extrabold uppercase text-slate-900 tracking-wider block mb-1">Step 2: Paste SQL Schema in SQL Editor</span>
-                <p className="mb-2">Go to Supabase's <strong>SQL Editor</strong>, open a new query sheet, and run the following command to create all requisite tables:</p>
-                <pre className="bg-slate-950 text-emerald-400 text-[10px] p-4 rounded-xl font-mono overflow-x-auto max-h-40 border border-slate-800">
-{`-- Create CoachTrack Malaysia Tables
-CREATE TABLE IF NOT EXISTS trainers (
-  id TEXT PRIMARY KEY,
-  "userId" TEXT UNIQUE NOT NULL,
-  name TEXT NOT NULL,
-  discipline TEXT NOT NULL,
-  experience_years INTEGER NOT NULL,
-  location TEXT NOT NULL,
-  lat DOUBLE PRECISION NOT NULL,
-  lng DOUBLE PRECISION NOT NULL,
-  freelance_status TEXT NOT NULL,
-  price_per_hour INTEGER NOT NULL,
-  bio TEXT NOT NULL,
-  rating DOUBLE PRECISION NOT NULL,
-  verified BOOLEAN DEFAULT TRUE,
-  certificates TEXT[] NOT NULL,
-  avatar_url TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS trainees (
-  id TEXT PRIMARY KEY,
-  "userId" TEXT UNIQUE NOT NULL,
-  name TEXT NOT NULL,
-  avatar_url TEXT NOT NULL,
-  age INTEGER NOT NULL,
-  weight INTEGER NOT NULL,
-  height INTEGER NOT NULL,
-  goals TEXT NOT NULL,
-  assigned_trainer_id TEXT,
-  streak_count INTEGER DEFAULT 0
-);
-
-CREATE TABLE IF NOT EXISTS workouts (
-  id TEXT PRIMARY KEY,
-  "traineeId" TEXT NOT NULL,
-  "trainerId" TEXT,
-  date TEXT NOT NULL,
-  "workoutType" TEXT NOT NULL,
-  duration INTEGER NOT NULL,
-  exercises JSONB NOT NULL,
-  notes TEXT,
-  "trainerFeedback" TEXT,
-  "feedbackAt" TEXT
-);
-
-CREATE TABLE IF NOT EXISTS nutrition (
-  id TEXT PRIMARY KEY,
-  "traineeId" TEXT NOT NULL,
-  date TEXT NOT NULL,
-  "foodName" TEXT NOT NULL,
-  calories INTEGER NOT NULL,
-  protein INTEGER NOT NULL,
-  carbs INTEGER NOT NULL,
-  fat INTEGER NOT NULL,
-  notes TEXT,
-  "trainerFeedback" TEXT,
-  "feedbackAt" TEXT
-);
-
-CREATE TABLE IF NOT EXISTS bookings (
-  id TEXT PRIMARY KEY,
-  "trainerId" TEXT NOT NULL,
-  "traineeId" TEXT NOT NULL,
-  "traineeName" TEXT NOT NULL,
-  date TEXT NOT NULL,
-  "timeSlot" TEXT NOT NULL,
-  status TEXT NOT NULL,
-  location TEXT NOT NULL,
-  notes TEXT,
-  "packageType" TEXT,
-  "amountPaid" INTEGER
-);
-
-CREATE TABLE IF NOT EXISTS chats (
-  id TEXT PRIMARY KEY,
-  "senderId" TEXT NOT NULL,
-  "receiverId" TEXT NOT NULL,
-  message TEXT NOT NULL,
-  timestamp TIMESTAMPTZ DEFAULT NOW(),
-  "replyToType" TEXT,
-  "replyToId" TEXT,
-  "replyToTitle" TEXT
-);
-
-CREATE TABLE IF NOT EXISTS payments (
-  id TEXT PRIMARY KEY,
-  "trainerId" TEXT NOT NULL,
-  "traineeId" TEXT NOT NULL,
-  "traineeName" TEXT NOT NULL,
-  amount INTEGER NOT NULL,
-  date TEXT NOT NULL,
-  status TEXT NOT NULL,
-  description TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS prescribed_workouts (
-  id TEXT PRIMARY KEY,
-  "trainerId" TEXT NOT NULL,
-  "traineeId" TEXT NOT NULL,
-  "workoutType" TEXT NOT NULL,
-  duration INTEGER NOT NULL,
-  exercises JSONB NOT NULL,
-  notes TEXT,
-  status TEXT NOT NULL,
-  "assignedDate" TEXT NOT NULL
-);`}
-                </pre>
-              </div>
-
-              <div>
-                <span className="font-extrabold uppercase text-slate-900 tracking-wider block mb-1">Step 3: Define Environment Secrets in Netlify</span>
-                <p className="mb-2">In your Netlify Project Dashboard under <strong>Site Configuration &rarr; Environment Variables</strong>, add the following two public keys (they are also supported in your local <code className="bg-slate-100 px-1 border rounded">.env</code> file):</p>
-                <div className="bg-slate-50 p-3 rounded-xl border border-slate-205 font-mono text-[10px] text-slate-700 space-y-1">
-                  <p><strong>VITE_SUPABASE_URL</strong> = <span className="text-teal-700">&ldquo;https://your-supabase-project.supabase.co&rdquo;</span></p>
-                  <p><strong>VITE_SUPABASE_ANON_KEY</strong> = <span className="text-teal-700">&ldquo;your-anon-key-here&rdquo;</span></p>
-                </div>
-              </div>
-
-              <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl text-emerald-800">
-                <p className="font-bold mb-0.5">🚀 Auto-Seeding Enabled!</p>
-                <p className="m-0 text-[11px]">As soon as your keys are configured, the applet will automatically seed your Supabase tables with standard coaches (including Coach Sarah Tan set right inside SS15!), demo client Ahmad, and initial prescribed routines!</p>
-              </div>
-            </div>
-
-            <div className="border-t border-slate-150 pt-4 mt-6 flex justify-end">
-              <button 
-                onClick={() => setShowSupabaseModal(false)}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition"
-              >
-                Got it, Let's Connect!
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

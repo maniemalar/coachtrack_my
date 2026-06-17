@@ -53,6 +53,10 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
   const [signupError, setSignupError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Diagnostic states
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'failed'>('idle');
+  const [testResult, setTestResult] = useState('');
+
   // Trainer Stepper values
   // Step 1: Basic Info
   const [trainerName, setTrainerName] = useState('');
@@ -89,71 +93,39 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
   const [traineeWorkoutType, setTraineeWorkoutType] = useState('HIIT Weightloss');
   const [traineeLevel, setTraineeLevel] = useState('Beginner');
 
-  // Demo Login triggers
-  const handleDemoLogin = async (role: 'trainer' | 'trainee') => {
-    setLoginError('');
-    setIsLoggingIn(true);
-    const email = role === 'trainer' ? 'trainer@demo.my' : 'trainee@demo.my';
-    const password = 'demo1234';
-    
+  const handleDiagnosticTest = async () => {
+    setTestStatus('testing');
+    setTestResult('');
     try {
-      if (isSupabaseConfigured && supabase) {
-        console.log('Attempting Supabase Demo login for:', email);
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-        
-        if (error) {
-          console.error('Supabase Demo Auth error:', error);
-          throw error;
-        }
-
-        if (data?.user) {
-          console.log('Login success');
-          // fetch profiles
-          const { data: prof, error: profErr } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
-            
-          if (profErr) {
-            console.error('Error fetching profile for auth user:', profErr);
-            throw profErr;
-          }
-
-          if (prof) {
-            console.log('Role redirect success');
-            onAuthSuccess({
-              id: data.user.id,
-              email: prof.email,
-              role: prof.role as UserRole,
-              name: prof.name || 'Demo User',
-              avatarUrl: prof.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
-            });
-            setIsLoggingIn(false);
-            return;
-          }
-        }
-      } else {
-        // Fallback in-memory mock login for offline testing
-        console.log('Supabase not configured, using local sandbox credentials for demo:', role);
-        onAuthSuccess({
-          id: role === 'trainer' ? 'u_sarah' : 'te_ahmad',
-          email,
-          role: role === 'trainer' ? UserRole.TRAINER : UserRole.TRAINEE,
-          name: role === 'trainer' ? 'Coach Sarah Tan' : 'Ahmad bin Ibrahim',
-          avatarUrl: role === 'trainer' 
-            ? 'https://images.unsplash.com/photo-1548690312-e3b507d8c110?auto=format&fit=crop&q=80&w=120'
-            : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
-        });
+      if (!isSupabaseConfigured || !supabase) {
+        throw new Error('Supabase Client is not initialized. Please verify VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are present in your environment.');
       }
+      
+      const testEmail = `diagnostic-${Date.now()}@test.coachtrack.my`;
+      const testPassword = `Test1234!-${Date.now()}`;
+      
+      console.log('Diagnostic test: Attempting supabase.auth.signUp() with:', testEmail);
+      const { data, error } = await supabase.auth.signUp({
+        email: testEmail,
+        password: testPassword,
+        options: {
+          data: { name: 'Diagnostic Test User', role: 'trainee' }
+        }
+      });
+      
+      console.log('DIAGNOSTIC SUPABASE SIGNUP DATA RESPONSE:', data);
+      console.log('DIAGNOSTIC SUPABASE SIGNUP ERROR RESPONSE:', error);
+      
+      if (error) {
+        throw error;
+      }
+      
+      setTestStatus('success');
+      setTestResult(`Success! User created successfully.\nID: ${data.user?.id || 'N/A'}\nEmail: ${data.user?.email || testEmail}\nConfirmed: ${data.user?.email_confirmed_at ? 'Yes' : 'Pending/No confirmation'}`);
     } catch (e: any) {
-      console.error('Demo auth failed:', e);
-      setLoginError(e.message || 'Supabase auth failed.');
-    } finally {
-      setIsLoggingIn(false);
+      console.error('Diagnostic test failed:', e);
+      setTestStatus('failed');
+      setTestResult(e.message || 'Unknown diagnostic error.');
     }
   };
 
@@ -161,6 +133,33 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
     e.preventDefault();
     setLoginError('');
     setIsLoggingIn(true);
+
+    const isLive = localStorage.getItem('coach_track_mode') === 'live';
+    if (!isLive) {
+      console.log('Simulating offline login for Sandbox Mode:', loginEmail);
+      const emailLower = loginEmail.toLowerCase();
+      if (emailLower.includes('trainer') || emailLower.includes('sarah') || emailLower === 'sarah@demo.my') {
+        onAuthSuccess({
+          id: 'u_sarah',
+          email: loginEmail,
+          role: UserRole.TRAINER,
+          name: 'Sarah Tan',
+          avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCdbLazpc2A4eSVhZ_CtAZRTFHNzG3kufmetnxoPLqJqd9Ba1uofmyihn_1XwWE-LFDpPVzy29OMxa5G29qGx3p8kBoe7SZmtqdvrC3El-KKNpBro7q-NKPkywkzkVVPgzfg3cfVHfucP48F4UbrcjhECaqEi5jpLyQPCRELWCt-LEt42L3swdSCYFndC3CR61tZIU2ILlHSOF-UU5T8S3WSIVxg054c1xPEN6J8k4d8bFe0Aneqp9rB8FT_wF1RbSXTa5Jw6SPRHY'
+        });
+        setIsLoggingIn(false);
+        return;
+      } else {
+        onAuthSuccess({
+          id: 'u_ahmad',
+          email: loginEmail,
+          role: UserRole.TRAINEE,
+          name: 'Ahmad bin Ibrahim',
+          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
+        });
+        setIsLoggingIn(false);
+        return;
+      }
+    }
 
     try {
       if (isSupabaseConfigured && supabase) {
@@ -205,15 +204,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           }
         }
       } else {
-        // Mock success fallback for offline testing if keys are absent
-        console.log('Supabase keys not configured, fallback offline auth');
-        onAuthSuccess({
-          id: 'u_offline_fallback',
-          email: loginEmail,
-          role: loginEmail.includes('trainer') ? UserRole.TRAINER : UserRole.TRAINEE,
-          name: 'Sandbox User',
-          avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
-        });
+        throw new Error('Supabase is not configured. Please define VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY first.');
       }
     } catch (err: any) {
       console.error('Login submit error:', err);
@@ -280,6 +271,21 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
     setIsSubmitting(true);
     setSignupError('');
 
+    const isLive = localStorage.getItem('coach_track_mode') === 'live';
+    if (!isLive) {
+      setTimeout(() => {
+        onAuthSuccess({
+          id: `u_tr_${Math.random().toString(36).substring(2, 7)}`,
+          email: trainerEmail || 'trainer_new@demo.my',
+          role: UserRole.TRAINER,
+          name: trainerName || 'New Sandbox Coach',
+          avatarUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120'
+        });
+        setIsSubmitting(false);
+      }, 500);
+      return;
+    }
+
     const planLimits = { starter: 5, growth: 20, pro: 50 };
     const planPrices = { starter: 29, growth: 59, pro: 99 };
     const pNames = { starter: 'Starter Trainer Plan', growth: 'Growth Trainer Plan', pro: 'Pro Trainer Plan' };
@@ -321,7 +327,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
       if (isSupabaseConfigured && supabase) {
         console.log('Starting Supabase Trainer signup for:', trainerEmail);
         // Create user in Auth
-        const { data: authData, error: authErr } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: trainerEmail,
           password: trainerPassword,
           options: {
@@ -329,13 +335,16 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           }
         });
 
-        if (authErr) {
-          console.error('Supabase Auth SignUp Error:', authErr);
-          throw authErr;
+        console.log('SUPABASE SIGNUP DATA:', data);
+        console.log('SUPABASE SIGNUP ERROR:', error);
+
+        if (error) {
+          console.error('Supabase Auth SignUp Error:', error);
+          throw error;
         }
 
-        if (authData?.user) {
-          const authUserId = authData.user.id;
+        if (data?.user) {
+          const authUserId = data.user.id;
           console.log('Signup auth success');
 
           // 1. Create Profile
@@ -414,19 +423,15 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           return;
         }
       } else {
-        // Fallback bypass API call
-        console.log('Supabase keys not configured, fallback offline trainer registration');
-        onAuthSuccess({
-          id: `u_${Date.now()}`,
-          email: trainerEmail,
-          role: UserRole.TRAINER,
-          name: trainerName,
-          avatarUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=120'
-        });
+        throw new Error('Supabase is not configured. Please define VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY first.');
       }
     } catch (e: any) {
       console.error('Trainer signup error:', e);
-      setSignupError(e.message || 'Trainer profile creation failed.');
+      if (e.message?.toLowerCase().includes('rate limit') || e.message?.toLowerCase().includes('rate_limit')) {
+        setSignupError('Supabase SignUp Error: Email Rate Limit Exceeded. By default, Supabase limits sign-ups to 3 per hour per IP. To resolve this, go to your Supabase Dashboard -> Auth -> Rate Limits and disable/increase the registration rate limits, or try log-in if your user is already created.');
+      } else {
+        setSignupError(e.message || 'Trainer profile creation failed.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -441,6 +446,21 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
     if (!traineeName || !traineeEmail || !traineePassword || !traineePhone || !traineeLocation || !traineeGoal || !traineeWorkoutType || !traineeLevel) {
       setSignupError('Please fill out all the onboarding registration fields.');
       setIsSubmitting(false);
+      return;
+    }
+
+    const isLive = localStorage.getItem('coach_track_mode') === 'live';
+    if (!isLive) {
+      setTimeout(() => {
+        onAuthSuccess({
+          id: `u_te_${Math.random().toString(36).substring(2, 7)}`,
+          email: traineeEmail,
+          role: UserRole.TRAINEE,
+          name: traineeName,
+          avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
+        });
+        setIsSubmitting(false);
+      }, 500);
       return;
     }
 
@@ -461,7 +481,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
       if (isSupabaseConfigured && supabase) {
         console.log('Starting Supabase Trainee signup for:', traineeEmail);
         // Create auth user
-        const { data: authData, error: authErr } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: traineeEmail,
           password: traineePassword,
           options: {
@@ -469,13 +489,16 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           }
         });
 
-        if (authErr) {
-          console.error('Supabase Auth SignUp Error:', authErr);
-          throw authErr;
+        console.log('SUPABASE SIGNUP DATA:', data);
+        console.log('SUPABASE SIGNUP ERROR:', error);
+
+        if (error) {
+          console.error('Supabase Auth SignUp Error:', error);
+          throw error;
         }
 
-        if (authData?.user) {
-          const authUserId = authData.user.id;
+        if (data?.user) {
+          const authUserId = data.user.id;
           console.log('Signup auth success');
 
           // 1. Create Profile
@@ -537,19 +560,15 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           return;
         }
       } else {
-        // Fallback bypass API call
-        console.log('Supabase keys not configured, fallback offline trainee registration');
-        onAuthSuccess({
-          id: `u_${Date.now()}`,
-          email: traineeEmail,
-          role: UserRole.TRAINEE,
-          name: traineeName,
-          avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'
-        });
+        throw new Error('Supabase is not configured. Please define VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY first.');
       }
     } catch (e: any) {
       console.error('Trainee signup error:', e);
-      setSignupError(e.message || 'Trainee profile creation failed.');
+      if (e.message?.toLowerCase().includes('rate limit') || e.message?.toLowerCase().includes('rate_limit')) {
+        setSignupError('Supabase SignUp Error: Email Rate Limit Exceeded. By default, Supabase limits sign-ups to 3 per hour per IP. To resolve this, go to your Supabase Dashboard -> Auth -> Rate Limits and disable/increase the registration rate limits, or try log-in if your user is already created.');
+      } else {
+        setSignupError(e.message || 'Trainee profile creation failed.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -610,21 +629,52 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
           </div>
 
           {/* Connected state indicators */}
-          <div className="mt-8 bg-teal-500/10 border border-teal-500/20 rounded-2xl p-4 relative z-10">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${isSupabaseConfigured ? 'bg-teal-400 animate-pulse' : 'bg-amber-400'}`}></span>
-                <span className="text-[10px] font-black tracking-wider uppercase text-teal-350">Supabase Connection</span>
+          <div className="mt-8 bg-slate-900/50 border border-teal-500/20 rounded-2xl p-4 relative z-10 font-mono text-left">
+            {isSupabaseConfigured ? (
+              <div className="space-y-2">
+                <div className="text-emerald-400 font-extrabold text-xs flex items-center gap-2">
+                  <span>🟢 SUPABASE CLOUD CONNECTED</span>
+                </div>
+                <div className="space-y-1 text-[11px] text-slate-300">
+                  <p><span className="text-slate-500">Project:</span> CoachTrack</p>
+                  <p><span className="text-slate-500">Authentication:</span> Active</p>
+                  <p><span className="text-slate-500">Database:</span> Connected</p>
+                  <p><span className="text-slate-500">Storage:</span> Connected</p>
+                  <p><span className="text-slate-500 font-bold">Realtime:</span> Connected</p>
+                </div>
               </div>
-              <span className="text-[9px] font-bold text-teal-300 bg-teal-505/20 px-2.5 py-0.5 rounded-lg border border-teal-500/30">
-                {isSupabaseConfigured ? 'Connected to Supabase Cloud' : 'Supabase Not Configured'}
-              </span>
-            </div>
-            <p className="text-[9px] text-emerald-300 mt-1.5 leading-normal">
-              {isSupabaseConfigured 
-                ? 'Success! Connected to Supabase Cloud database and Auth services. All operations sync directly with the live database tables.' 
-                : 'Offline sandbox fallback active. Setup your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY variables.'}
-            </p>
+            ) : (
+              <div className="text-rose-400 font-extrabold text-xs flex items-center gap-2">
+                <span>🔴 SUPABASE NOT CONFIGURED</span>
+              </div>
+            )}
+          </div>
+
+          {/* Test Supabase Auth Diagnostic system */}
+          <div className="mt-4 bg-slate-900/50 border border-slate-700/50 rounded-2xl p-4 relative z-10 font-mono text-left space-y-2">
+            <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">
+              🛠️ AUTH TESTING DIAGNOSTIC
+            </span>
+            <button
+              onClick={handleDiagnosticTest}
+              disabled={testStatus === 'testing'}
+              className="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-3 rounded-lg text-[10px] uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              {testStatus === 'testing' ? 'Testing...' : 'Test Supabase Auth'}
+            </button>
+            
+            {testStatus !== 'idle' && (
+              <div className={`p-2.5 rounded-lg text-[10px] font-mono whitespace-pre-wrap border ${
+                testStatus === 'success' 
+                  ? 'bg-emerald-950/20 text-emerald-300 border-emerald-550/30' 
+                  : testStatus === 'failed'
+                  ? 'bg-rose-950/20 text-rose-300 border-rose-550/30'
+                  : 'bg-slate-800/80 text-blue-300 border-slate-700'
+              }`}>
+                {testStatus === 'testing' && 'Executing supabase.auth.signUp() with dummy address...'}
+                {testResult}
+              </div>
+            )}
           </div>
         </div>
 
@@ -716,45 +766,86 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
                 </button>
               </form>
 
-              {/* Instant Credential Swappers */}
-              <div className="border-t border-slate-100 pt-6 mt-8">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block text-center mb-3">
-                  ⚡ SANDBOX DEMO ACCOUNTS
-                </span>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={() => handleDemoLogin('trainee')}
-                    className="flex flex-col text-left p-3 rounded-xl border border-teal-100 hover:border-teal-400 bg-teal-50/20 hover:bg-teal-50/60 transition group cursor-pointer"
-                  >
-                    <span className="text-[11px] font-black text-slate-800 flex items-center gap-1 group-hover:text-teal-600">
-                      🧑 Trainee Account
-                    </span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">trainee@demo.my</span>
-                    <span className="text-[9px] font-bold text-teal-600 mt-1">demo1234 →</span>
-                  </button>
-
-                  <button 
-                    onClick={() => handleDemoLogin('trainer')}
-                    className="flex flex-col text-left p-3 rounded-xl border border-indigo-100 hover:border-indigo-400 bg-indigo-50/20 hover:bg-indigo-50/60 transition group cursor-pointer"
-                  >
-                    <span className="text-[11px] font-black text-slate-800 flex items-center gap-1 group-hover:text-indigo-600">
-                      🏋️ Coach Account
-                    </span>
-                    <span className="text-[9px] text-slate-400 mt-0.5">trainer@demo.my</span>
-                    <span className="text-[9px] font-bold text-indigo-650 mt-1">demo1234 →</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="text-center pt-2">
-                <span className="text-xs text-slate-450 font-medium">New to CoachTrack MY? </span>
+              <div className="text-center pt-6 border-t border-slate-100 mt-8">
+                <span className="text-xs text-slate-500 font-medium font-sans">New to CoachTrack MY? </span>
                 <button 
                   onClick={() => { setAuthMode('signup'); setSelectedRole(null); }}
                   className="text-xs font-bold text-teal-600 hover:underline"
                 >
                   Create an account now
                 </button>
+              </div>
+
+              {/* Demo Login Cards helper */}
+              <div className="pt-6 border-t border-slate-100 mt-6">
+                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-teal-600 block mb-3 font-mono">
+                  💡 Active Sandbox Demo Accounts
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {/* Coach Tan Card */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginEmail('trainer@demo.my');
+                      setLoginPassword('demo1234');
+                      // Auto trigger login submit instantly in Sandbox Mode
+                      const isLive = localStorage.getItem('coach_track_mode') === 'live';
+                      if (!isLive) {
+                        onAuthSuccess({
+                          id: 'u_sarah',
+                          email: 'trainer@demo.my',
+                          role: UserRole.TRAINER,
+                          name: 'Sarah Tan',
+                          avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCdbLazpc2A4eSVhZ_CtAZRTFHNzG3kufmetnxoPLqJqd9Ba1uofmyihn_1XwWE-LFDpPVzy29OMxa5G29qGx3p8kBoe7SZmtqdvrC3El-KKNpBro7q-NKPkywkzkVVPgzfg3cfVHfucP48F4UbrcjhECaqEi5jpLyQPCRELWCt-LEt42L3swdSCYFndC3CR61tZIU2ILlHSOF-UU5T8S3WSIVxg054c1xPEN6J8k4d8bFe0Aneqp9rB8FT_wF1RbSXTa5Jw6SPRHY'
+                        });
+                      }
+                    }}
+                    className="flex text-left items-center gap-3 p-3 bg-indigo-50/50 hover:bg-[#001f3f]/5 border border-slate-200 hover:border-teal-500 rounded-xl transition-all cursor-pointer group"
+                  >
+                    <img
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdbLazpc2A4eSVhZ_CtAZRTFHNzG3kufmetnxoPLqJqd9Ba1uofmyihn_1XwWE-LFDpPVzy29OMxa5G29qGx3p8kBoe7SZmtqdvrC3El-KKNpBro7q-NKPkywkzkVVPgzfg3cfVHfucP48F4UbrcjhECaqEi5jpLyQPCRELWCt-LEt42L3swdSCYFndC3CR61tZIU2ILlHSOF-UU5T8S3WSIVxg054c1xPEN6J8k4d8bFe0Aneqp9rB8FT_wF1RbSXTa5Jw6SPRHY"
+                      className="w-10 h-10 rounded-full border border-indigo-200 object-cover shrink-0"
+                      alt="Coach Sarah"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[11px] font-bold text-slate-800 block truncate group-hover:text-teal-600 transition-colors font-sans">Sarah Tan (Coach)</span>
+                      <span className="text-[9px] text-slate-500 block truncate font-sans">discipline: Yoga & Pilates</span>
+                      <span className="text-[8px] bg-indigo-100 text-indigo-700 font-bold px-1.5 py-0.5 rounded inline-block mt-0.5 font-sans">SS15 • 1-Click Login</span>
+                    </div>
+                  </button>
+
+                  {/* Trainee bin Ibrahim Card */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginEmail('trainee@demo.my');
+                      setLoginPassword('demo1234');
+                      // Auto trigger login submit instantly in Sandbox Mode
+                      const isLive = localStorage.getItem('coach_track_mode') === 'live';
+                      if (!isLive) {
+                        onAuthSuccess({
+                          id: 'u_ahmad',
+                          email: 'trainee@demo.my',
+                          role: UserRole.TRAINEE,
+                          name: 'Ahmad bin Ibrahim',
+                          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
+                        });
+                      }
+                    }}
+                    className="flex text-left items-center gap-3 p-3 bg-teal-50/50 hover:bg-[#001f3f]/5 border border-slate-200 hover:border-teal-500 rounded-xl transition-all cursor-pointer group"
+                  >
+                    <img
+                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120"
+                      className="w-10 h-10 rounded-full border border-teal-200 object-cover shrink-0"
+                      alt="Ahmad Ibrahim"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[11px] font-bold text-slate-800 block truncate group-hover:text-teal-600 transition-colors font-sans">Ahmad Ibrahim (Client)</span>
+                      <span className="text-[9px] text-slate-500 block truncate font-sans">Goal: Cardio & Fat Loss</span>
+                      <span className="text-[8px] bg-teal-100 text-teal-700 font-bold px-1.5 py-0.5 rounded inline-block mt-0.5 font-sans">SS15 • 1-Click Login</span>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
           )}
