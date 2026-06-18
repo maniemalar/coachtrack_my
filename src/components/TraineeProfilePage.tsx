@@ -742,8 +742,23 @@ export default function TraineeProfilePage({
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900 text-white rounded-2xl p-5 border border-slate-800">
                     <div className="text-left space-y-1">
                       <span className="text-[10px] font-black uppercase text-teal-400 font-mono tracking-widest leading-none">Roster Status Active</span>
-                      <h4 className="font-display font-black text-white text-base">Monthly Coaching Package</h4>
-                      <p className="text-4xs text-slate-400 font-medium">Auto-renewing recurring checkout (RM880 / 8 Classes)</p>
+                      {(() => {
+                        let name = "8 Classes Per Month";
+                        let price = 600;
+                        if (profile.id === 'te_ling' || profile.name?.includes('Mei Ling')) {
+                          name = "4 Classes Per Month";
+                          price = 310;
+                        } else if (profile.id === 'te_jason' || profile.name?.includes('Jason Wong')) {
+                          name = "Single Session";
+                          price = 80;
+                        }
+                        return (
+                          <>
+                            <h4 className="font-display font-black text-white text-base">{name}</h4>
+                            <p className="text-4xs text-slate-400 font-medium font-sans">Auto-renewing recurring checkout (RM {price} / month)</p>
+                          </>
+                        );
+                      })()}
                     </div>
 
                     <div className="flex items-center gap-4 shrink-0 w-full md:w-auto border-t md:border-t-0 border-slate-800 pt-3 md:pt-0">

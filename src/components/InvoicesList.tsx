@@ -357,7 +357,7 @@ export default function InvoicesList({ traineeId }: InvoicesListProps) {
 
                     <div className="bg-white border border-slate-100 p-2.5 rounded-lg mb-3 text-[10px] relative z-10 font-sans">
                       <p className="text-[9px] text-slate-400 uppercase font-bold">Received From Trainee Client</p>
-                      <p className="font-extrabold text-slate-800">{selectedInvoice.traineeName || 'Ahmad bin Ibrahim'}</p>
+                      <p className="font-extrabold text-slate-800">{selectedInvoice.traineeName || 'Ahmad Bin Ibrahim'}</p>
                     </div>
 
                     <div className="border-t border-b border-dashed border-slate-200 py-3 mb-4 space-y-1.5 text-[10px]">

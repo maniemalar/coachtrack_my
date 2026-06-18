@@ -1156,6 +1156,46 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
               )}
             </div>
 
+            {/* Active Package Widget */}
+            {trainer && (
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 relative overflow-hidden text-left">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-xl pointer-events-none"></div>
+                
+                <span className="text-[10px] uppercase font-extrabold text-teal-600 bg-teal-50 px-2.5 py-1 rounded inline-block tracking-wider mb-3 w-max">
+                  Package Status
+                </span>
+                
+                <h4 className="font-display font-medium text-xs text-slate-400 uppercase tracking-wider">
+                  Current Active Package
+                </h4>
+                <p className="font-bold text-base text-slate-900 mt-1">
+                  8 Classes Per Month
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100 text-xs text-left">
+                  <div>
+                    <span className="text-slate-400 block font-sans">Coach</span>
+                    <strong className="text-slate-800 font-bold">{trainer.name}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-sans">Amount Paid</span>
+                    <strong className="text-[#001F3F] font-black">RM 600</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-sans">Status</span>
+                    <span className="inline-flex items-center gap-1.5 text-emerald-800 font-bold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Active
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-sans">Renewal</span>
+                    <strong className="text-slate-800 font-bold">Next Month</strong>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Assigned Coach Contact Card */}
             {trainer ? (
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">

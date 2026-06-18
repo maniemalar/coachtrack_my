@@ -116,7 +116,7 @@ export default function App() {
         location: 'SS15, Subang Jaya',
         coordinates: { lat: 3.0792, lng: 101.5950 },
         freelanceStatus: 'Freelance',
-        pricePerHour: 110,
+        pricePerHour: 80,
         bio: 'Dedicated to helping office workers improve flexibility, core strength, and mindfulness near Subang Jaya. Specialized in therapeutic yoga.',
         rating: 4.8,
         verified: true,
@@ -130,14 +130,14 @@ export default function App() {
         id: 'u_ahmad',
         email: 'trainee@demo.my',
         role: UserRole.TRAINEE,
-        name: 'Ahmad bin Ibrahim',
+        name: 'Ahmad Bin Ibrahim',
         avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
       };
       setCurrentUser(user);
       const prf = await dbService.getTraineeProfile('u_ahmad') || {
         id: 'te_ahmad',
         userId: 'u_ahmad',
-        name: 'Ahmad bin Ibrahim',
+        name: 'Ahmad Bin Ibrahim',
         avatarUrl: user.avatarUrl,
         age: 28,
         weight: 84,

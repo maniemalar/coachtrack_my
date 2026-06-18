@@ -60,10 +60,9 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
 
   // Section 4 - Coaching Packages State
   const [packages, setPackages] = useState([
-    { id: 'pkg_1', name: '4 Classes Trial Pack', price: 480, sessions: 4 },
-    { id: 'pkg_2', name: '8 Classes Standard Pack', price: 880, sessions: 8 },
-    { id: 'pkg_3', name: 'Monthly Personal Coaching', price: 1200, sessions: 12 },
-    { id: 'pkg_4', name: 'Custom Contest Prep Pack', price: 2200, sessions: 20 },
+    { id: 'pkg_1', name: 'Single Session', price: 80, sessions: 1 },
+    { id: 'pkg_2', name: '4 Classes Per Month', price: 310, sessions: 4 },
+    { id: 'pkg_3', name: '8 Classes Per Month', price: 600, sessions: 8 },
   ]);
   const [editingPackageId, setEditingPackageId] = useState<string | null>(null);
   const [packageNameInput, setPackageNameInput] = useState('');
@@ -73,9 +72,9 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
 
   // Section 5 - Business performance stats
   const analyticsData = {
-    activeClients: 12,
+    activeClients: 8,
     sessionsCompleted: 148,
-    revenueMonth: 9840,
+    revenueMonth: 910,
     revenueYear: 84320,
     clientRetention: 92,
     workoutReviews: 114,
@@ -84,9 +83,9 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
 
   // Section 6 - Reviews list
   const reviews = [
-    { name: "Ahmad bin Ibrahim", rating: 5, text: "Sarah has completely changed my stance accuracy and lower back safety during deep heavy squat logs. Simply the best trainer in Subang!", date: "2026-06-12" },
+    { name: "Ahmad Bin Ibrahim", rating: 5, text: "Sarah has completely changed my stance accuracy and lower back safety during deep heavy squat logs. Simply the best trainer in Subang!", date: "2026-06-12" },
     { name: "Mei Ling Tan", rating: 5, text: "Extremely attentive and structured coaching. The weekly habits, hydration triggers, and posture-focused rehabilitation are amazing.", date: "2026-05-30" },
-    { name: "Muhammad Faizul", rating: 4, text: "Very supportive with daily nutrition log audits. The calorie reviews are direct and incredibly helpful for food discipline.", date: "2026-05-18" },
+    { name: "Amir Hakim", rating: 4, text: "Very supportive with daily nutrition log audits. The calorie reviews are direct and incredibly helpful for food discipline.", date: "2026-05-18" },
   ];
 
   // Section 7 - Availability Settings

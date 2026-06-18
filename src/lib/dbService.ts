@@ -50,7 +50,7 @@ const DEMO_TRAINERS: TrainerProfile[] = [
     location: 'SS15, Subang Jaya',
     coordinates: { lat: 3.0792, lng: 101.5950 },
     freelanceStatus: 'Freelance',
-    pricePerHour: 110,
+    pricePerHour: 80,
     bio: 'Dedicated to helping office workers improve flexibility, core strength, and mindfulness near Subang Jaya. Specialized in therapeutic yoga.',
     rating: 4.8,
     verified: true,
@@ -95,14 +95,98 @@ const DEMO_TRAINEES: TraineeProfile[] = [
   {
     id: 'te_ahmad',
     userId: 'u_ahmad',
-    name: 'Ahmad bin Ibrahim',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
+    name: 'Ahmad Bin Ibrahim',
+    avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCm6XjkajKC1E-auUB-6Sr-GyTGI4zsoY-YEgT0MAl6pw_jL3uSF-kMR6I3SCISx-0HXh-tcAf99gfuoVVhzN1P1HU5oCZk0WWchxWKY22ATwB-APrTezY3HVTAOMGVpXNApLlt1VIzi9o8yJXJ5nQRsSmRHOuxBYfJf_533KGGsCsvrxpZ_3m5uxZ9KZr2L6dBuXJkWmoMBDY9z_YnDYNr0b8EJ3Tyw-sPE0l5vW78317CdkDStSWtXZxNwtq6QaBgqW3N2oV2two',
     age: 28,
     weight: 84,
     height: 176,
     goals: 'Weight Loss and Cardio Endurance. Specifically trying to trim down fat and transition to active jogging and weekend hiking.',
     assignedTrainerId: 'tr_sarah',
     streakCount: 5
+  },
+  {
+    id: 'te_ling',
+    userId: 'u_ling',
+    name: 'Mei Ling Tan',
+    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120',
+    age: 31,
+    weight: 58,
+    height: 162,
+    goals: 'Post-Partum abdominal restoration, pelvis floor alignment, and flexibility improvement.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 8
+  },
+  {
+    id: 'te_jason',
+    userId: 'u_jason',
+    name: 'Jason Wong',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
+    age: 35,
+    weight: 78,
+    height: 175,
+    goals: 'Core strength enhancement and posture optimization due to long working hours behind a desk.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 4
+  },
+  {
+    id: 'te_aisyah',
+    userId: 'u_aisyah',
+    name: 'Nur Aisyah',
+    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120',
+    age: 29,
+    weight: 62,
+    height: 165,
+    goals: 'Fat depletion, functional circuit training, and cardiovascular endurance optimization.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 6
+  },
+  {
+    id: 'te_daniel',
+    userId: 'u_daniel',
+    name: 'Daniel Lee',
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120',
+    age: 42,
+    weight: 88,
+    height: 182,
+    goals: 'Hypertension mitigation, stamina preservation, and general health alignment.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 2
+  },
+  {
+    id: 'te_priya',
+    userId: 'u_priya',
+    name: 'Priya Nair',
+    avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=120',
+    age: 27,
+    weight: 55,
+    height: 160,
+    goals: 'Muscle hypertrophy, overall toning, and core balance stability adjustments.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 7
+  },
+  {
+    id: 'te_amir',
+    userId: 'u_amir',
+    name: 'Amir Hakim',
+    avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=120',
+    age: 33,
+    weight: 95,
+    height: 185,
+    goals: 'Strength development, functional squat flexibility, and target metabolic conditioning.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 3
+  },
+  {
+    id: 'te_chloe',
+    userId: 'u_chloe',
+    name: 'Chloe Lim',
+    avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=120',
+    age: 26,
+    weight: 52,
+    height: 158,
+    goals: 'Active athletic speed development, lower back routing protection, and meal habit calibration.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 9
   }
 ];
 
@@ -707,7 +791,15 @@ export const dbService = {
           amount: p.amount,
           date: p.date,
           status: p.status as any,
-          description: p.description
+          description: p.description,
+          dueDate: p.dueDate || p.date,
+          itemDescription: p.itemDescription || p.description,
+          invoiceNo: p.invoiceNo,
+          receiptNo: p.receiptNo,
+          packageName: p.packageName,
+          packageType: p.packageType,
+          paymentMethod: p.paymentMethod,
+          email: p.email
         }));
       }
     }

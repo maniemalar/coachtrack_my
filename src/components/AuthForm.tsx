@@ -167,7 +167,7 @@ export default function AuthForm({
           id: 'u_ahmad',
           email: loginEmail,
           role: UserRole.TRAINEE,
-          name: 'Ahmad bin Ibrahim',
+          name: 'Ahmad Bin Ibrahim',
           avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
         });
         setIsLoggingIn(false);
@@ -942,7 +942,7 @@ export default function AuthForm({
                           id: 'u_ahmad',
                           email: 'trainee@demo.my',
                           role: UserRole.TRAINEE,
-                          name: 'Ahmad bin Ibrahim',
+                          name: 'Ahmad Bin Ibrahim',
                           avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
                         });
                       }}
@@ -954,7 +954,7 @@ export default function AuthForm({
                         alt="Ahmad Ibrahim"
                       />
                       <div className="flex-1 min-w-0">
-                        <span className="text-[11px] font-bold text-slate-800 block truncate group-hover:text-teal-600 transition-colors font-sans">Ahmad bin Ibrahim (Trainee)</span>
+                        <span className="text-[11px] font-bold text-slate-800 block truncate group-hover:text-teal-600 transition-colors font-sans">Ahmad Bin Ibrahim (Trainee)</span>
                         <span className="text-[9px] text-slate-500 block truncate font-sans">Goal: Cardio & Fat Loss</span>
                         <span className="text-[8px] bg-teal-100 text-teal-700 font-bold px-1.5 py-0.5 rounded inline-block mt-0.5 font-sans">SS15 • 1-Click Login</span>
                       </div>

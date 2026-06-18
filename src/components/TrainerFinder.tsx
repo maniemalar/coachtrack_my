@@ -64,9 +64,9 @@ const TRAINER_METADATA_MAP: Record<string, {
     licenseStatus: 'Active & Authenticated by Ministry of Youth & Sports Malaysia',
     ratingsBreakdown: { professionalism: 5.0, communication: 4.8, results: 4.9, punctuality: 4.9 },
     testimonials: [
-      { author: 'Ahmad bin Ibrahim', text: 'Sarah helped me recover from lower back pain in just 6 weeks. Her posture corrections are incredibly precise!', rating: 5 },
+      { author: 'Ahmad Bin Ibrahim', text: 'Sarah helped me recover from lower back pain in just 6 weeks. Her posture corrections are incredibly precise!', rating: 5 },
       { author: 'Mei Ling Tan', text: 'Every lesson is tailored beautifully. Very professional environment!', rating: 5 },
-      { author: 'Muhammad Faizul', text: 'Excellent prenatal expertise. My wife loves her session structures!', rating: 4 }
+      { author: 'Nur Aisyah', text: 'Excellent prenatal expertise. Highly supportive and structural session structures!', rating: 4 }
     ]
   },
   tr_faiz: {
@@ -130,10 +130,26 @@ export default function TrainerFinder({ traineeId, onNavigateToTab }: TrainerFin
   const [bookingRefNotes, setBookingRefNotes] = useState('First consultation and initial fitness goals setup.');
   const [paymentOption, setPaymentOption] = useState('fpx_maybank');
   
+  const [selectedRecurringDay, setSelectedRecurringDay] = useState<string>('Monday');
+  const [selectedRecurringDays, setSelectedRecurringDays] = useState<string[]>(['Tuesday', 'Friday']);
+  const [selectedRecurringTime, setSelectedRecurringTime] = useState<string>('6:00 PM');
+  
   const [bookingSuccessId, setBookingSuccessId] = useState('');
   const [bookingSuccessInvoice, setBookingSuccessInvoice] = useState('');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showSuccessRegisteredModal, setShowSuccessRegisteredModal] = useState(false);
+
+  const handleToggleRecurringDay = (day: string) => {
+    if (selectedRecurringDays.includes(day)) {
+      setSelectedRecurringDays(selectedRecurringDays.filter(d => d !== day));
+    } else {
+      if (selectedRecurringDays.length < 2) {
+        setSelectedRecurringDays([...selectedRecurringDays, day]);
+      } else {
+        setSelectedRecurringDays([selectedRecurringDays[1], day]);
+      }
+    }
+  };
 
   // Auto redirect after 5 seconds if registered
   useEffect(() => {
@@ -211,41 +227,110 @@ export default function TrainerFinder({ traineeId, onNavigateToTab }: TrainerFin
     setIsProcessingPayment(true);
 
     try {
+      // Helper function to calculate repeating weekly dates
+      const getNextDatesForDay = (dayName: string, count: number): string[] => {
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const targetDayIndex = daysOfWeek.findIndex(d => d.toLowerCase() === dayName.toLowerCase());
+        if (targetDayIndex === -1) return [];
+
+        const dates: string[] = [];
+        let currentDate = new Date();
+        while (dates.length < count) {
+          currentDate.setDate(currentDate.getDate() + 1);
+          if (currentDate.getDay() === targetDayIndex) {
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const date = String(currentDate.getDate()).padStart(2, '0');
+            dates.push(`${year}-${month}-${date}`);
+          }
+        }
+        return dates;
+      };
+
+      const getNextDatesForDays = (dayNames: string[], countPerDay: number): string[] => {
+        const dates: string[] = [];
+        dayNames.forEach(day => {
+          dates.push(...getNextDatesForDay(day, countPerDay));
+        });
+        return dates.sort();
+      };
+
       // Calculate payment amounts based on package selected
       let amount = activeDetailsTrainer.pricePerHour;
       let packLabel = 'Single Class Trial';
 
       if (selectedPackage === 'bundle4') {
-        amount = Math.round((activeDetailsTrainer.pricePerHour * 4) * 0.9); // 10% bundle discount
-        packLabel = '4-Class Package Bundle';
+        amount = activeDetailsTrainer.id === 'tr_sarah' ? 310 : Math.round((activeDetailsTrainer.pricePerHour * 4) * 0.9);
+        packLabel = '4 Classes Per Month';
       } else if (selectedPackage === 'monthly') {
-        amount = Math.round((activeDetailsTrainer.pricePerHour * 8) * 0.8); // 20% premium loyalty discount
-        packLabel = 'Monthly Continuous Coaching';
+        amount = activeDetailsTrainer.id === 'tr_sarah' ? 600 : Math.round((activeDetailsTrainer.pricePerHour * 8) * 0.8);
+        packLabel = '8 Classes Per Month';
+      } else {
+        amount = activeDetailsTrainer.id === 'tr_sarah' ? 80 : activeDetailsTrainer.pricePerHour;
+        packLabel = 'Single Session';
       }
 
-      // 1. Create calendar booking
-      const bookPayload = {
-        trainerId: activeDetailsTrainer.id,
-        traineeId: traineeId || 'te_ahmad',
-        traineeName: 'Ahmad Ibrahim',
-        date: selectedDate,
-        timeSlot: selectedTimeSlot,
-        location: activeDetailsTrainer.location,
-        notes: `Selected Package: ${packLabel}. Brief limit: ${bookingRefNotes}`,
-        packageType: selectedPackage === 'single' ? 'Single Slot' : 'Monthly Pack' as any,
-        amountPaid: amount,
-        status: 'Approved' as any
-      };
+      // 1. Create calendar booking(s) based on package rules
+      const sessionsToCreate: any[] = [];
+      let mainDate = selectedDate || new Date().toISOString().split('T')[0];
+      let mainTime = selectedTimeSlot || '10:00 AM';
 
-      const bookingRes = await dbService.createBooking(bookPayload);
+      if (selectedPackage === 'single') {
+        sessionsToCreate.push({
+          date: mainDate,
+          timeSlot: mainTime,
+          notes: `Selected Package: Single Session assessment / trial. ${bookingRefNotes}`
+        });
+      } else if (selectedPackage === 'bundle4') {
+        const recurringDay = selectedRecurringDay || 'Monday';
+        mainTime = selectedRecurringTime || '10:00 AM';
+        const dates = getNextDatesForDay(recurringDay, 4);
+        mainDate = dates[0] || mainDate;
+        dates.forEach((dt, idx) => {
+          sessionsToCreate.push({
+            date: dt,
+            timeSlot: mainTime,
+            notes: `4-Class Package: Session #${idx + 1} (${recurringDay}). ${bookingRefNotes}`
+          });
+        });
+      } else if (selectedPackage === 'monthly') {
+        const recurringDays = selectedRecurringDays && selectedRecurringDays.length === 2 ? selectedRecurringDays : ['Monday', 'Wednesday'];
+        mainTime = selectedRecurringTime || '10:00 AM';
+        const dates = getNextDatesForDays(recurringDays, 4);
+        mainDate = dates[0] || mainDate;
+        dates.forEach((dt, idx) => {
+          sessionsToCreate.push({
+            date: dt,
+            timeSlot: mainTime,
+            notes: `8-Class Package: Session #${idx + 1}. Required choice days: ${recurringDays.join(', ')}. ${bookingRefNotes}`
+          });
+        });
+      }
+
+      let bookingRes: any = null;
+      for (const sess of sessionsToCreate) {
+        const bookPayload = {
+          trainerId: activeDetailsTrainer.id,
+          traineeId: traineeId || 'te_ahmad',
+          traineeName: 'Ahmad Ibrahim',
+          date: sess.date,
+          timeSlot: sess.timeSlot,
+          location: activeDetailsTrainer.location,
+          notes: sess.notes,
+          packageType: selectedPackage === 'single' ? ('Single Slot' as any) : ('Monthly Pack' as any),
+          amountPaid: amount,
+          status: 'Approved' as any
+        };
+        bookingRes = await dbService.createBooking(bookPayload);
+      }
 
       // 2. Generate a PAID custom payment receipt invoice inside Malaysian Ringgit (MYR)
       const invoicePayload = {
         trainerId: activeDetailsTrainer.id,
         traineeId: traineeId || 'te_ahmad',
         amount: amount,
-        itemDescription: `${packLabel} [Coach ${activeDetailsTrainer.name} - ${selectedDate} ${selectedTimeSlot}]`,
-        dueDate: selectedDate
+        itemDescription: `${packLabel} [Coach ${activeDetailsTrainer.name} - ${mainDate} ${mainTime}]`,
+        dueDate: mainDate
       };
 
       const invoiceRes = await dbService.createInvoice(invoicePayload);
@@ -765,14 +850,14 @@ export default function TrainerFinder({ traineeId, onNavigateToTab }: TrainerFin
                           }`}
                         >
                           <div className="flex justify-between items-center mb-1">
-                            <strong className="text-xs font-black uppercase tracking-wider text-slate-900">Single Session Pack</strong>
+                            <strong className="text-xs font-black uppercase tracking-wider text-slate-900">Single Session</strong>
                             <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPackage === 'single' ? 'bg-[#001F3F] border-transparent' : 'border-slate-300'}`}>
                               {selectedPackage === 'single' && <Check className="w-2.5 h-2.5 text-teal-400" />}
                             </div>
                           </div>
                           <p className="text-2xs text-slate-500">1x Class Assessment (1 hour duration)</p>
-                          <p className="text-2xs text-[#76c7c0] uppercase font-extrabold mt-1">Perfect for trial seekers</p>
-                          <p className="text-lg font-black text-[#001F3F] mt-1.5">RM {activeDetailsTrainer.pricePerHour}</p>
+                          <p className="text-2xs text-[#76c7c0] uppercase font-bold mt-1">Perfect for trial seekers</p>
+                          <p className="text-lg font-black text-[#001F3F] mt-1.5">RM 80</p>
                         </div>
 
                         <div 
@@ -783,18 +868,18 @@ export default function TrainerFinder({ traineeId, onNavigateToTab }: TrainerFin
                               : 'border-slate-150 bg-white hover:bg-slate-50'
                           }`}
                         >
-                          <span className="absolute top-0 right-0 bg-teal-500 text-slate-950 text-[8px] font-black uppercase px-2 py-0.5 rounded-bl">
+                          <span className="absolute top-0 right-0 bg-teal-500 text-slate-950 text-[8px] font-bold uppercase px-2 py-0.5 rounded-bl">
                             Best Value
                           </span>
                           <div className="flex justify-between items-center mb-1">
-                            <strong className="text-xs font-black uppercase tracking-wider text-slate-900">4-Class Package</strong>
+                            <strong className="text-xs font-black uppercase tracking-wider text-slate-900">4 Classes Per Month</strong>
                             <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPackage === 'bundle4' ? 'bg-[#001F3F] border-transparent' : 'border-slate-300'}`}>
                               {selectedPackage === 'bundle4' && <Check className="w-2.5 h-2.5 text-teal-400" />}
                             </div>
                           </div>
-                          <p className="text-2xs text-slate-500">4x Customized Sessions (60 Days Validity)</p>
-                          <p className="text-2xs text-teal-600 font-extrabold mt-1">Save RM {Math.round(activeDetailsTrainer.pricePerHour * 0.4)} over individual slots!</p>
-                          <p className="text-lg font-black text-[#001F3F] mt-1.5">RM {Math.round((activeDetailsTrainer.pricePerHour * 4) * 0.9)}</p>
+                          <p className="text-2xs text-slate-500">4x Scheduled Classes (Every Month)</p>
+                          <p className="text-2xs text-teal-600 font-bold mt-1">Save RM 10 over individual sessions!</p>
+                          <p className="text-lg font-black text-[#001F3F] mt-1.5">RM 310</p>
                         </div>
 
                         <div 
@@ -805,18 +890,18 @@ export default function TrainerFinder({ traineeId, onNavigateToTab }: TrainerFin
                               : 'border-slate-150 bg-white hover:bg-slate-50'
                           }`}
                         >
-                          <span className="absolute top-0 right-0 bg-indigo-600 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-bl">
+                          <span className="absolute top-0 right-0 bg-indigo-600 text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-bl">
                             Fully Immersive
                           </span>
                           <div className="flex justify-between items-center mb-1">
-                            <strong className="text-xs font-black uppercase tracking-wider text-slate-900">Monthly Support</strong>
+                            <strong className="text-xs font-black uppercase tracking-wider text-slate-900">8 Classes Per Month</strong>
                             <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPackage === 'monthly' ? 'bg-[#001F3F] border-transparent' : 'border-slate-300'}`}>
                               {selectedPackage === 'monthly' && <Check className="w-2.5 h-2.5 text-teal-400" />}
                             </div>
                           </div>
-                          <p className="text-2xs text-slate-500">8x Sessions + Unlimited Chat support & daily meal analysis</p>
-                          <p className="text-2xs text-indigo-700 font-extrabold mt-1">20% Premium loyalty bundle price</p>
-                          <p className="text-lg font-black text-[#001F3F] mt-1.5">RM {Math.round((activeDetailsTrainer.pricePerHour * 8) * 0.8)}</p>
+                          <p className="text-2xs text-slate-500">8x Scheduled Classes (Choose TWO Days)</p>
+                          <p className="text-2xs text-indigo-700 font-bold mt-1">Save RM 40 over individual sessions!</p>
+                          <p className="text-lg font-black text-[#001F3F] mt-1.5">RM 600</p>
                         </div>
                       </div>
 
@@ -861,92 +946,236 @@ export default function TrainerFinder({ traineeId, onNavigateToTab }: TrainerFin
                 )}
 
                 {bookingStep === 'booking' && (
-                  <div className="border-2 border-slate-900 rounded-3xl p-5 bg-white shadow-md space-y-5">
+                    <div className="border-2 border-slate-900 rounded-3xl p-5 bg-white shadow-md space-y-5">
                     <span className="text-[10px] uppercase font-black text-teal-600 bg-teal-50 px-2.5 py-1 rounded inline-block tracking-wider">
-                      Step 2: Dates & Booking
+                      Step 2: Scheduling Rules
                     </span>
                     <h4 className="font-display font-black text-[#001F3F] text-lg leading-tight">
-                      Pick Your Live Spot Target
+                      Configure Schedule Selection
                     </h4>
 
-                    {/* Weekly calendar selector line */}
-                    <div className="space-y-2">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Choose Session Date</span>
-                      
-                      <div className="flex gap-1.5 overflow-x-auto pb-1.5 snap-x">
-                        {next7Days.map((day) => {
-                          const isPicked = selectedDate === day.isoString;
-                          return (
-                            <button
-                              key={day.isoString}
-                              type="button"
-                              onClick={() => setSelectedDate(day.isoString)}
-                              className={`flex-1 min-w-[55px] snap-center text-center p-2 rounded-xl border flex flex-col items-center justify-center transition cursor-pointer ${
-                                isPicked 
-                                  ? 'bg-[#001F3F] border-[#001F3F] text-white' 
-                                  : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
-                              }`}
-                            >
-                              <span className="text-[9px] uppercase font-bold opacity-75">{day.dayName}</span>
-                              <span className="text-sm font-black mt-0.5">{day.dateNum}</span>
-                              <span className="text-[8px] opacity-75">{day.monthShort}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    {selectedPackage === 'single' && (
+                      <div className="space-y-4">
+                        {/* Weekly calendar selector line */}
+                        <div className="space-y-2">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Choose Trial Date</span>
+                          <div className="flex gap-1.5 overflow-x-auto pb-1.5 snap-x">
+                            {next7Days.map((day) => {
+                              const isPicked = selectedDate === day.isoString;
+                              return (
+                                <button
+                                  key={day.isoString}
+                                  type="button"
+                                  onClick={() => setSelectedDate(day.isoString)}
+                                  className={`flex-1 min-w-[55px] snap-center text-center p-2 rounded-xl border flex flex-col items-center justify-center transition cursor-pointer ${
+                                    isPicked 
+                                      ? 'bg-[#001F3F] border-[#001F3F] text-white' 
+                                      : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
+                                  }`}
+                                >
+                                  <span className="text-[9px] uppercase font-bold opacity-75">{day.dayName}</span>
+                                  <span className="text-sm font-black mt-0.5">{day.dateNum}</span>
+                                  <span className="text-[8px] opacity-75">{day.monthShort}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
 
-                    {/* Time slot pills */}
-                    <div className="space-y-2">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Available Time Slots</span>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        {['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM'].map((slot) => {
-                          const isSlotPicked = selectedTimeSlot === slot;
-                          return (
-                            <button
-                              key={slot}
-                              type="button"
-                              onClick={() => setSelectedTimeSlot(slot)}
-                              className={`p-2.5 text-xs text-center font-bold rounded-xl border transition cursor-pointer ${
-                                isSlotPicked 
-                                  ? 'bg-[#001F3F] border-[#001F3F] text-white' 
-                                  : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800'
-                              }`}
-                            >
-                              {slot}
-                            </button>
-                          );
-                        })}
+                        {/* Trial Time Slots */}
+                        <div className="space-y-2">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Available Time Slots</span>
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM'].map((slot) => {
+                              const isSlotPicked = selectedTimeSlot === slot;
+                              return (
+                                <button
+                                  key={slot}
+                                  type="button"
+                                  onClick={() => setSelectedTimeSlot(slot)}
+                                  className={`p-2.5 text-xs text-center font-bold rounded-xl border transition cursor-pointer ${
+                                    isSlotPicked 
+                                      ? 'bg-[#001F3F] border-[#001F3F] text-white' 
+                                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800'
+                                  }`}
+                                >
+                                  {slot}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {selectedPackage === 'bundle4' && (
+                      <div className="space-y-4">
+                        {/* 4 Classes Per Month Recurring Day selection */}
+                        <div className="space-y-2">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Select ONE Recurring Day</span>
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
+                              const isDaySelected = selectedRecurringDay === day;
+                              return (
+                                <button
+                                  key={day}
+                                  type="button"
+                                  onClick={() => setSelectedRecurringDay(day)}
+                                  className={`p-2 text-[#001F3F] text-2xs text-center font-extrabold rounded-xl border transition cursor-pointer ${
+                                    isDaySelected 
+                                      ? 'bg-slate-900 text-teal-400 border-slate-900' 
+                                      : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
+                                  }`}
+                                >
+                                  {day}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <p className="text-[10px] text-slate-500">Selected recurring day: <strong className="text-slate-800 font-bold">{selectedRecurringDay}</strong></p>
+                        </div>
+
+                        {/* Recurring Time slot */}
+                        <div className="space-y-2">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Choose Recurring Time</span>
+                          <div className="grid grid-cols-3 gap-1.5">
+                            {['08:00 AM', '10:00 AM', '02:00 PM', '04:00 PM', '06:00 PM', '08:00 PM'].map((slot) => {
+                              const isTimeSelected = selectedRecurringTime === slot;
+                              return (
+                                <button
+                                  key={slot}
+                                  type="button"
+                                  onClick={() => setSelectedRecurringTime(slot)}
+                                  className={`p-2 text-2xs text-center font-extrabold rounded-xl border transition cursor-pointer ${
+                                    isTimeSelected 
+                                      ? 'bg-[#001F3F] border-[#001F3F] text-white' 
+                                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800'
+                                  }`}
+                                >
+                                  {slot}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedPackage === 'monthly' && (
+                      <div className="space-y-4">
+                        {/* 8 Classes Per Month Recurring DAYS selection (must select exactly 2) */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Select TWO Recurring Days</span>
+                            <span className="text-[9px] text-teal-600 font-extrabold bg-teal-50 px-2 py-0.5 rounded">
+                              {selectedRecurringDays.length} / 2 selected
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
+                              const isDaySelected = selectedRecurringDays.includes(day);
+                              return (
+                                <button
+                                  key={day}
+                                  type="button"
+                                  onClick={() => handleToggleRecurringDay(day)}
+                                  className={`p-2 text-2xs text-center font-extrabold rounded-xl border transition cursor-pointer ${
+                                    isDaySelected 
+                                      ? 'bg-slate-900 text-teal-400 border-slate-900' 
+                                      : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
+                                  }`}
+                                >
+                                  {day}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <p className="text-[10px] text-slate-500">Selected: <strong className="text-indigo-950 font-black">{selectedRecurringDays.join(' & ') || 'None (Please pick 2)'}</strong></p>
+                        </div>
+
+                        {/* Recurring Time slot */}
+                        <div className="space-y-2">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Choose Recurring Time</span>
+                          <div className="grid grid-cols-3 gap-1.5">
+                            {['08:00 AM', '10:00 AM', '02:00 PM', '04:00 PM', '06:00 PM', '08:00 PM'].map((slot) => {
+                              const isTimeSelected = selectedRecurringTime === slot;
+                              return (
+                                <button
+                                  key={slot}
+                                  type="button"
+                                  onClick={() => setSelectedRecurringTime(slot)}
+                                  className={`p-2 text-2xs text-center font-extrabold rounded-xl border transition cursor-pointer ${
+                                    isTimeSelected 
+                                      ? 'bg-[#001F3F] border-[#001F3F] text-white' 
+                                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800'
+                                  }`}
+                                >
+                                  {slot}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Booking text limit notes */}
                     <div>
                       <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
-                        Session Objectives / Health Focus
+                        Coaching Goals / Objectives
                       </label>
                       <textarea
                         value={bookingRefNotes}
                         onChange={(e) => setBookingRefNotes(e.target.value)}
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs h-16 text-slate-800 focus:outline-[#001F3F]"
-                        placeholder="Specify if rehab, cardio focus, fat assessment expectations, etc."
+                        placeholder="Specify any details, post-check expectations, etc."
                       />
                     </div>
 
                     {/* Summary row */}
-                    <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs text-slate-700 space-y-1">
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-700 space-y-1.5 text-left">
                       <div className="flex justify-between">
-                        <span>Selected Bundle:</span>
-                        <strong className="text-slate-900 uppercase font-bold">{selectedPackage === 'single' ? 'Single Session' : selectedPackage === 'bundle4' ? '4-Class Package' : 'Monthly continuous'}</strong>
+                        <span>Selected Package:</span>
+                        <strong className="text-slate-900 uppercase font-extrabold">
+                          {selectedPackage === 'single' ? 'Single Session (RM80)' : selectedPackage === 'bundle4' ? '4 Classes Per Month (RM310)' : '8 Classes Per Month (RM600)'}
+                        </strong>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Booking Date:</span>
-                        <strong className="text-slate-900 font-bold">{selectedDate}</strong>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Selected Time:</span>
-                        <strong className="text-[#001F3F] font-bold">{selectedTimeSlot}</strong>
-                      </div>
+                      
+                      {selectedPackage === 'single' ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span>Selected Date:</span>
+                            <strong className="text-slate-900 font-bold">{selectedDate || 'Please pick a date'}</strong>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Selected Time:</span>
+                            <strong className="text-[#001F3F] font-bold">{selectedTimeSlot}</strong>
+                          </div>
+                        </>
+                      ) : selectedPackage === 'bundle4' ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span>Recurring Schedule:</span>
+                            <strong className="text-slate-900 font-bold">Every {selectedRecurringDay}</strong>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Timeslot:</span>
+                            <strong className="text-[#001F3F] font-bold">{selectedRecurringTime}</strong>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex justify-between">
+                            <span>Recurring Schedule:</span>
+                            <strong className="text-slate-900 font-bold">Every {selectedRecurringDays.join(' & ') || '...'}</strong>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Timeslot:</span>
+                            <strong className="text-[#001F3F] font-bold">{selectedRecurringTime}</strong>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     {/* CTA row split */}
@@ -954,16 +1183,17 @@ export default function TrainerFinder({ traineeId, onNavigateToTab }: TrainerFin
                       <button
                         type="button"
                         onClick={() => setBookingStep('details')}
-                        className="flex-1 py-3 border border-slate-350 bg-white hover:bg-slate-50 font-bold text-slate-750 text-center rounded-xl cursor-pointer"
+                        className="flex-1 py-1.5 border border-slate-300 bg-white hover:bg-slate-50 font-bold text-slate-700 text-center rounded-xl cursor-pointer"
                       >
                         Back
                       </button>
                       <button
                         type="button"
                         onClick={handleGoToPayment}
-                        className="flex-1 py-1.5 bg-[#001F3F] hover:bg-slate-900 text-teal-400 font-black text-center rounded-xl cursor-pointer uppercase tracking-wider"
+                        className="flex-1 py-2.5 bg-[#001F3F] hover:bg-slate-900 text-teal-400 font-black text-center rounded-xl cursor-pointer uppercase tracking-wider disabled:opacity-50"
+                        disabled={selectedPackage === 'monthly' && selectedRecurringDays.length !== 2}
                       >
-                        Confirm Slot
+                        Confirm Schedule slot
                       </button>
                     </div>
 
@@ -994,11 +1224,11 @@ export default function TrainerFinder({ traineeId, onNavigateToTab }: TrainerFin
 
                       {/* Explicit 5% Commission Breakdown */}
                       {(() => {
-                        const computedTotal = selectedPackage === 'single' 
-                          ? activeDetailsTrainer.pricePerHour 
-                          : selectedPackage === 'bundle4' 
-                            ? Math.round((activeDetailsTrainer.pricePerHour * 4) * 0.9) 
-                            : Math.round((activeDetailsTrainer.pricePerHour * 8) * 0.8);
+                        const computedTotal = selectedPackage === 'single'
+                          ? (activeDetailsTrainer.id === 'tr_sarah' ? 80 : activeDetailsTrainer.pricePerHour)
+                          : selectedPackage === 'bundle4'
+                            ? (activeDetailsTrainer.id === 'tr_sarah' ? 310 : Math.round(activeDetailsTrainer.pricePerHour * 4 * 0.9))
+                            : (activeDetailsTrainer.id === 'tr_sarah' ? 600 : Math.round(activeDetailsTrainer.pricePerHour * 8 * 0.8));
                         const commissionFee = Number((computedTotal * 0.05).toFixed(2));
                         const tPayout = Number((computedTotal - commissionFee).toFixed(2));
                         

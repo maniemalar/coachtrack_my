@@ -145,6 +145,14 @@ export interface Payment {
   date: string;
   status: 'Paid' | 'Unpaid' | 'Overdue';
   description: string;
+  dueDate?: string;
+  itemDescription?: string;
+  invoiceNo?: string;
+  receiptNo?: string;
+  packageName?: string;
+  packageType?: string;
+  paymentMethod?: string;
+  email?: string;
 }
 
 export interface Invoice {
@@ -167,6 +175,10 @@ export interface Invoice {
     unitPrice: number;
     total: number;
   }[];
+  receiptNo?: string;
+  packageName?: string;
+  packageType?: string;
+  paymentMethod?: string;
 }
 
 export interface MalaysianFoodItem {

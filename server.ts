@@ -48,7 +48,7 @@ const DEFAULT_TRAINERS: TrainerProfile[] = [
     location: 'SS15, Subang Jaya',
     coordinates: { lat: 3.0792, lng: 101.5950 }, // ss15 subang
     freelanceStatus: 'Freelance',
-    pricePerHour: 110,
+    pricePerHour: 80,
     bio: 'Dedicated to helping office workers improve flexibility, core strength, and mindfulness right here in Klang Valley. Specialized in therapeutic yoga.',
     rating: 4.8,
     verified: true,
@@ -113,7 +113,7 @@ const DEFAULT_TRAINEES: TraineeProfile[] = [
   {
     id: 'te_ahmad',
     userId: 'u_ahmad',
-    name: 'Ahmad bin Ibrahim',
+    name: 'Ahmad Bin Ibrahim',
     avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCm6XjkajKC1E-auUB-6Sr-GyTGI4zsoY-YEgT0MAl6pw_jL3uSF-kMR6I3SCISx-0HXh-tcAf99gfuoVVhzN1P1HU5oCZk0WWchxWKY22ATwB-APrTezY3HVTAOMGVpXNApLlt1VIzi9o8yJXJ5nQRsSmRHOuxBYfJf_533KGGsCsvrxpZ_3m5uxZ9KZr2L6dBuXJkWmoMBDY9z_YnDYNr0b8EJ3Tyw-sPE0l5vW78317CdkDStSWtXZxNwtq6QaBgqW3N2oV2two',
     age: 28,
     weight: 84,
@@ -126,7 +126,7 @@ const DEFAULT_TRAINEES: TraineeProfile[] = [
     id: 'te_ling',
     userId: 'u_ling',
     name: 'Mei Ling Tan',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120',
+    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120',
     age: 31,
     weight: 58,
     height: 162,
@@ -135,16 +135,76 @@ const DEFAULT_TRAINEES: TraineeProfile[] = [
     streakCount: 8
   },
   {
-    id: 'te_faizul',
-    userId: 'u_faizul',
-    name: 'Muhammad Faizul',
+    id: 'te_jason',
+    userId: 'u_jason',
+    name: 'Jason Wong',
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
-    age: 24,
-    weight: 92,
-    height: 180,
-    goals: 'Powerlifting hyper-focus. Trying to target 180kg deadlift by end of quarter while avoiding lumbar spine injury.',
+    age: 35,
+    weight: 78,
+    height: 175,
+    goals: 'Core strength enhancement and posture optimization due to long working hours behind a desk.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 4
+  },
+  {
+    id: 'te_aisyah',
+    userId: 'u_aisyah',
+    name: 'Nur Aisyah',
+    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120',
+    age: 29,
+    weight: 62,
+    height: 165,
+    goals: 'Fat depletion, functional circuit training, and cardiovascular endurance optimization.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 6
+  },
+  {
+    id: 'te_daniel',
+    userId: 'u_daniel',
+    name: 'Daniel Lee',
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120',
+    age: 42,
+    weight: 88,
+    height: 182,
+    goals: 'Hypertension mitigation, stamina preservation, and general health alignment.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 2
+  },
+  {
+    id: 'te_priya',
+    userId: 'u_priya',
+    name: 'Priya Nair',
+    avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=120',
+    age: 27,
+    weight: 55,
+    height: 160,
+    goals: 'Muscle hypertrophy, overall toning, and core balance stability adjustments.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 7
+  },
+  {
+    id: 'te_amir',
+    userId: 'u_amir',
+    name: 'Amir Hakim',
+    avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=120',
+    age: 33,
+    weight: 95,
+    height: 185,
+    goals: 'Strength development, functional squat flexibility, and target metabolic conditioning.',
     assignedTrainerId: 'tr_sarah',
     streakCount: 3
+  },
+  {
+    id: 'te_chloe',
+    userId: 'u_chloe',
+    name: 'Chloe Lim',
+    avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=120',
+    age: 26,
+    weight: 52,
+    height: 158,
+    goals: 'Active athletic speed development, lower back routing protection, and meal habit calibration.',
+    assignedTrainerId: 'tr_sarah',
+    streakCount: 9
   }
 ];
 
@@ -152,8 +212,14 @@ const DEFAULT_USERS = [
   { id: 'u_sarah', email: 'sarah@trainer.my', role: UserRole.TRAINER, name: 'Sarah Tan' },
   { id: 'u_faiz', email: 'faiz@trainer.my', role: UserRole.TRAINER, name: 'Coach Faiz' },
   { id: 'u_rishi', email: 'rishi@trainer.my', role: UserRole.TRAINER, name: 'Rishi Kumar' },
-  { id: 'u_chloe', email: 'chloe@trainer.my', role: UserRole.TRAINER, name: 'Chloe Lim' },
-  { id: 'u_ahmad', email: 'ahmad@trainee.my', role: UserRole.TRAINEE, name: 'Ahmad Ibrahim' }
+  { id: 'u_ahmad', email: 'ahmad@trainee.my', role: UserRole.TRAINEE, name: 'Ahmad Bin Ibrahim' },
+  { id: 'u_ling', email: 'ling@trainee.my', role: UserRole.TRAINEE, name: 'Mei Ling Tan' },
+  { id: 'u_jason', email: 'jason@trainee.my', role: UserRole.TRAINEE, name: 'Jason Wong' },
+  { id: 'u_aisyah', email: 'aisyah@trainee.my', role: UserRole.TRAINEE, name: 'Nur Aisyah' },
+  { id: 'u_daniel', email: 'daniel@trainee.my', role: UserRole.TRAINEE, name: 'Daniel Lee' },
+  { id: 'u_priya', email: 'priya@trainee.my', role: UserRole.TRAINEE, name: 'Priya Nair' },
+  { id: 'u_amir', email: 'amir@trainee.my', role: UserRole.TRAINEE, name: 'Amir Hakim' },
+  { id: 'u_chloe', email: 'chloe@trainee.my', role: UserRole.TRAINEE, name: 'Chloe Lim' }
 ];
 
 const DEFAULT_WORKOUTS: WorkoutLog[] = [
@@ -198,12 +264,124 @@ const DEFAULT_BOOKINGS: BookingSession[] = [
     id: 'b_1',
     trainerId: 'tr_sarah',
     traineeId: 'te_ahmad',
-    traineeName: 'Ahmad Ibrahim',
+    traineeName: 'Ahmad Bin Ibrahim',
     date: '2026-06-12',
     timeSlot: '10:00 AM',
     status: 'Approved',
     location: 'Bangsar Gym Center',
     notes: 'Focus on breathing control & squat posture setup.'
+  },
+  {
+    id: 'b_ahmad_jul_1',
+    trainerId: 'tr_sarah',
+    traineeId: 'te_ahmad',
+    traineeName: 'Ahmad Bin Ibrahim',
+    date: '2026-07-07',
+    timeSlot: '6:00 PM',
+    status: 'Approved',
+    location: 'Bangsar Gym Center',
+    notes: 'Recurring Session #1: Posture & breathing stabilization',
+    packageType: '8 Classes Per Month',
+    amountPaid: 600,
+    paymentStatus: 'Paid'
+  },
+  {
+    id: 'b_ahmad_jul_2',
+    trainerId: 'tr_sarah',
+    traineeId: 'te_ahmad',
+    traineeName: 'Ahmad Bin Ibrahim',
+    date: '2026-07-10',
+    timeSlot: '6:00 PM',
+    status: 'Approved',
+    location: 'Bangsar Gym Center',
+    notes: 'Recurring Session #2: Core alignment & lumbar health',
+    packageType: '8 Classes Per Month',
+    amountPaid: 600,
+    paymentStatus: 'Paid'
+  },
+  {
+    id: 'b_ahmad_jul_3',
+    trainerId: 'tr_sarah',
+    traineeId: 'te_ahmad',
+    traineeName: 'Ahmad Bin Ibrahim',
+    date: '2026-07-14',
+    timeSlot: '6:00 PM',
+    status: 'Approved',
+    location: 'Bangsar Gym Center',
+    notes: 'Recurring Session #3: Strength development & body fat depletion',
+    packageType: '8 Classes Per Month',
+    amountPaid: 600,
+    paymentStatus: 'Paid'
+  },
+  {
+    id: 'b_ahmad_jul_4',
+    trainerId: 'tr_sarah',
+    traineeId: 'te_ahmad',
+    traineeName: 'Ahmad Bin Ibrahim',
+    date: '2026-07-17',
+    timeSlot: '6:00 PM',
+    status: 'Approved',
+    location: 'Bangsar Gym Center',
+    notes: 'Recurring Session #4: Cardio pacing',
+    packageType: '8 Classes Per Month',
+    amountPaid: 600,
+    paymentStatus: 'Paid'
+  },
+  {
+    id: 'b_ahmad_jul_5',
+    trainerId: 'tr_sarah',
+    traineeId: 'te_ahmad',
+    traineeName: 'Ahmad Bin Ibrahim',
+    date: '2026-07-21',
+    timeSlot: '6:00 PM',
+    status: 'Approved',
+    location: 'Bangsar Gym Center',
+    notes: 'Recurring Session #5: Weight control assessment',
+    packageType: '8 Classes Per Month',
+    amountPaid: 600,
+    paymentStatus: 'Paid'
+  },
+  {
+    id: 'b_ahmad_jul_6',
+    trainerId: 'tr_sarah',
+    traineeId: 'te_ahmad',
+    traineeName: 'Ahmad Bin Ibrahim',
+    date: '2026-07-24',
+    timeSlot: '6:00 PM',
+    status: 'Approved',
+    location: 'Bangsar Gym Center',
+    notes: 'Recurring Session #6: Core resistance & post-check',
+    packageType: '8 Classes Per Month',
+    amountPaid: 600,
+    paymentStatus: 'Paid'
+  },
+  {
+    id: 'b_ahmad_jul_7',
+    trainerId: 'tr_sarah',
+    traineeId: 'te_ahmad',
+    traineeName: 'Ahmad Bin Ibrahim',
+    date: '2026-07-28',
+    timeSlot: '6:00 PM',
+    status: 'Approved',
+    location: 'Bangsar Gym Center',
+    notes: 'Recurring Session #7: Conditioning calibration',
+    packageType: '8 Classes Per Month',
+    amountPaid: 600,
+    paymentStatus: 'Paid'
+  },
+  {
+    id: 'b_ahmad_jul_8',
+    trainerId: 'tr_sarah',
+    traineeId: 'te_ahmad',
+    traineeName: 'Ahmad Bin Ibrahim',
+    date: '2026-07-31',
+    timeSlot: '6:00 PM',
+    status: 'Approved',
+    location: 'Bangsar Gym Center',
+    notes: 'Recurring Session #8: Posture correction final confirmation',
+    packageType: '8 Classes Per Month',
+    amountPaid: 600,
+    paymentStatus: 'Paid'
   }
 ];
 
@@ -226,71 +404,104 @@ const DEFAULT_CHATS: ChatMessage[] = [
 
 const DEFAULT_PAYMENTS: Payment[] = [
   {
-    id: 'p_1',
+    id: 'p_ahmad_pkg',
     trainerId: 'tr_sarah',
     traineeId: 'te_ahmad',
-    traineeName: 'Ahmad Ibrahim',
-    amount: 330,
-    date: '2026-06-05',
+    traineeName: 'Ahmad Bin Ibrahim',
+    amount: 600,
+    date: '2026-07-05',
     status: 'Paid',
-    description: '3x Private Yoga & Conditioning Sessions Pack'
+    description: '8 Classes Per Month'
   },
   {
-    id: 'p_2',
+    id: 'p_ling_pkg',
     trainerId: 'tr_sarah',
-    traineeId: 'te_ahmad',
-    traineeName: 'Ahmad Ibrahim',
-    amount: 110,
-    date: '2026-06-11',
-    status: 'Unpaid',
-    description: '1x Custom Goal Assessment & Stretch Session'
+    traineeId: 'te_ling',
+    traineeName: 'Mei Ling Tan',
+    amount: 310,
+    date: '2026-06-25',
+    status: 'Paid',
+    description: '4 Classes Per Month'
+  },
+  {
+    id: 'p_jason_pkg',
+    trainerId: 'tr_sarah',
+    traineeId: 'te_jason',
+    traineeName: 'Jason Wong',
+    amount: 80,
+    date: '2026-06-12',
+    status: 'Pending',
+    description: 'Single Session'
   }
 ];
 
 const DEFAULT_INVOICES: Invoice[] = [
   {
-    id: 'inv_1',
-    paymentId: 'p_1',
-    invoiceNo: 'COACH-2026-0034',
+    id: 'inv_2026_001',
+    paymentId: 'p_ahmad_pkg',
+    invoiceNo: 'INV-2026-001',
     trainerId: 'tr_sarah',
     trainerName: 'Sarah Tan',
     trainerEmail: 'sarah@trainer.my',
     traineeId: 'te_ahmad',
-    traineeName: 'Ahmad Ibrahim',
+    traineeName: 'Ahmad Bin Ibrahim',
     traineeEmail: 'ahmad@trainee.my',
-    amount: 330,
-    date: '2026-06-05',
-    dueDate: '2026-06-05',
+    amount: 600,
+    date: '2026-07-05',
+    dueDate: '2026-07-05',
     status: 'Paid',
     items: [
       {
-        description: 'Elite Level Private Personal Coaching Hour',
-        quantity: 3,
-        unitPrice: 110,
-        total: 330
+        description: '8 Classes Per Month Signature personal coaching package',
+        quantity: 1,
+        unitPrice: 600,
+        total: 600
       }
     ]
   },
   {
-    id: 'inv_2',
-    paymentId: 'p_2',
-    invoiceNo: 'COACH-2026-0045',
+    id: 'inv_2026_002',
+    paymentId: 'p_ling_pkg',
+    invoiceNo: 'INV-2026-002',
     trainerId: 'tr_sarah',
     trainerName: 'Sarah Tan',
     trainerEmail: 'sarah@trainer.my',
-    traineeId: 'te_ahmad',
-    traineeName: 'Ahmad Ibrahim',
-    traineeEmail: 'ahmad@trainee.my',
-    amount: 110,
-    date: '2026-06-11',
-    dueDate: '2026-06-18',
-    status: 'Unpaid',
+    traineeId: 'te_ling',
+    traineeName: 'Mei Ling Tan',
+    traineeEmail: 'ling@trainee.my',
+    amount: 310,
+    date: '2026-06-25',
+    dueDate: '2026-06-25',
+    status: 'Paid',
     items: [
       {
-        description: 'Custom Physical Assessment (Klang Valley Standard)',
+        description: '4 Classes Per Month personal coaching bundle',
         quantity: 1,
-        unitPrice: 110,
-        total: 110
+        unitPrice: 310,
+        total: 310
+      }
+    ]
+  },
+  {
+    id: 'inv_2026_003',
+    paymentId: 'p_jason_pkg',
+    invoiceNo: 'INV-2026-003',
+    trainerId: 'tr_sarah',
+    trainerName: 'Sarah Tan',
+    trainerEmail: 'sarah@trainer.my',
+    traineeId: 'te_jason',
+    traineeName: 'Jason Wong',
+    traineeEmail: 'jason@trainee.my',
+    amount: 80,
+    date: '2026-06-12',
+    dueDate: '2026-06-12',
+    status: 'Pending',
+    items: [
+      {
+        description: 'Single Session assessment / trial pack',
+        quantity: 1,
+        unitPrice: 80,
+        total: 80
       }
     ]
   }
@@ -819,7 +1030,7 @@ app.post('/api/prescribed-workouts/:id/checkin', (req, res) => {
       id: 'not_tr_' + Date.now(),
       userId: trainerObj.userId,
       title: 'New Video Evidence Uploaded!',
-      message: `Your client ${trainee ? trainee.name : 'Ahmad Ibrahim'} submitted workout proof for: ${pw.workoutType}. Review execution now.`,
+      message: `Your client ${trainee ? trainee.name : 'Ahmad Bin Ibrahim'} submitted workout proof for: ${pw.workoutType}. Review execution now.`,
       date: new Date().toISOString().split('T')[0],
       read: false
     });
@@ -827,7 +1038,7 @@ app.post('/api/prescribed-workouts/:id/checkin', (req, res) => {
       id: 'not_tr_id_' + Date.now(),
       userId: trainerObj.id,
       title: 'New Video Evidence Uploaded!',
-      message: `Your client ${trainee ? trainee.name : 'Ahmad Ibrahim'} submitted workout proof for: ${pw.workoutType}. Review execution now.`,
+      message: `Your client ${trainee ? trainee.name : 'Ahmad Bin Ibrahim'} submitted workout proof for: ${pw.workoutType}. Review execution now.`,
       date: new Date().toISOString().split('T')[0],
       read: false
     });

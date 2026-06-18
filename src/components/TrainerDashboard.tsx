@@ -173,7 +173,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
           experienceYears: 6,
           location: 'SS15, Subang Jaya',
           freelanceStatus: 'Freelance',
-          pricePerHour: 110,
+          pricePerHour: 80,
           bio: 'Dedicated to helping office workers improve flexibility, core strength, and mindfulness near Subang Jaya.',
           selectedPlan: 'Starter',
           phoneNumber: '+60 12-345 6789',
@@ -331,7 +331,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
   const [activeChatTrainee, setActiveChatTrainee] = useState<any>({
     id: 'te_ahmad',
     userId: 'u_ahmad',
-    name: 'Ahmad bin Ibrahim',
+    name: 'Ahmad Bin Ibrahim',
     initials: 'AI',
     avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCm6XjkajKC1E-auUB-6Sr-GyTGI4zsoY-YEgT0MAl6pw_jL3uSF-kMR6I3SCISx-0HXh-tcAf99gfuoVVhzN1P1HU5oCZk0WWchxWKY22ATwB-APrTezY3HVTAOMGVpXNApLlt1VIzi9o8yJXJ5nQRsSmRHOuxBYfJf_533KGGsCsvrxpZ_3m5uxZ9KZr2L6dBuXJkWmoMBDY9z_YnDYNr0b8EJ3Tyw-sPE0l5vW78317CdkDStSWtXZxNwtq6QaBgqW3N2oV2two',
     status: 'online',
@@ -386,7 +386,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
       type: 'Strength',
       status: 'Upcoming',
       registeredTrainees: [
-        { name: 'Ahmad bin Ibrahim', presence: 'Present' },
+        { name: 'Ahmad Bin Ibrahim', presence: 'Present' },
         { name: 'Mei Ling Tan', presence: 'Present' }
       ]
     },
@@ -399,7 +399,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
       type: 'Mobility',
       status: 'Upcoming',
       registeredTrainees: [
-        { name: 'Muhammad Faizul', presence: 'Present' }
+        { name: 'Amir Hakim', presence: 'Present' }
       ]
     },
     {
@@ -411,11 +411,11 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
       type: 'Power',
       status: 'Completed',
       registeredTrainees: [
-        { name: 'Ahmad bin Ibrahim', presence: 'Present' },
-        { name: 'Muhammad Faizul', presence: 'Present' },
+        { name: 'Ahmad Bin Ibrahim', presence: 'Present' },
+        { name: 'Amir Hakim', presence: 'Present' },
         { name: 'Mei Ling Tan', presence: 'Absent' }
       ],
-      feedback: 'Excellent power generation from Ahmad bin Ibrahim today. Faizul needs minor ankle routing tweaks.'
+      feedback: 'Excellent power generation from Ahmad Bin Ibrahim today. Amir Hakim needs minor ankle routing tweaks.'
     },
     {
       id: 'sess_4',
@@ -426,7 +426,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
       type: 'Cardio',
       status: 'Cancelled',
       registeredTrainees: [
-        { name: 'Ahmad bin Ibrahim', presence: 'Absent' }
+        { name: 'Ahmad Bin Ibrahim', presence: 'Absent' }
       ],
       cancelReason: 'Heavy rain in Kuala Lumpur. Rescheduled to virtual session.'
     },
@@ -546,10 +546,10 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
   const [selectedTraineeIdsForPrescription, setSelectedTraineeIdsForPrescription] = useState<string[]>([]);
 
   const [coachingFeed, setCoachingFeed] = useState<any[]>([
-    { id: 1, type: 'workout', text: 'Workout feedback successfully sent to Ahmad Ibrahim for HIIT Routine', time: '15 mins ago' },
+    { id: 1, type: 'workout', text: 'Workout feedback successfully sent to Ahmad Bin Ibrahim for HIIT Routine', time: '15 mins ago' },
     { id: 2, type: 'nutrition', text: 'Dietary swap advice provided to Mei Ling Tan (SS15 Gym)', time: '1 hour ago' },
     { id: 3, type: 'photo', text: 'Week 8 progress photo visual comparison reviewed', time: '3 hours ago' },
-    { id: 4, type: 'ai', text: 'AI custom metabolic optimizer recommendation approved for Faizul Razak', time: 'Yesterday' }
+    { id: 4, type: 'ai', text: 'AI custom metabolic optimizer recommendation approved for Daniel Lee', time: 'Yesterday' }
   ]);
 
   // Modals for Coaching Hub actions
@@ -558,12 +558,9 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
 
   // Billing dummy seed data for rich sorting
   const [billingList, setBillingList] = useState<any[]>([
-    { id: "pay_1", traineeName: "Ahmad bin Ibrahim", traineeId: "te_ahmad", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-06-05", status: "Paid", month: "June 2026", invoiceNo: "INV-MY-0098", email: "ahmad@coachtrack.my" },
-    { id: "pay_2", traineeName: "Ahmad bin Ibrahim", traineeId: "te_ahmad", packageName: "Single Slot Fee", packageType: "Single", amount: 150, dueDate: "2026-06-12", status: "Pending", month: "June 2026", invoiceNo: "INV-MY-0102", email: "ahmad@coachtrack.my" },
-    { id: "pay_3", traineeName: "Mei Ling Tan", traineeId: "te_ling", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-06-25", status: "Pending", month: "June 2026", invoiceNo: "INV-MY-0105", email: "ling@coachtrack.my" },
-    { id: "pay_4", traineeName: "Muhammad Faizul", traineeId: "te_faizul", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-05-28", status: "Overdue", month: "May 2026", invoiceNo: "INV-MY-0081", email: "faizul@coachtrack.my" },
-    { id: "pay_5", traineeName: "Mei Ling Tan", traineeId: "te_ling", packageName: "Single Slot Fee", packageType: "Single", amount: 150, dueDate: "2026-05-15", status: "Paid", month: "May 2026", invoiceNo: "INV-MY-0075", email: "ling@coachtrack.my" },
-    { id: "pay_6", traineeName: "Ahmad bin Ibrahim", traineeId: "te_ahmad", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-05-02", status: "Paid", month: "May 2026", invoiceNo: "INV-MY-0062", email: "ahmad@coachtrack.my" }
+    { id: "pay_1", traineeName: "Ahmad Bin Ibrahim", traineeId: "te_ahmad", packageName: "8 Classes Per Month", packageType: "Monthly", amount: 600, dueDate: "2026-07-05", status: "Paid", month: "July 2026", invoiceNo: "INV-2026-001", email: "ahmad@coachtrack.my" },
+    { id: "pay_2", traineeName: "Mei Ling Tan", traineeId: "te_ling", packageName: "4 Classes Per Month", packageType: "Monthly", amount: 310, dueDate: "2026-06-25", status: "Paid", month: "June 2026", invoiceNo: "INV-2026-002", email: "ling@coachtrack.my" },
+    { id: "pay_3", traineeName: "Jason Wong", traineeId: "te_jason", packageName: "Single Session", packageType: "Single", amount: 80, dueDate: "2026-06-12", status: "Pending", month: "June 2026", invoiceNo: "INV-2026-003", email: "jason@coachtrack.my" }
   ]);
 
   useEffect(() => {
@@ -607,7 +604,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
         setPayments(dataPay || []);
         if (dataPay && dataPay.length > 0) {
           const mappedBackendPayments = dataPay.map((p: any) => {
-            const traineeInfo = (dataTr || []).find((t: any) => t.id === p.traineeId) || { name: 'Ahmad bin Ibrahim', email: 'ahmad@coachtrack.my' };
+            const traineeInfo = (dataTr || []).find((t: any) => t.id === p.traineeId) || { name: 'Ahmad Bin Ibrahim', email: 'ahmad@coachtrack.my' };
             return {
               id: p.id,
               traineeName: traineeInfo.name,
@@ -651,13 +648,10 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
         const dataPay = await dbService.getPayments({ trainerId: trainerProfile.id });
         setPayments(dataPay);
         
-        setBillingList([
-          { id: "pay_1", traineeName: "Ahmad bin Ibrahim", traineeId: "te_ahmad", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-06-05", status: "Paid", month: "June 2026", invoiceNo: "INV-MY-0098", email: "ahmad@coachtrack.my" },
-          { id: "pay_2", traineeName: "Ahmad bin Ibrahim", traineeId: "te_ahmad", packageName: "Single Slot Fee", packageType: "Single", amount: 150, dueDate: "2026-06-12", status: "Pending", month: "June 2026", invoiceNo: "INV-MY-0102", email: "ahmad@coachtrack.my" },
-          { id: "pay_3", traineeName: "Mei Ling Tan", traineeId: "te_ling", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-06-25", status: "Pending", month: "June 2026", invoiceNo: "INV-MY-0105", email: "ling@coachtrack.my" },
-          { id: "pay_4", traineeName: "Muhammad Faizul", traineeId: "te_faizul", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-05-28", status: "Overdue", month: "May 2026", invoiceNo: "INV-MY-0081", email: "faizul@coachtrack.my" },
-          { id: "pay_5", traineeName: "Mei Ling Tan", traineeId: "te_ling", packageName: "Single Slot Fee", packageType: "Single", amount: 150, dueDate: "2026-05-15", status: "Paid", month: "May 2026", invoiceNo: "INV-MY-0075", email: "ling@coachtrack.my" },
-          { id: "pay_6", traineeName: "Ahmad bin Ibrahim", traineeId: "te_ahmad", packageName: "Monthly Pack (8x Slots)", packageType: "Monthly", amount: 1080, dueDate: "2026-05-02", status: "Paid", month: "May 2026", invoiceNo: "INV-MY-0062", email: "ahmad@coachtrack.my" }
+         setBillingList([
+          { id: "pay_1", traineeName: "Ahmad Bin Ibrahim", traineeId: "te_ahmad", packageName: "8 Classes Per Month", packageType: "Monthly", amount: 600, dueDate: "2026-07-05", status: "Paid", month: "July 2026", invoiceNo: "INV-2026-001", email: "ahmad@coachtrack.my" },
+          { id: "pay_2", traineeName: "Mei Ling Tan", traineeId: "te_ling", packageName: "4 Classes Per Month", packageType: "Monthly", amount: 310, dueDate: "2026-06-25", status: "Paid", month: "June 2026", invoiceNo: "INV-2026-002", email: "ling@coachtrack.my" },
+          { id: "pay_3", traineeName: "Jason Wong", traineeId: "te_jason", packageName: "Single Session", packageType: "Single", amount: 80, dueDate: "2026-06-12", status: "Pending", month: "June 2026", invoiceNo: "INV-2026-003", email: "jason@coachtrack.my" }
         ]);
 
         const dataInv = await dbService.getInvitations({ trainerId: trainerProfile.id });
@@ -1125,10 +1119,11 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
         latestMeal: traineeMeals.length > 0 
           ? `${traineeMeals[0].foodName} (${traineeMeals[0].calories} kcal)` 
           : "Nasi Lemak tapi kurang manis (620 kcal)",
-        packageName: "Monthly Pass",
-        paymentStatus: "Pending",
-        outstandingAmount: 299,
-        dueDate: "2026-06-25",
+        packageName: "8 Classes Per Month",
+        paymentStatus: "Paid",
+        outstandingAmount: 0,
+        amountPaid: 600,
+        dueDate: "None",
         invoiceCount: 1,
         nextSession: traineeBookings.length > 0 && traineeBookings[0].status === 'Approved'
           ? `${traineeBookings[0].date} @ ${traineeBookings[0].timeSlot}` 
@@ -1139,39 +1134,136 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
       },
       'te_ling': {
         targetWeight: 52,
-        completionRate: 68,
-        completedWorkouts: 13,
-        missedWorkouts: 6,
+        completionRate: 78,
+        completedWorkouts: 14,
+        missedWorkouts: 4,
         lastCheckin: "2026-06-09 - Reformer Pilates Level 1",
         lastWorkoutDate: "2026-06-09",
         latestMeal: "Shredded Quinoa Salad & Chicken Breast (390 kcal)",
-        packageName: "8-Class Package",
-        paymentStatus: "Overdue",
-        outstandingAmount: 450,
-        dueDate: "2026-06-05",
-        invoiceCount: 2,
+        packageName: "4 Classes Per Month",
+        paymentStatus: "Paid",
+        outstandingAmount: 0,
+        amountPaid: 310,
+        dueDate: "None",
+        invoiceCount: 1,
         nextSession: "2026-06-13 @ 2:30 PM",
         bodyMetrics: { weight: 58, height: 162, bodyFat: 25.5, muscleMass: 21.2, bmr: 1250 },
-        attendance: "68% (13/19 completed)",
+        attendance: "78% (14/18 completed)",
         notes: "Post-partum abdominal separation (diastasis recti) is healing well. Focus on safe transverse abdominis stabilizers. Strict posture control on pelvic alignment."
       },
-      'te_faizul': {
-        targetWeight: 88,
+      'te_jason': {
+        targetWeight: 72,
+        completionRate: 0,
+        completedWorkouts: 0,
+        missedWorkouts: 0,
+        lastCheckin: "No workouts completed yet",
+        lastWorkoutDate: "N/A",
+        latestMeal: "No meals logged",
+        packageName: "Single Session",
+        paymentStatus: "Pending",
+        outstandingAmount: 80,
+        amountPaid: 0,
+        dueDate: "2026-06-12",
+        invoiceCount: 1,
+        nextSession: "2026-06-20 @ 11:00 AM",
+        bodyMetrics: { weight: 78, height: 175, bodyFat: 24.2, muscleMass: 29.5, bmr: 1620 },
+        attendance: "0% (0/1 completed)",
+        notes: "New client. Focusing on baseline strength and posture assessment."
+      },
+      'te_aisyah': {
+        targetWeight: 55,
+        completionRate: 65,
+        completedWorkouts: 11,
+        missedWorkouts: 6,
+        lastCheckin: "2026-06-11 - MetCon Bodyweight Circuit",
+        lastWorkoutDate: "2026-06-11",
+        latestMeal: "Grilled salmon & asparagus (420 kcal)",
+        packageName: "4 Classes Per Month",
+        paymentStatus: "Paid",
+        outstandingAmount: 0,
+        amountPaid: 310,
+        dueDate: "None",
+        invoiceCount: 1,
+        nextSession: "2026-06-15 @ 4:00 PM",
+        bodyMetrics: { weight: 62, height: 165, bodyFat: 22.1, muscleMass: 24.5, bmr: 1380 },
+        attendance: "65% (11/17 completed)",
+        notes: "High work capacity in conditioning blocks. Watch for left ankle inversion fatigue."
+      },
+      'te_daniel': {
+        targetWeight: 82,
         completionRate: 91,
         completedWorkouts: 20,
         missedWorkouts: 2,
         lastCheckin: "2026-06-14 - Compound Powerlifting Deadlift Set",
         lastWorkoutDate: "2026-06-14",
         latestMeal: "Brown Rice & Double Grilled Chicken Breast (820 kcal)",
-        packageName: "Personal Training Package",
+        packageName: "8 Classes Per Month",
         paymentStatus: "Paid",
         outstandingAmount: 0,
+        amountPaid: 600,
         dueDate: "None (Fully Paid)",
         invoiceCount: 1,
         nextSession: "None Scheduled",
         bodyMetrics: { weight: 92, height: 180, bodyFat: 17.6, muscleMass: 42.8, bmr: 1980 },
         attendance: "91% (20/22 completed)",
         notes: "High potential for deadlift target of 180kg. Work on thoracic spine extension under heavy loads. Form is solid, but tends to hyper-extend lower lumbar at lockouts."
+      },
+      'te_priya': {
+        targetWeight: 52,
+        completionRate: 72,
+        completedWorkouts: 10,
+        missedWorkouts: 4,
+        lastCheckin: "2026-06-13 - Upper Body Push-Pull Hypertrophy",
+        lastWorkoutDate: "2026-06-13",
+        latestMeal: "Tofu Scramble & Avocado Toast (380 kcal)",
+        packageName: "4 Classes Per Month",
+        paymentStatus: "Paid",
+        outstandingAmount: 0,
+        amountPaid: 310,
+        dueDate: "None",
+        invoiceCount: 1,
+        nextSession: "2026-06-19 @ 9:00 AM",
+        bodyMetrics: { weight: 55, height: 160, bodyFat: 23.4, muscleMass: 20.8, bmr: 1220 },
+        attendance: "72% (10/14 completed)",
+        notes: "Consistent effort. Excellent shoulder mobilization progression."
+      },
+      'te_amir': {
+        targetWeight: 85,
+        completionRate: 50,
+        completedWorkouts: 6,
+        missedWorkouts: 6,
+        lastCheckin: "2026-06-08 - Barbell Squat Progressions",
+        lastWorkoutDate: "2026-06-08",
+        latestMeal: "Mixed Beef Rice bowl (720 kcal)",
+        packageName: "8 Classes Per Month",
+        paymentStatus: "Paid",
+        outstandingAmount: 0,
+        amountPaid: 600,
+        dueDate: "None",
+        invoiceCount: 1,
+        nextSession: "2026-06-17 @ 11:00 AM",
+        bodyMetrics: { weight: 95, height: 185, bodyFat: 26.8, muscleMass: 38.2, bmr: 1890 },
+        attendance: "50% (6/12 completed)",
+        notes: "Form on deep squats has improved significantly. Focus on hip flexor stretching."
+      },
+      'te_chloe': {
+        targetWeight: 50,
+        completionRate: 85,
+        completedWorkouts: 17,
+        missedWorkouts: 3,
+        lastCheckin: "2026-06-12 - Agility ladder & speed sprints",
+        lastWorkoutDate: "2026-06-12",
+        latestMeal: "Acai Berry protein bowl (310 kcal)",
+        packageName: "8 Classes Per Month",
+        paymentStatus: "Paid",
+        outstandingAmount: 0,
+        amountPaid: 600,
+        dueDate: "None",
+        invoiceCount: 1,
+        nextSession: "2026-06-18 @ 6:00 PM",
+        bodyMetrics: { weight: 52, height: 158, bodyFat: 18.2, muscleMass: 22.0, bmr: 1190 },
+        attendance: "85% (17/20 completed)",
+        notes: "Very high athletic speed. Continuing to improve functional flexibility under fatigue."
       }
     };
     
@@ -1553,7 +1645,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
             <button
               id="qa-create-workout"
               onClick={() => {
-                const defaultTr = trainees[0] || { id: 'te_ahmad', name: 'Ahmad bin Ibrahim' };
+                const defaultTr = trainees[0] || { id: 'te_ahmad', name: 'Ahmad Bin Ibrahim' };
                 setPrescribeTraineeId(defaultTr.id);
                 setPrescribeTraineeName(defaultTr.name);
                 setPrescribeWorkoutType('HIIT Core Strength');
@@ -2568,7 +2660,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                   <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-1">Total Active Clients</span>
                   <div className="flex justify-between items-baseline mt-1.5 animate-pulse">
                     <span className="text-2xl font-black text-slate-800 font-display">
-                      {isSupActive ? trainees.length : (trainees.length || 6)}
+                      {trainees.length || 8}
                     </span>
                     <span className="text-[10px] text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full font-bold border border-teal-200 uppercase font-sans">
                       👥 Active
@@ -2603,7 +2695,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                       RM {(pendingSumRevenue + overdueSumRevenue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                     <span className="text-[10px] text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full font-bold border border-rose-250 text-2xs">
-                      {isSupActive ? billingList.filter(b => b.status === 'Overdue').length : 2} Overdue
+                      {billingList.filter(b => b.status === 'Overdue').length} Overdue
                     </span>
                   </div>
                 </div>
@@ -2781,36 +2873,60 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                   {/* SVG Bar Chart Area */}
                   <div className="relative pt-6">
                     <div className="absolute inset-0 flex flex-col justify-between pointer-events-none h-40 border-b border-slate-100 text-[9px] font-mono text-slate-300">
-                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 2,500</div>
-                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 1,800</div>
-                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 1,200</div>
-                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 600</div>
+                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 1,000</div>
+                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 750</div>
+                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 500</div>
+                      <div className="border-b border-dashed border-slate-100/80 w-full pt-1">RM 250</div>
                     </div>
 
                     <div className="flex justify-between items-end h-40 pt-6 relative px-4 z-10 font-sans">
-                      <div className="flex flex-col items-center group w-12">
-                        <div className="bg-slate-300 w-6 rounded-t-md transition-all duration-300 hover:bg-slate-400 animate-pulse" style={{ height: '35px' }}></div>
-                        <span className="text-[9px] font-bold text-slate-400 mt-2 font-mono uppercase">Feb</span>
-                      </div>
-                      <div className="flex flex-col items-center group w-12">
-                        <div className="bg-slate-300 w-6 rounded-t-md transition-all duration-300 hover:bg-slate-400" style={{ height: '58px' }}></div>
-                        <span className="text-[9px] font-bold text-slate-400 mt-2 font-mono uppercase font-sans">Mar</span>
-                      </div>
-                      <div className="flex flex-col items-center group w-12">
-                        <div className="bg-indigo-950/40 w-6 rounded-t-md transition-all duration-300 hover:bg-indigo-950 animate-fade-in" style={{ height: '80px' }}></div>
-                        <span className="text-[9px] font-bold text-slate-405 mt-2 font-mono uppercase">Apr</span>
-                      </div>
-                      <div className="flex flex-col items-center group w-12">
-                        <div className="bg-indigo-950/80 w-6 rounded-t-md transition-all duration-300 hover:bg-indigo-950" style={{ height: '115px' }}></div>
-                        <span className="text-[9px] font-bold text-slate-400 mt-2 font-mono uppercase">May</span>
-                      </div>
-                      <div className="flex flex-col items-center group w-12 relative">
-                        <span className="absolute -top-7 scale-0 group-hover:scale-100 transition-all bg-slate-900 text-teal-400 text-[9px] font-black font-mono py-1 px-2 rounded -translate-x-1/2 left-1/2 shadow-xl border border-slate-800 z-50 whitespace-nowrap">
-                          RM {paidSumRevenue.toFixed(0)}
-                        </span>
-                        <div className="bg-gradient-to-t from-indigo-950 to-indigo-700 w-7 rounded-t-md transition-all duration-300 hover:brightness-110 shadow-lg border-t-2 border-indigo-400 cursor-pointer" style={{ height: '142px' }}></div>
-                        <strong className="text-[9px] font-black text-indigo-950 mt-2 font-mono uppercase">Jun</strong>
-                      </div>
+                      {(() => {
+                        const junPaid = billingList.filter(b => b.status === "Paid" && b.month?.includes("June")).reduce((s, b) => s + b.amount, 0);
+                        const junPending = billingList.filter(b => b.status === "Pending" && b.month?.includes("June")).reduce((s, b) => s + b.amount, 0);
+                        const julPaid = billingList.filter(b => b.status === "Paid" && b.month?.includes("July")).reduce((s, b) => s + b.amount, 0);
+                        const julPending = billingList.filter(b => b.status === "Pending" && b.month?.includes("July")).reduce((s, b) => s + b.amount, 0);
+                        
+                        const chartData = [
+                          { month: "Jan", collected: 0, projected: 0 },
+                          { month: "Feb", collected: 0, projected: 0 },
+                          { month: "Mar", collected: 0, projected: 0 },
+                          { month: "Apr", collected: 0, projected: 0 },
+                          { month: "May", collected: 0, projected: 0 },
+                          { month: "Jun", collected: junPaid, projected: junPending },
+                          { month: "Jul", collected: julPaid, projected: julPending }
+                        ];
+
+                        return chartData.map((item, id) => (
+                          <div key={id} className="flex flex-col items-center justify-end h-36 flex-1 relative group">
+                            {/* Tooltip on hover */}
+                            <span className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 bg-slate-900 text-white text-[9px] px-1.5 py-0.5 rounded pointer-events-none transition duration-150 z-10 font-bold whitespace-nowrap leading-none">
+                              RM {item.collected + item.projected}
+                              {item.projected > 0 ? ` (RM ${item.collected} Paid)` : ''}
+                            </span>
+                            {/* Bar fill wrapper */}
+                            <div className="w-6 sm:w-8 bg-slate-100 rounded-lg flex flex-col justify-end h-[100px] mb-1.5 overflow-hidden">
+                              {item.projected > 0 && (
+                                <div 
+                                  className="w-full bg-teal-400 hover:bg-teal-500 transition-all duration-300 cursor-pointer animate-fade-in" 
+                                  style={{ height: `${Math.round((item.projected / 600) * 100)}%` }}
+                                  title={`Projected: RM ${item.projected}`}
+                                />
+                              )}
+                              {item.collected > 0 && (
+                                <div 
+                                  className="w-full bg-[#001F3F] hover:bg-indigo-900 transition-all duration-300 cursor-pointer" 
+                                  style={{ height: `${Math.round((item.collected / 600) * 100)}%` }}
+                                  title={`Collected: RM ${item.collected}`}
+                                />
+                              )}
+                              {(item.collected === 0 && item.projected === 0) && (
+                                <div className="w-full h-0 bg-slate-100" />
+                              )}
+                            </div>
+                            <span className="text-[10px] text-slate-400 font-bold font-mono">{item.month}</span>
+                          </div>
+                        ));
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -4044,6 +4160,36 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                             </div>
                           </div>
 
+                          {/* Coaching Package Contract details */}
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">Coaching Package Contract</span>
+                            <div className="grid grid-cols-2 gap-4 mt-3 text-xs">
+                              <div>
+                                <span className="text-slate-500 block">Package Name</span>
+                                <strong className="text-slate-800 font-bold">{getTraineeStats(selectedTrainee.id).packageName || '8 Classes Per Month'}</strong>
+                              </div>
+                              <div>
+                                <span className="text-slate-500 block">Trainer Coach</span>
+                                <strong className="text-slate-800 font-bold">Coach Sarah Tan</strong>
+                              </div>
+                              <div>
+                                <span className="text-slate-500 block">Amount Paid</span>
+                                <strong className="text-[#001F3F] font-black">RM {getTraineeStats(selectedTrainee.id).amountPaid || 600}</strong>
+                              </div>
+                              <div>
+                                <span className="text-slate-500 block">Contract Status</span>
+                                <span className="inline-flex items-center gap-1.5 text-emerald-850 text-emerald-800 font-extrabold">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                  {getTraineeStats(selectedTrainee.id).status || 'Active'}
+                                </span>
+                              </div>
+                              <div className="col-span-2 border-t border-slate-200/55 pt-2 flex justify-between">
+                                <span className="text-slate-500">Auto Renewal:</span>
+                                <strong className="text-slate-850 font-bold">{getTraineeStats(selectedTrainee.id).renewal || 'Next Month'}</strong>
+                              </div>
+                            </div>
+                          </div>
+
                           {/* Physical Check-In Dates History */}
                           <div>
                             <h4 className="font-bold text-xs uppercase text-slate-400 tracking-wider mb-2.5 font-display">QR Code Scan Attendance Log</h4>
@@ -4718,30 +4864,53 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                     <div className="border-b border-slate-400 w-full h-0"></div>
                   </div>
 
-                  {/* Columns */}
-                  {[
-                    { month: "Jan", amt: 1200, pct: '30%' },
-                    { month: "Feb", amt: 1850, pct: '45%' },
-                    { month: "Mar", amt: 2200, pct: '58%' },
-                    { month: "Apr", amt: 2900, pct: '75%' },
-                    { month: "May", amt: 2310, pct: '60%' },
-                    { month: "Jun", amt: 3240, pct: '92%' }
-                  ].map((item, id) => (
-                    <div key={id} className="flex flex-col items-center justify-end h-36 flex-1 relative group">
-                      {/* Tooltip on hover */}
-                      <span className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 bg-slate-900 text-white text-[9px] px-1.5 py-0.5 rounded pointer-events-none transition duration-150 z-10 font-bold whitespace-nowrap">
-                        RM {item.amt}
-                      </span>
-                      {/* Bar fill wrapper to compute percentage with fixed height */}
-                      <div className="w-8 sm:w-10 bg-slate-100/85 rounded-lg flex items-end h-[100px] mb-1.5">
-                        <div 
-                          className="w-full bg-[#001F3F] hover:bg-teal-500 rounded-lg transition-all duration-300 cursor-pointer" 
-                          style={{ height: item.pct }}
-                        />
+                  {(() => {
+                    const junPaid = billingList.filter(b => b.status === "Paid" && b.month?.includes("June")).reduce((s, b) => s + b.amount, 0);
+                    const junPending = billingList.filter(b => b.status === "Pending" && b.month?.includes("June")).reduce((s, b) => s + b.amount, 0);
+                    const julPaid = billingList.filter(b => b.status === "Paid" && b.month?.includes("July")).reduce((s, b) => s + b.amount, 0);
+                    const julPending = billingList.filter(b => b.status === "Pending" && b.month?.includes("July")).reduce((s, b) => s + b.amount, 0);
+                    
+                    const chartData = [
+                      { month: "Jan", collected: 0, projected: 0, pct: '0%' },
+                      { month: "Feb", collected: 0, projected: 0, pct: '0%' },
+                      { month: "Mar", collected: 0, projected: 0, pct: '0%' },
+                      { month: "Apr", collected: 0, projected: 0, pct: '0%' },
+                      { month: "May", collected: 0, projected: 0, pct: '0%' },
+                      { month: "Jun", collected: junPaid, projected: junPending, pct: `${Math.round(((junPaid + junPending) / 600) * 100)}%` },
+                      { month: "Jul", collected: julPaid, projected: julPending, pct: `${Math.round(((julPaid + julPending) / 600) * 100)}%` }
+                    ];
+
+                    return chartData.map((item, id) => (
+                      <div key={id} className="flex flex-col items-center justify-end h-36 flex-1 relative group">
+                        {/* Tooltip on hover */}
+                        <span className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 bg-slate-900 text-white text-[9px] px-1.5 py-0.5 rounded pointer-events-none transition duration-150 z-10 font-bold whitespace-nowrap leading-none">
+                          Invoiced: RM {item.collected + item.projected}
+                          {item.projected > 0 ? ` (RM ${item.collected} Paid)` : ''}
+                        </span>
+                        {/* Bar fill wrapper */}
+                        <div className="w-8 sm:w-10 bg-slate-105/85 bg-slate-100 rounded-lg flex flex-col justify-end h-[100px] mb-1.5 overflow-hidden">
+                          {item.projected > 0 && (
+                            <div 
+                              className="w-full bg-teal-400 hover:bg-teal-500 transition-all duration-300 cursor-pointer animate-fade-in" 
+                              style={{ height: `${Math.round((item.projected / (item.collected + item.projected || 1)) * 100)}%` }}
+                              title={`Projected: RM ${item.projected}`}
+                            />
+                          )}
+                          {item.collected > 0 && (
+                            <div 
+                              className="w-full bg-[#001F3F] hover:bg-indigo-900 transition-all duration-300 cursor-pointer" 
+                              style={{ height: `${Math.round((item.collected / (item.collected + item.projected || 1)) * 100)}%` }}
+                              title={`Collected: RM ${item.collected}`}
+                            />
+                          )}
+                          {(item.collected === 0 && item.projected === 0) && (
+                            <div className="w-full h-0 bg-slate-100" />
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-bold font-mono">{item.month}</span>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-bold font-mono">{item.month}</span>
-                    </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
               </div>
 
@@ -4750,42 +4919,80 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                 
                 {/* Pack split bar */}
                 <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-sm">
-                  <h4 className="font-bold text-xs uppercase text-slate-400 tracking-wider mb-3">Package Category breakdown</h4>
-                  <div className="flex bg-slate-100 h-3.5 rounded-full overflow-hidden mb-3">
-                    <div className="bg-[#001F3F] h-full" style={{ width: '70%' }} title="Monthly Pack"></div>
-                    <div className="bg-teal-500 h-full" style={{ width: '30%' }} title="Single coaching"></div>
-                  </div>
-                  <div className="flex justify-between items-center text-xs text-slate-500">
-                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-[#001F3F] rounded-full inline-block"></span> Monthly Pack (70%)</span>
-                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-teal-500 rounded-full inline-block"></span> Single Hour (30%)</span>
-                  </div>
+                  <h4 className="font-bold text-xs uppercase text-slate-400 tracking-wider mb-3 font-sans">Package Category breakdown</h4>
+                  {(() => {
+                    const singleCount = billingList.filter(b => b.packageName === 'Single Session' || b.packageName?.includes('Single')).length;
+                    const b4Count = billingList.filter(b => b.packageName === '4 Classes Per Month' || b.packageName?.includes('4 Classes')).length;
+                    const b8Count = billingList.filter(b => b.packageName === '8 Classes Per Month' || b.packageName?.includes('8 Classes')).length;
+                    const totalCount = (singleCount + b4Count + b8Count) || 1;
+                    
+                    const singlePct = Math.round((singleCount / totalCount) * 100);
+                    const b4Pct = Math.round((b4Count / totalCount) * 100);
+                    const b8Pct = 100 - singlePct - b4Pct; // ensure sums to 100%
+                    
+                    return (
+                      <>
+                        <div className="flex bg-slate-100 h-3.5 rounded-full overflow-hidden mb-3">
+                          <div className="bg-[#001F3F] h-full" style={{ width: `${b8Pct}%` }} title="8 Classes Per Month"></div>
+                          <div className="bg-indigo-600 h-full" style={{ width: `${b4Pct}%` }} title="4 Classes Per Month"></div>
+                          <div className="bg-teal-500 h-full" style={{ width: `${singlePct}%` }} title="Single Session"></div>
+                        </div>
+                        <div className="space-y-1.5 text-xs text-slate-500 font-sans">
+                          <div className="flex justify-between items-center">
+                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#001F3F] rounded-full inline-block"></span> 8 Classes Per Month</span>
+                            <span className="font-bold text-slate-700">{b8Pct}% ({b8Count})</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-indigo-600 rounded-full inline-block"></span> 4 Classes Per Month</span>
+                            <span className="font-bold text-slate-700">{b4Pct}% ({b4Count})</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-teal-500 rounded-full inline-block"></span> Single Session</span>
+                            <span className="font-bold text-slate-700">{singlePct}% ({singleCount})</span>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Top payers */}
                 <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
-                  <h4 className="font-bold text-xs uppercase text-slate-400 tracking-wider mb-2.5">Top-Paying Roster Clients</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-100 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="text-zinc-600 font-sans">1.</span>
-                        <span className="font-bold">Ahmad bin Ibrahim</span>
-                      </div>
-                      <span className="text-[#001F3F] font-black">RM 2,310.00</span>
-                    </div>
-                    <div className="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-100 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="text-zinc-650 font-sans">2.</span>
-                        <span className="font-bold">Mei Ling Tan</span>
-                      </div>
-                      <span className="text-[#001F3F] font-black">RM 1,230.00</span>
-                    </div>
-                    <div className="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-100 text-xs opacity-70">
-                      <div className="flex items-center gap-2">
-                        <span className="text-zinc-655 font-sans">3.</span>
-                        <span className="font-medium">Muhammad Faizul</span>
-                      </div>
-                      <span className="text-[#001F3F] font-semibold">RM 0.00 (Due)</span>
-                    </div>
+                  <h4 className="font-bold text-xs uppercase text-slate-400 tracking-wider mb-2.5 font-sans">Top-Paying Roster Clients</h4>
+                  <div className="space-y-2 font-sans">
+                    {(() => {
+                      const clientSums: Record<string, { paid: number; pending: number; name: string }> = {};
+                      const names = ["Ahmad Bin Ibrahim", "Mei Ling Tan", "Jason Wong"];
+                      names.forEach(n => { clientSums[n] = { paid: 0, pending: 0, name: n }; });
+                      
+                      billingList.forEach(item => {
+                        const n = item.traineeName;
+                        if (!clientSums[n]) {
+                          clientSums[n] = { paid: 0, pending: 0, name: n };
+                        }
+                        if (item.status === 'Paid') {
+                          clientSums[n].paid += item.amount;
+                        } else {
+                          clientSums[n].pending += item.amount;
+                        }
+                      });
+                      
+                      const ranked = Object.values(clientSums).sort((a, b) => b.paid - a.paid || b.pending - a.pending);
+                      return ranked.map((item, index) => (
+                        <div key={item.name} className="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-100 text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="text-zinc-600 font-sans">{index + 1}.</span>
+                            <span className="font-bold">{item.name}</span>
+                          </div>
+                          <span className="text-[#001F3F] font-black">
+                            {item.paid > 0 
+                              ? `RM ${item.paid.toLocaleString('en-US', { minimumFractionDigits: 2 })}` 
+                              : `RM 0.00 paid / RM ${item.pending.toLocaleString('en-US', { minimumFractionDigits: 2 })} pending`
+                            }
+                          </span>
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </div>
 
@@ -5440,7 +5647,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                       {
                         id: 'te_ahmad',
                         userId: 'u_ahmad',
-                        name: 'Ahmad Ibrahim',
+                        name: 'Ahmad Bin Ibrahim',
                         avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCm6XjkajKC1E-auUB-6Sr-GyTGI4zsoY-YEgT0MAl6pw_jL3uSF-kMR6I3SCISx-0HXh-tcAf99gfuoVVhzN1P1HU5oCZk0WWchxWKY22ATwB-APrTezY3HVTAOMGVpXNApLlt1VIzi9o8yJXJ5nQRsSmRHOuxBYfJf_533KGGsCsvrxpZ_3m5uxZ9KZr2L6dBuXJkWmoMBDY9z_YnDYNr0b8EJ3Tyw-sPE0l5vW78317CdkDStSWtXZxNwtq6QaBgqW3N2oV2two',
                         goals: 'Weight Loss & Cardio',
                         streakCount: 5,
@@ -5456,8 +5663,8 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                         status: 'offline'
                       },
                       {
-                        id: 'te_faizul',
-                        userId: 'u_faizul',
+                        id: 'te_jason',
+                        userId: 'u_jason',
                         name: 'Jason Wong',
                         avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
                         goals: 'Powerlifting',
@@ -5474,7 +5681,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                         displayedTraineesMap.set(t.userId, {
                           id: t.id,
                           userId: t.userId,
-                          name: t.name === 'Ahmad bin Ibrahim' ? 'Ahmad Ibrahim' : t.name,
+                          name: (t.name === 'Ahmad bin Ibrahim' || t.name === 'Ahmad Ibrahim') ? 'Ahmad Bin Ibrahim' : t.name,
                           avatarUrl: t.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120',
                           goals: t.goals || existing?.goals || 'General Fitness',
                           streakCount: t.streakCount ?? existing?.streakCount ?? 0,
@@ -5513,7 +5720,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                       {
                         id: 'te_ahmad',
                         userId: 'u_ahmad',
-                        name: 'Ahmad Ibrahim',
+                        name: 'Ahmad Bin Ibrahim',
                         avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCm6XjkajKC1E-auUB-6Sr-GyTGI4zsoY-YEgT0MAl6pw_jL3uSF-kMR6I3SCISx-0HXh-tcAf99gfuoVVhzN1P1HU5oCZk0WWchxWKY22ATwB-APrTezY3HVTAOMGVpXNApLlt1VIzi9o8yJXJ5nQRsSmRHOuxBYfJf_533KGGsCsvrxpZ_3m5uxZ9KZr2L6dBuXJkWmoMBDY9z_YnDYNr0b8EJ3Tyw-sPE0l5vW78317CdkDStSWtXZxNwtq6QaBgqW3N2oV2two',
                         goals: 'Weight Loss & Cardio',
                         streakCount: 5,
@@ -5529,8 +5736,8 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                         status: 'offline'
                       },
                       {
-                        id: 'te_faizul',
-                        userId: 'u_faizul',
+                        id: 'te_jason',
+                        userId: 'u_jason',
                         name: 'Jason Wong',
                         avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
                         goals: 'Powerlifting',
@@ -5547,7 +5754,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                         displayedTraineesMap.set(t.userId, {
                           id: t.id,
                           userId: t.userId,
-                          name: t.name === 'Ahmad bin Ibrahim' ? 'Ahmad Ibrahim' : t.name,
+                          name: (t.name === 'Ahmad bin Ibrahim' || t.name === 'Ahmad Ibrahim') ? 'Ahmad Bin Ibrahim' : t.name,
                           avatarUrl: t.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120',
                           goals: t.goals || existing?.goals || 'General Fitness',
                           streakCount: t.streakCount ?? existing?.streakCount ?? 0,
@@ -5571,7 +5778,7 @@ export function TrainerDashboardInner({ trainerProfile: initialTrainerProfile, a
                       // Previews of last messages
                       let lastMsg = "Thanks coach Sarah! I logged my breakfast just now.";
                       if (t.id === 'te_ling') lastMsg = "Ready to target pelvis floor alignment recovery.";
-                      if (t.id === 'te_faizul') lastMsg = "Deadlift target hit at 150kg today! Form felt stable.";
+                      if (t.id === 'te_jason') lastMsg = "Deadlift target hit at 150kg today! Form felt stable.";
 
                       return (
                         <button
