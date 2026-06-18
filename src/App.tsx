@@ -35,7 +35,11 @@ export default function App() {
       if (!isSupabaseConfigured) {
         return false;
       }
-      return localStorage.getItem('coach_track_mode') === 'live';
+      const stored = localStorage.getItem('coach_track_mode');
+      if (stored === 'sandbox') {
+        return false;
+      }
+      return true; // Live is default when configured
     } catch (e) {
       return false;
     }
@@ -274,74 +278,15 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
       
-      {/* Dynamic Global Sandbox Controls Header */}
-      <div className="w-full bg-slate-900 border-b border-slate-800 text-slate-200 py-3 px-4 relative z-50">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
-          
-          {/* Mode Switcher Buttons */}
-          <div className="flex items-center gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800 shrink-0">
-            <button
-              onClick={() => toggleLiveMode(false)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
-                !isLiveMode 
-                  ? 'bg-teal-500 text-slate-950 shadow-md' 
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Database className="w-3.5 h-3.5 shrink-0" />
-              Demo Sandbox Mode
-            </button>
-            <button
-              onClick={() => toggleLiveMode(true)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
-                isLiveMode 
-                  ? 'bg-indigo-600 text-white shadow-md' 
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Shield className="w-3.5 h-3.5 shrink-0" />
-              Live Supabase Mode
-            </button>
-          </div>
-
-          {/* Local DB Utilities (Only shown in Sandbox Mode) */}
-          {!isLiveMode && (
-            <div className="flex flex-wrap items-center justify-center gap-2.5">
-              <button
-                onClick={handleResetLocalDb}
-                className="bg-slate-800 hover:bg-slate-700 hover:text-rose-400 text-slate-300 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border border-slate-700 transition-all cursor-pointer font-mono"
-                title="Reset local JSON database to initial seeds"
-              >
-                Reset Local DB
-              </button>
-              <button
-                onClick={handleSetupSupabaseDb}
-                className="bg-slate-800 hover:bg-slate-700 hover:text-indigo-400 text-slate-300 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border border-slate-700 transition-all cursor-pointer font-mono"
-                title="Create & Seed standard tables in Supabase"
-              >
-                Setup Supabase Database
-              </button>
-            </div>
-          )}
-
-          {/* Sandbox Info */}
-          <div className="text-[10px] font-mono text-center md:text-right shrink-0">
-            {isLiveMode ? (
-              <span className="text-indigo-400 font-bold block">
-                ⚡ LIVE SUPABASE ENVIRONMENT ACTIVE
-              </span>
-            ) : (
-              <span className="text-teal-400 font-bold block animate-pulse">
-                🟢 OFFLINE SANDBOX WORKFLOW FALLBACK ACTIVE
-              </span>
-            )}
-          </div>
-
-        </div>
-      </div>
-
-      {/* Sandbox Account Fast Swapper Banner */}
+      {/* Small Notice Banner under Demo Backup Mode (Strictly hidden in Live Mode) */}
       {!isLiveMode && (
+        <div className="w-full bg-teal-600 text-slate-950 py-1.5 px-4 text-center font-bold tracking-wider font-mono text-[10px] uppercase shadow-sm relative z-50">
+          DEMO BACKUP MODE ACTIVE — Presentation data only
+        </div>
+      )}
+
+      {/* Sandbox Account Fast Swapper Banner - Only shown when not logged in and in Demo backup mode */}
+      {!isLiveMode && !currentUser && (
         <div className="w-full bg-teal-950 text-teal-100 border-b border-teal-900 py-2 px-4 relative z-40">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2.5">
             <div className="flex items-center gap-2 text-[10px] sm:text-xs">
@@ -350,25 +295,19 @@ export default function App() {
                 DEMO SANDBOX ACTIVE
               </span>
               <span className="font-medium text-[11px] sm:text-xs font-sans">
-                Switch accounts instantly to test workflows
+                Quick Demo Accounts (Sarah Tan & Ahmad Ibrahim)
               </span>
             </div>
 
             {/* Quick switcher buttons */}
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-teal-400 uppercase tracking-widest hidden lg:inline block mr-1 font-mono">
-                Fast switch:
-              </span>
               <button
+                type="button"
                 onClick={() => handleInstantSwitch('trainer')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer font-sans ${
-                  currentUser && currentUser.id === 'u_sarah'
-                    ? 'bg-teal-400 text-slate-950 border-teal-300 scale-102 shadow'
-                    : 'bg-teal-900/60 hover:bg-teal-900 text-teal-100 border-teal-800'
-                }`}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all border bg-teal-900/60 hover:bg-teal-900 text-teal-100 border-teal-800 cursor-pointer font-sans"
               >
                 <img
-                  referrerPolicy="referrer"
+                  referrerPolicy="no-referrer"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdbLazpc2A4eSVhZ_CtAZRTFHNzG3kufmetnxoPLqJqd9Ba1uofmyihn_1XwWE-LFDpPVzy29OMxa5G29qGx3p8kBoe7SZmtqdvrC3El-KKNpBro7q-NKPkywkzkVVPgzfg3cfVHfucP48F4UbrcjhECaqEi5jpLyQPCRELWCt-LEt42L3swdSCYFndC3CR61tZIU2ILlHSOF-UU5T8S3WSIVxg054c1xPEN6J8k4d8bFe0Aneqp9rB8FT_wF1RbSXTa5Jw6SPRHY"
                   className="w-4 h-4 rounded-full object-cover shrink-0"
                   alt="Sarah"
@@ -376,15 +315,12 @@ export default function App() {
                 Sarah Tan (Trainer)
               </button>
               <button
+                type="button"
                 onClick={() => handleInstantSwitch('trainee')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer font-sans ${
-                  currentUser && currentUser.id === 'u_ahmad'
-                    ? 'bg-teal-400 text-slate-950 border-teal-300 scale-102 shadow'
-                    : 'bg-teal-900/60 hover:bg-teal-900 text-teal-100 border-teal-800'
-                }`}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all border bg-teal-900/60 hover:bg-teal-900 text-teal-100 border-teal-800 cursor-pointer font-sans"
               >
                 <img
-                  referrerPolicy="referrer"
+                  referrerPolicy="no-referrer"
                   src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120"
                   className="w-4 h-4 rounded-full object-cover shrink-0"
                   alt="Ahmad"
@@ -412,6 +348,10 @@ export default function App() {
 
         {activeTab === 'login' && (
           <AuthForm 
+            isLiveMode={isLiveMode}
+            onToggleLiveMode={toggleLiveMode}
+            onResetLocalDb={handleResetLocalDb}
+            onSetupSupabaseDb={handleSetupSupabaseDb}
             onAuthSuccess={(user, trainerPrf, traineePrf) => {
               setCurrentUser(user);
               if (trainerPrf) setTrainerProfile(trainerPrf);

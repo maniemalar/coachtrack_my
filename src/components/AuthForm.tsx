@@ -24,7 +24,9 @@ import {
   BadgeHelp,
   ShieldCheck,
   CheckCircle2,
-  Info
+  Info,
+  Shield,
+  Database
 } from 'lucide-react';
 
 interface AuthFormProps {
@@ -35,9 +37,21 @@ interface AuthFormProps {
   ) => void;
   onNavigateToTab: (tab: string) => void;
   initialRole?: UserRole;
+  isLiveMode: boolean;
+  onToggleLiveMode: (live: boolean) => void;
+  onResetLocalDb: () => void;
+  onSetupSupabaseDb: () => void;
 }
 
-export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole = UserRole.TRAINEE }: AuthFormProps) {
+export default function AuthForm({ 
+  onAuthSuccess, 
+  onNavigateToTab, 
+  initialRole = UserRole.TRAINEE,
+  isLiveMode,
+  onToggleLiveMode,
+  onResetLocalDb,
+  onSetupSupabaseDb
+}: AuthFormProps) {
   // Auth Form mode: 'login' | 'signup'
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   
@@ -134,7 +148,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
     setLoginError('');
     setIsLoggingIn(true);
 
-    const isLive = localStorage.getItem('coach_track_mode') === 'live';
+    const isLive = isLiveMode;
     if (!isLive) {
       console.log('Simulating offline login for Sandbox Mode:', loginEmail);
       const emailLower = loginEmail.toLowerCase();
@@ -307,7 +321,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
     setIsSubmitting(true);
     setSignupError('');
 
-    const isLive = localStorage.getItem('coach_track_mode') === 'live';
+    const isLive = isLiveMode;
     if (!isLive) {
       setTimeout(() => {
         onAuthSuccess({
@@ -485,7 +499,7 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
       return;
     }
 
-    const isLive = localStorage.getItem('coach_track_mode') === 'live';
+    const isLive = isLiveMode;
     if (!isLive) {
       setTimeout(() => {
         onAuthSuccess({
@@ -725,10 +739,68 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
               </div>
             )}
           </div>
+
+          {/* SQL Sandbox Utilities (Only shown in Backup/Demo Mode) */}
+          {!isLiveMode && (
+            <div className="mt-4 bg-slate-900/50 border border-slate-700/50 rounded-2xl p-4 relative z-10 font-mono text-left space-y-2">
+              <span className="text-[10px] uppercase font-black tracking-widest text-teal-400 block mb-1">
+                ⚙️ DEMO BACKUP UTILITIES
+              </span>
+              <div className="flex flex-col gap-1.5">
+                <button
+                  type="button"
+                  onClick={onResetLocalDb}
+                  className="w-full bg-slate-800 hover:bg-slate-700 hover:text-rose-450 text-slate-300 text-[10px] font-bold uppercase tracking-wider py-2 px-3 rounded-lg border border-slate-700 transition-all cursor-pointer text-center font-mono"
+                >
+                  Reset Local DB
+                </button>
+                <button
+                  type="button"
+                  onClick={onSetupSupabaseDb}
+                  className="w-full bg-slate-800 hover:bg-slate-700 hover:text-indigo-400 text-slate-300 text-[10px] font-bold uppercase tracking-wider py-2 px-3 rounded-lg border border-slate-700 transition-all cursor-pointer text-center font-mono"
+                >
+                  Setup Supabase Database
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Aspect: Auth Forms */}
         <div className="md:w-7/12 p-8 md:p-10 text-left bg-white">
+          
+          {/* Small non-intrusive toggle */}
+          <div className="mb-6 pb-4 border-b border-slate-100 flex items-center justify-between font-sans">
+            <span className="text-[10px] lg:text-xs font-extrabold text-slate-400 uppercase tracking-wider block shrink-0">
+              Environment Setup:
+            </span>
+            <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => onToggleLiveMode(true)}
+                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                  isLiveMode 
+                    ? 'bg-indigo-600 text-white shadow-sm' 
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                <Shield className="w-3.5 h-3.5" />
+                Live Mode
+              </button>
+              <button
+                type="button"
+                onClick={() => onToggleLiveMode(false)}
+                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                  !isLiveMode 
+                    ? 'bg-teal-500 text-slate-950 shadow-sm' 
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                <Database className="w-3.5 h-3.5" />
+                Demo Backup
+              </button>
+            </div>
+          </div>
           
           {/* Tab Switcher */}
           <div className="flex bg-slate-100 rounded-xl p-1 mb-8">
@@ -826,20 +898,18 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
               </div>
 
               {/* Demo Login Cards helper */}
-              <div className="pt-6 border-t border-slate-100 mt-6">
-                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-teal-600 block mb-3 font-mono">
-                  💡 Active Sandbox Demo Accounts
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {/* Coach Tan Card */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLoginEmail('trainer@demo.my');
-                      setLoginPassword('demo1234');
-                      // Auto trigger login submit instantly in Sandbox Mode
-                      const isLive = localStorage.getItem('coach_track_mode') === 'live';
-                      if (!isLive) {
+              {!isLiveMode && (
+                <div className="pt-6 border-t border-slate-100 mt-6">
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-teal-600 block mb-3 font-mono">
+                    💡 Active Sandbox Demo Accounts
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {/* Coach Tan Card */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLoginEmail('trainer@demo.my');
+                        setLoginPassword('demo1234');
                         onAuthSuccess({
                           id: 'u_sarah',
                           email: 'trainer@demo.my',
@@ -847,31 +917,27 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
                           name: 'Sarah Tan',
                           avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCdbLazpc2A4eSVhZ_CtAZRTFHNzG3kufmetnxoPLqJqd9Ba1uofmyihn_1XwWE-LFDpPVzy29OMxa5G29qGx3p8kBoe7SZmtqdvrC3El-KKNpBro7q-NKPkywkzkVVPgzfg3cfVHfucP48F4UbrcjhECaqEi5jpLyQPCRELWCt-LEt42L3swdSCYFndC3CR61tZIU2ILlHSOF-UU5T8S3WSIVxg054c1xPEN6J8k4d8bFe0Aneqp9rB8FT_wF1RbSXTa5Jw6SPRHY'
                         });
-                      }
-                    }}
-                    className="flex text-left items-center gap-3 p-3 bg-indigo-50/50 hover:bg-[#001f3f]/5 border border-slate-200 hover:border-teal-500 rounded-xl transition-all cursor-pointer group"
-                  >
-                    <img
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdbLazpc2A4eSVhZ_CtAZRTFHNzG3kufmetnxoPLqJqd9Ba1uofmyihn_1XwWE-LFDpPVzy29OMxa5G29qGx3p8kBoe7SZmtqdvrC3El-KKNpBro7q-NKPkywkzkVVPgzfg3cfVHfucP48F4UbrcjhECaqEi5jpLyQPCRELWCt-LEt42L3swdSCYFndC3CR61tZIU2ILlHSOF-UU5T8S3WSIVxg054c1xPEN6J8k4d8bFe0Aneqp9rB8FT_wF1RbSXTa5Jw6SPRHY"
-                      className="w-10 h-10 rounded-full border border-indigo-200 object-cover shrink-0"
-                      alt="Coach Sarah"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[11px] font-bold text-slate-800 block truncate group-hover:text-teal-600 transition-colors font-sans">Sarah Tan (Coach)</span>
-                      <span className="text-[9px] text-slate-500 block truncate font-sans">discipline: Yoga & Pilates</span>
-                      <span className="text-[8px] bg-indigo-100 text-indigo-700 font-bold px-1.5 py-0.5 rounded inline-block mt-0.5 font-sans">SS15 • 1-Click Login</span>
-                    </div>
-                  </button>
+                      }}
+                      className="flex text-left items-center gap-3 p-3 bg-indigo-50/50 hover:bg-[#001f3f]/5 border border-slate-200 hover:border-teal-500 rounded-xl transition-all cursor-pointer group"
+                    >
+                      <img
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdbLazpc2A4eSVhZ_CtAZRTFHNzG3kufmetnxoPLqJqd9Ba1uofmyihn_1XwWE-LFDpPVzy29OMxa5G29qGx3p8kBoe7SZmtqdvrC3El-KKNpBro7q-NKPkywkzkVVPgzfg3cfVHfucP48F4UbrcjhECaqEi5jpLyQPCRELWCt-LEt42L3swdSCYFndC3CR61tZIU2ILlHSOF-UU5T8S3WSIVxg054c1xPEN6J8k4d8bFe0Aneqp9rB8FT_wF1RbSXTa5Jw6SPRHY"
+                        className="w-10 h-10 rounded-full border border-indigo-200 object-cover shrink-0"
+                        alt="Coach Sarah"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[11px] font-bold text-slate-800 block truncate group-hover:text-teal-600 transition-colors font-sans">Sarah Tan (Trainer)</span>
+                        <span className="text-[9px] text-slate-500 block truncate font-sans">discipline: Yoga & Pilates</span>
+                        <span className="text-[8px] bg-indigo-100 text-indigo-700 font-bold px-1.5 py-0.5 rounded inline-block mt-0.5 font-sans">SS15 • 1-Click Login</span>
+                      </div>
+                    </button>
 
-                  {/* Trainee bin Ibrahim Card */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLoginEmail('trainee@demo.my');
-                      setLoginPassword('demo1234');
-                      // Auto trigger login submit instantly in Sandbox Mode
-                      const isLive = localStorage.getItem('coach_track_mode') === 'live';
-                      if (!isLive) {
+                    {/* Trainee bin Ibrahim Card */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLoginEmail('trainee@demo.my');
+                        setLoginPassword('demo1234');
                         onAuthSuccess({
                           id: 'u_ahmad',
                           email: 'trainee@demo.my',
@@ -879,23 +945,23 @@ export default function AuthForm({ onAuthSuccess, onNavigateToTab, initialRole =
                           name: 'Ahmad bin Ibrahim',
                           avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
                         });
-                      }
-                    }}
-                    className="flex text-left items-center gap-3 p-3 bg-teal-50/50 hover:bg-[#001f3f]/5 border border-slate-200 hover:border-teal-500 rounded-xl transition-all cursor-pointer group"
-                  >
-                    <img
-                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120"
-                      className="w-10 h-10 rounded-full border border-teal-200 object-cover shrink-0"
-                      alt="Ahmad Ibrahim"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[11px] font-bold text-slate-800 block truncate group-hover:text-teal-600 transition-colors font-sans">Ahmad Ibrahim (Client)</span>
-                      <span className="text-[9px] text-slate-500 block truncate font-sans">Goal: Cardio & Fat Loss</span>
-                      <span className="text-[8px] bg-teal-100 text-teal-700 font-bold px-1.5 py-0.5 rounded inline-block mt-0.5 font-sans">SS15 • 1-Click Login</span>
-                    </div>
-                  </button>
+                      }}
+                      className="flex text-left items-center gap-3 p-3 bg-teal-50/50 hover:bg-[#001f3f]/5 border border-slate-200 hover:border-teal-500 rounded-xl transition-all cursor-pointer group"
+                    >
+                      <img
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120"
+                        className="w-10 h-10 rounded-full border border-teal-200 object-cover shrink-0"
+                        alt="Ahmad Ibrahim"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[11px] font-bold text-slate-800 block truncate group-hover:text-teal-600 transition-colors font-sans">Ahmad bin Ibrahim (Trainee)</span>
+                        <span className="text-[9px] text-slate-500 block truncate font-sans">Goal: Cardio & Fat Loss</span>
+                        <span className="text-[8px] bg-teal-100 text-teal-700 font-bold px-1.5 py-0.5 rounded inline-block mt-0.5 font-sans">SS15 • 1-Click Login</span>
+                      </div>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
