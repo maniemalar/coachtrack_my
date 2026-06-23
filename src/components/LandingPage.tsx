@@ -1,186 +1,386 @@
 import React from 'react';
-import { ShieldCheck, MapPin, Sparkles, Activity, Utensils, HeartHandshake, Check } from 'lucide-react';
-import { UserRole } from '../types';
+import { 
+  ShieldCheck, 
+  Calendar, 
+  Apple, 
+  TrendingUp, 
+  ArrowRight, 
+  Star, 
+  Crown, 
+  Check 
+} from 'lucide-react';
 
 interface LandingPageProps {
-  onStartAs: (role: UserRole) => void;
+  onStartAs: (action: 'login' | 'signup') => void;
 }
 
 export default function LandingPage({ onStartAs }: LandingPageProps) {
   return (
-    <div className="w-full bg-slate-50 min-h-screen text-slate-800 font-sans">
-      {/* Hero Banner section */}
-      <section className="relative bg-white border-b border-slate-100 overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 relative z-10 flex flex-col md:flex-row items-center gap-12">
-          <div className="flex-1 text-left">
-            <div className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-100 rounded-full px-3 py-1 text-teal-800 text-xs font-semibold mb-6">
-              <Sparkles className="w-4 h-4" />
-              <span>Malaysia’s Premium AI Trainer & Client Platform</span>
-            </div>
-            <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-slate-900 tracking-tight leading-none mb-6">
-              Accelerate Your Fitness Career. <br />
-              <span className="bg-gradient-to-r from-teal-600 via-teal-500 to-cyan-500 bg-clip-text text-transparent">Achieve Perfect Physical Goals.</span>
-            </h1>
-            <p className="text-slate-600 text-lg mb-8 leading-relaxed max-w-2xl">
-              CoachTrack MY is the complete all-in-one software built for Malaysian sports coaches, gym operators, freelance trainers, and their trainees. Manage custom workouts, track nutrition featuring an authentic database of local delicacies (Nasi Lemak, Teh Tarik, Roti Canai), generate certified invoices, and utilize AI-enhanced advice!
-            </p>
-
-            <div className="flex flex-wrap gap-4">
-              <button 
-                onClick={() => onStartAs(UserRole.TRAINEE)}
-                className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8 py-4 rounded-xl transition duration-200 transform hover:-translate-y-0.5 shadow-md flex items-center gap-2 text-sm"
-                id="btn-trainee-start"
-              >
-                Start Tracking as Trainee
-              </button>
-              <button 
-                onClick={() => onStartAs(UserRole.TRAINER)}
-                className="bg-[#001F3F] hover:bg-slate-900 text-teal-400 font-bold px-8 py-4 rounded-xl border border-slate-800 transition duration-200 transform hover:-translate-y-0.5 shadow-sm text-sm"
-                id="btn-trainer-start"
-              >
-                Join as Trainer / Coach
-              </button>
-            </div>
-
-            <div className="mt-8 flex items-center gap-6 text-xs text-slate-500 font-medium">
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                <span>Verified Malaysian Instructors</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-emerald-500" />
-                <span>Under 10km GPS Discovery</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1 w-full relative">
-            <div className="absolute -top-6 -left-6 w-72 h-72 bg-teal-400/20 rounded-full blur-3xl -z-10"></div>
-            <div className="absolute -bottom-6 -right-6 w-72 h-72 bg-indigo-505/10 rounded-full blur-3xl -z-10"></div>
+    <div className="w-full bg-[#F8FAFC] flex flex-col items-center justify-start text-slate-800 font-sans pb-12">
+      {/* 3. HERO SECTION */}
+      <div className="px-4 pt-6 w-full">
+        <div className="w-full bg-gradient-to-br from-[#001F3F] via-[#052B54] to-[#18D4C5] rounded-[20px] p-6 text-white shadow-lg relative overflow-hidden">
+          {/* Decorative organic background circle */}
+          <div className="absolute -right-12 -bottom-12 w-44 h-44 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+          
+          <div className="relative z-10 space-y-4">
+            <span className="inline-block bg-white/15 backdrop-blur-md text-[#18D4C5] text-[10px] font-extrabold uppercase px-3 py-1 rounded-full tracking-wider border border-white/10">
+              ⚡ LIVE FITNESS ECOSYSTEM
+            </span>
             
-            <img 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNp_aNaJfDRjjCZ1t70Yoe0my-seU1jLKtaELkv2wjUZtKoLZFmOE-rIGx_kvBJ40NSMkZaVu2Gj_D7tgyREuJiu20ehe_sxSvS-S74u_YZjaEsVs4o6Z_OMLjh4TEUfspKB4VbxTZuDUy5ZvVrldxdys7tZTd8x3nseZ_AqYUmyTWTow5Pe-UQqojCs2xDmZquB-jKHEonJF3zNamcN26f7BhBb9MwF6RILt3e6q8Cbq2h13FdTNTJZ5f60dEcYBDbzm4jzS9I7A" 
-              alt="CoachTrack MY App Dashboard preview" 
-              className="w-full h-auto rounded-2xl shadow-xl border border-slate-100 object-cover"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Feature Split section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-display font-extrabold text-slate-900 text-center mb-4">
-          Dual Platform Optimized for Both Sides
-        </h2>
-        <p className="text-slate-600 text-center max-w-2xl mx-auto mb-12">
-          Whether you’re keeping track of your business, or pushing personal physical breakthroughs, we have you covered.
-        </p>
-
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Trainer Software Features */}
-          <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm hover:shadow-md transition">
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 mb-6 font-bold">
-              🏋️
+            <div className="space-y-1">
+              <h1 className="text-3xl font-black tracking-tight leading-none">
+                CoachTrack MY
+              </h1>
+              <p className="text-sm font-semibold text-teal-300">
+                Malaysia’s Premium Fitness Coaching Platform
+              </p>
             </div>
-            <h3 className="text-2xl font-display font-bold text-slate-900 mb-4">
-              For Trainers, Coaches & Gym Operators
-            </h3>
-            <p className="text-slate-600 mb-6">
-              Run your entire freelance business or gym from a sleek portal. Eliminate scheduling headaches, track client nutrition, and streamline payments.
+            
+            <p className="text-xs text-slate-200 leading-relaxed font-medium">
+              Book verified coaches, track workouts, monitor nutrition, and manage progress in one private coaching ecosystem.
             </p>
             
-            <ul className="space-y-3 mb-8 text-left">
-              {[
-                'Full Client Rosters & Profile Records',
-                'Visual In-App Replies to Workout & Nutrition Logs',
-                'Malaysian-Formatted Billing, Invoices & Receipt Records',
-                'Revenue Dashboards to Monitor Monthly Growth',
-                'Professional Document Certification Uploads',
-                'Interactive Schedule Calendars & Timetable Booking'
-              ].map((f, i) => (
-                <li key={i} className="flex gap-2.5 items-start text-sm text-slate-600">
-                  <Check className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            <button 
-              onClick={() => onStartAs(UserRole.TRAINER)}
-              className="w-full bg-[#001F3F] hover:bg-slate-900 text-teal-400 font-bold py-3.5 rounded-xl transition"
+            <button
+              onClick={() => onStartAs('login')}
+              className="w-full bg-[#18D4C5] hover:bg-[#15C2B4] active:scale-[0.98] text-[#001F3F] font-extrabold py-3 px-5 rounded-[15px] text-xs uppercase tracking-wider transition duration-200 shadow-md shadow-teal-550/10 flex items-center justify-center gap-2 cursor-pointer"
             >
-              Sign Up as Verified Coach
-            </button>
-          </div>
-
-          {/* Trainee App Features */}
-          <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm hover:shadow-md transition">
-            <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 mb-6 font-bold">
-              💪
-            </div>
-            <h3 className="text-2xl font-display font-bold text-slate-900 mb-4">
-              For Trainees, Students & Fitness Lovers
-            </h3>
-            <p className="text-slate-600 mb-6">
-              Unlock professional support. Discover verified premium trainers close to your location, log meals, complete secure invoices, and track your daily progress.
-            </p>
-
-            <ul className="space-y-3 mb-8 text-left">
-              {[
-                'Nearby Discoveries (under 10km radius calculation)',
-                'Workout Trackers with Set, Rep, and Weight log details',
-                'AI-Powered Adaptive Workout Routine suggestions',
-                'Authentic Malaysian Food & Calories database',
-                'Direct Feedback & Tagged Coach Messaging',
-                'Consolidated Billing & One-Click Payment Mockups'
-              ].map((f, i) => (
-                <li key={i} className="flex gap-2.5 items-start text-sm text-slate-600">
-                  <Check className="w-5 h-5 text-teal-500 shrink-0 mt-0.5" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            <button 
-              onClick={() => onStartAs(UserRole.TRAINEE)}
-              className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3.5 rounded-xl transition"
-            >
-              Launch Your Trainee App
+              <span>Enter App Login</span>
+              <ArrowRight className="w-4 h-4 text-[#001F3F]" />
             </button>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Local Spotlight Section */}
-      <section className="bg-[#001F3F] text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-3xl font-display font-black tracking-tight text-white mb-4">
-              Empowering Community Fitness in Klang Valley & Beyond
+      {/* 4. FEATURE CARDS */}
+      <div className="px-4 pt-8 w-full space-y-4">
+        <div className="text-center">
+          <h2 className="text-lg font-black text-[#001F3F] uppercase tracking-wider">
+            Premium App Capabilities
+          </h2>
+          <p className="text-[11px] text-slate-500 font-medium">
+            Everything you need for elite athletic progression
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {/* Feature 1 */}
+          <div className="bg-white border border-slate-100 p-4 rounded-[20px] shadow-sm flex flex-col justify-between space-y-3">
+            <div className="w-8 h-8 rounded-xl bg-teal-50 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-[#18D4C5]" />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-[#001F3F]">Verified Coaches</h3>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 leading-normal">
+                Certified trainers with verified profiles and ratings.
+              </p>
+            </div>
+          </div>
+
+          {/* Feature 2 */}
+          <div className="bg-white border border-slate-100 p-4 rounded-[20px] shadow-sm flex flex-col justify-between space-y-3">
+            <div className="w-8 h-8 rounded-xl bg-teal-50 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-[#18D4C5]" />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-[#001F3F]">Smart Scheduling</h3>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 leading-normal">
+                Book sessions based on real coach availability.
+              </p>
+            </div>
+          </div>
+
+          {/* Feature 3 */}
+          <div className="bg-white border border-slate-100 p-4 rounded-[20px] shadow-sm flex flex-col justify-between space-y-3">
+            <div className="w-8 h-8 rounded-xl bg-teal-50 flex items-center justify-center">
+              <Apple className="w-5 h-5 text-[#18D4C5]" />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-[#001F3F]">Nutrition Tracking</h3>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 leading-normal">
+                Upload meals and receive AI-powered macro insights.
+              </p>
+            </div>
+          </div>
+
+          {/* Feature 4 */}
+          <div className="bg-white border border-slate-100 p-4 rounded-[20px] shadow-sm flex flex-col justify-between space-y-3">
+            <div className="w-8 h-8 rounded-xl bg-teal-50 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-[#18D4C5]" />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-[#001F3F]">Progress Analytics</h3>
+              <p className="text-[10px] text-slate-500 font-medium mt-1 leading-normal">
+                Track weight, BMI, measurements and history.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. COACHTRACK PLANS */}
+      <div className="px-4 pt-10 w-full space-y-5">
+        <div className="text-center">
+          <h2 className="text-lg font-black text-[#001F3F] uppercase tracking-wider">
+            Trainers, Choose Your CoachTrack Plan
+          </h2>
+          <p className="text-[11px] text-slate-500 font-medium leading-relaxed max-w-[320px] mx-auto">
+            Flexible memberships designed for every stage of your fitness journey.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {/* CoachBasic Card */}
+          <div className="bg-white border border-slate-150 p-5 rounded-[20px] shadow-sm relative overflow-hidden">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-sm font-extrabold text-[#001F3F]">CoachBasic</h3>
+                <p className="text-[10px] text-slate-500 font-bold mt-0.5">Start your fitness journey</p>
+              </div>
+              <div className="text-right">
+                <span className="text-base font-black text-[#001F3F] block">RM29</span>
+                <span className="text-[8px] font-bold text-slate-400 block -mt-1">/month</span>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
+              <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span>Coach Marketplace Access</span>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span>View Coach Profiles & Ratings</span>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span>Session Booking</span>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span>Workout History</span>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span>Weight Tracking</span>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span>Notifications</span>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span>Basic Profile Management</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => onStartAs('signup')}
+              className="mt-5 w-full bg-slate-100 hover:bg-slate-200 text-[#001F3F] font-bold py-2.5 rounded-[12px] text-[10px] uppercase tracking-wider transition cursor-pointer"
+            >
+              Choose CoachBasic
+            </button>
+          </div>
+
+          {/* CoachPlus Card (MOST POPULAR) */}
+          <div className="bg-white border-2 border-[#18D4C5] p-5 rounded-[20px] shadow-md relative overflow-hidden">
+            <div className="absolute top-0 right-0 bg-[#18D4C5] text-[#001F3F] text-[8px] font-black uppercase tracking-wider px-3 py-1 rounded-bl-[12px] flex items-center gap-1">
+              <Star className="w-2.5 h-2.5 fill-[#001F3F]" />
+              <span>MOST POPULAR</span>
+            </div>
+
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-sm font-extrabold text-[#001F3F]">CoachPlus</h3>
+                <p className="text-[10px] text-slate-500 font-bold mt-0.5">Everything needed for active coaching</p>
+              </div>
+              <div className="text-right">
+                <span className="text-base font-black text-[#001F3F] block">RM59</span>
+                <span className="text-[8px] font-bold text-slate-400 block -mt-1">/month</span>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
+              <div className="flex items-center gap-2 text-[10px] text-slate-700 font-bold">
+                <Check className="w-3.5 h-3.5 text-[#18D4C5] shrink-0" />
+                <span>Everything in CoachBasic</span>
+              </div>
+
+              {/* Nutrition Group */}
+              <div className="space-y-1.5 pl-1">
+                <span className="text-[9px] font-black uppercase tracking-wider text-[#18D4C5] block">Nutrition Suite</span>
+                <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                  <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>Nutrition Tracking & Meal Logging</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                  <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>AI Nutrition Feedback</span>
+                </div>
+              </div>
+
+              {/* Progress Group */}
+              <div className="space-y-1.5 pl-1">
+                <span className="text-[9px] font-black uppercase tracking-wider text-[#18D4C5] block">Progress Tracking</span>
+                <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                  <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>Body Measurements Tracking</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                  <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>Weight Analytics Dashboard</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                  <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>BMI & BMR Tracking</span>
+                </div>
+              </div>
+
+              {/* Coaching Tools Group */}
+              <div className="space-y-1.5 pl-1">
+                <span className="text-[9px] font-black uppercase tracking-wider text-[#18D4C5] block">Coaching Tools</span>
+                <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                  <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>Coach Messaging & Chat Logs</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium">
+                  <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>Session History Access</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => onStartAs('signup')}
+              className="mt-5 w-full bg-[#18D4C5] hover:bg-[#15C2B4] text-[#001F3F] font-extrabold py-2.5 rounded-[12px] text-[10px] uppercase tracking-wider transition cursor-pointer shadow-sm shadow-teal-350/20"
+            >
+              Choose CoachPlus
+            </button>
+          </div>
+
+          {/* CoachPro Card (PREMIUM HIGHLIGHT) */}
+          <div className="bg-[#001F3F] border border-slate-800 p-5 rounded-[20px] shadow-lg relative overflow-hidden text-white">
+            <div className="absolute top-0 right-0 bg-[#18D4C5] text-[#001F3F] text-[8px] font-black uppercase tracking-wider px-3 py-1 rounded-bl-[12px] flex items-center gap-1">
+              <Crown className="w-2.5 h-2.5 text-[#001F3F] fill-[#001F3F]" />
+              <span>COACHPRO ELITE</span>
+            </div>
+
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-sm font-extrabold text-white">CoachPro</h3>
+                <p className="text-[10px] text-teal-300 font-bold mt-0.5">Complete transformation ecosystem</p>
+              </div>
+              <div className="text-right">
+                <span className="text-base font-black text-[#18D4C5] block">RM99</span>
+                <span className="text-[8px] font-bold text-slate-400 block -mt-1">/month</span>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-slate-800 space-y-3">
+              <div className="flex items-center gap-2 text-[10px] text-teal-300 font-bold">
+                <Check className="w-3.5 h-3.5 text-[#18D4C5] shrink-0" />
+                <span>Everything in CoachPlus</span>
+              </div>
+
+              {/* Advanced Intelligence */}
+              <div className="space-y-1.5 pl-1">
+                <span className="text-[9px] font-black uppercase tracking-wider text-[#18D4C5] block">Advanced Health Intelligence</span>
+                <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                  <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <span>Medical History Management</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                  <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <span>Injury Tracking Records</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                  <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <span>Emergency Contact Repository</span>
+                </div>
+              </div>
+
+              {/* Premium Analytics */}
+              <div className="space-y-1.5 pl-1">
+                <span className="text-[9px] font-black uppercase tracking-wider text-[#18D4C5] block">Premium Analytics</span>
+                <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                  <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <span>Transformation Progress Dashboard</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                  <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <span>Advanced Trend Analysis</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                  <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <span>Goal Achievement Forecasting</span>
+                </div>
+              </div>
+
+              {/* Professional Reports */}
+              <div className="space-y-1.5 pl-1">
+                <span className="text-[9px] font-black uppercase tracking-wider text-[#18D4C5] block">Professional Reports</span>
+                <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                  <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <span>CSV Progress Reports & Downloads</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                  <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <span>Monthly Transformation Reports</span>
+                </div>
+              </div>
+
+              {/* Premium Visibility Benefits */}
+              <div className="space-y-1.5 pl-1">
+                <span className="text-[9px] font-black uppercase tracking-wider text-[#18D4C5] block">Premium Visibility Benefits</span>
+                <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                  <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <span>Top Placement in Discovery</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                  <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                  <span>Priority Placement in Search Results</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => onStartAs('signup')}
+              className="mt-5 w-full bg-[#18D4C5] hover:bg-[#15C2B4] text-[#001F3F] font-extrabold py-2.5 rounded-[12px] text-[10px] uppercase tracking-wider transition cursor-pointer shadow-md"
+            >
+              Choose CoachPro
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. FINAL CTA */}
+      <div className="px-4 pt-12 w-full">
+        <div className="bg-white border border-slate-150 p-6 rounded-[20px] text-center space-y-5 shadow-sm">
+          <div className="space-y-2">
+            <h2 className="text-lg font-black text-[#001F3F]">
+              Ready to Start Your Fitness Journey?
             </h2>
-            <p className="text-slate-300">
-              Simplifying professional execution from Subang Jaya to Kuala Lumpur city center.
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+              Join CoachTrack MY and connect with verified fitness professionals today.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-6 text-center">
-            <div className="p-6 bg-indigo-900/40 rounded-xl border border-indigo-800">
-              <span className="block text-4xl font-extrabold text-teal-400 font-display">100%</span>
-              <span className="block text-sm text-slate-300 mt-2 font-medium">Verified Malaysian Coaches Only</span>
-            </div>
-            <div className="p-6 bg-indigo-900/40 rounded-xl border border-indigo-800">
-              <span className="block text-4xl font-extrabold text-teal-400 font-display">10 KM</span>
-              <span className="block text-sm text-slate-300 mt-2 font-medium">True Geo-Radius Search Limits</span>
-            </div>
-            <div className="p-6 bg-indigo-900/40 rounded-xl border border-indigo-800">
-              <span className="block text-4xl font-extrabold text-teal-400 font-display">GEMINI</span>
-              <span className="block text-sm text-slate-300 mt-2 font-medium">A.I. Adaptive Routine Architect</span>
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => onStartAs('login')}
+              className="w-full bg-[#001F3F] hover:bg-[#052b54] text-white font-bold py-3 rounded-[12px] text-xs uppercase tracking-wider transition cursor-pointer shadow-sm"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => onStartAs('signup')}
+              className="w-full bg-white border-2 border-[#001F3F] text-[#001F3F] hover:bg-slate-50 font-bold py-3 rounded-[12px] text-xs uppercase tracking-wider transition cursor-pointer"
+            >
+              Create Account
+            </button>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

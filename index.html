@@ -4,6 +4,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Google AI Studio App</title>
+    <script>
+      (function() {
+        var suppress = function(event, type) {
+          var msg = '';
+          if (type === 'rejection') {
+            msg = (event.reason && (event.reason.message || event.reason.reason)) || String(event.reason);
+          } else {
+            msg = event.message || '';
+          }
+          if (msg && (
+            msg.indexOf('WebSocket') !== -1 ||
+            msg.indexOf('websocket') !== -1 ||
+            msg.indexOf('WebSocket closed without opened.') !== -1
+          )) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            console.debug('Suppressed benign HMR error:', msg);
+          }
+        };
+        window.addEventListener('unhandledrejection', function(e) { suppress(e, 'rejection'); }, true);
+        window.addEventListener('error', function(e) { suppress(e, 'error'); }, true);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,94 +1,84 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Dumbbell, 
-  Utensils, 
-  Sparkles, 
-  ChevronRight, 
-  Plus, 
-  Calendar, 
   Flame, 
+  Calendar, 
+  Camera, 
+  Sparkles, 
+  X, 
+  MessageCircle, 
+  Check, 
   TrendingUp, 
-  Clipboard, 
-  ArrowRight,
-  User,
-  Heart,
-  Search,
-  MessageCircle
+  TrendingDown,
+  Info,
+  ChevronRight,
+  Award,
+  ShieldCheck,
+  MessageSquare,
+  Clock,
+  MapPin,
+  RefreshCw,
+  Scale,
+  Apple,
+  Utensils,
+  CheckCircle
 } from 'lucide-react';
-import { MalaysianFoodItem, NutritionLog, WorkoutLog, BookingSession, TrainerProfile, TraineeProfile, PrescribedWorkout } from '../types';
 import { dbService } from '../lib/dbService';
+import { TraineeProfile, TrainerProfile, BookingSession, NutritionLog } from '../types';
+import { SharedNotificationPanel } from './SharedNotificationPanel';
 
 interface TraineeDashboardProps {
   traineeUserId: string;
   onNavigateToTab: (tab: string) => void;
 }
 
-const MALAYSIAN_FOODS: MalaysianFoodItem[] = [
-  { name: 'Nasi Lemak Biasa (with egg)', calories: 650, protein: 15, carbs: 80, fat: 25, servingSize: '1 plate', category: 'Rice' },
-  { name: 'Roti Canai (plain, 1 piece)', calories: 300, protein: 6, carbs: 45, fat: 10, servingSize: '1 piece', category: 'Bread' },
-  { name: 'Teh Tarik (pulled tea)', calories: 140, protein: 2, carbs: 22, fat: 4, servingSize: '1 glass', category: 'Beverages' },
-  { name: 'Laksa Sarawak', calories: 450, protein: 18, carbs: 55, fat: 18, servingSize: '1 bowl', category: 'Noodle' },
-  { name: 'Hainanese Chicken Rice', calories: 600, protein: 28, carbs: 70, fat: 22, servingSize: '1 plate', category: 'Rice' },
-  { name: 'Nasi Kandar (with chicken & cabbage)', calories: 800, protein: 35, carbs: 95, fat: 30, servingSize: '1 plate', category: 'Rice' },
-  { name: 'Mee Goreng Mamak', calories: 660, protein: 18, carbs: 85, fat: 25, servingSize: '1 plate', category: 'Noodle' },
-  { name: 'Char Kway Teow', calories: 740, protein: 20, carbs: 90, fat: 32, servingSize: '1 plate', category: 'Noodle' },
-  { name: 'Satay Chicken (5 sticks + peanut sauce)', calories: 360, protein: 22, carbs: 15, fat: 20, servingSize: '1 serving', category: 'Snacks' },
-  { name: 'Tosai Plain', calories: 200, protein: 4, carbs: 38, fat: 3, servingSize: '1 piece', category: 'Bread' }
-];
-
 export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: TraineeDashboardProps) {
   const [traineeMeta, setTraineeMeta] = useState<TraineeProfile | null>(null);
-  const [workouts, setWorkouts] = useState<WorkoutLog[]>([]);
-  const [nutrition, setNutrition] = useState<NutritionLog[]>([]);
-  const [bookings, setBookings] = useState<BookingSession[]>([]);
   const [trainer, setTrainer] = useState<TrainerProfile | null>(null);
-  const [invitations, setInvitations] = useState<any[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [invActionLoading, setInvActionLoading] = useState<string | null>(null);
+  const [bookings, setBookings] = useState<BookingSession[]>([]);
+  const [nutritionLogs, setNutritionLogs] = useState<NutritionLog[]>([]);
+
+  // Reschedule Modals/Detail States
+  const [selectedSession, setSelectedSession] = useState<BookingSession | null>(null);
+  const [isRescheduling, setIsRescheduling] = useState<boolean>(false);
+  const [modalStep, setModalStep] = useState<'detail' | 'selector' | 'summary'>('detail');
+  const [newDate, setNewDate] = useState<string>('');
+  const [newTimeSlot, setNewTimeSlot] = useState<string>('10:00 AM');
+  const [rescheduleReason, setRescheduleReason] = useState<string>('');
+  const [rescheduleSuccess, setRescheduleSuccess] = useState<boolean>(false);
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
+  const [allTrainerBookings, setAllTrainerBookings] = useState<any[]>([]);
+
+  // Photo-upload States
+  const [mealPhoto, setMealPhoto] = useState<string>('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [scanResult, setScanResult] = useState<{
+    foodName: string;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+    comment: string;
+  } | null>(null);
+
+  const [showNutritionInsight, setShowNutritionInsight] = useState<boolean>(false);
+  const [lastUploadedPhoto, setLastUploadedPhoto] = useState<string>('');
   
-  // Prescribed Workouts state
-  const [prescribedWorkouts, setPrescribedWorkouts] = useState<PrescribedWorkout[]>([]);
-  const [checkingInWorkout, setCheckingInWorkout] = useState<PrescribedWorkout | null>(null);
-  const [checkInNotes, setCheckInNotes] = useState('');
-  const [checkInDifficulties, setCheckInDifficulties] = useState('');
-  const [checkInPainLevel, setCheckInPainLevel] = useState('None');
-  const [checkInGeneralComments, setCheckInGeneralComments] = useState('');
-  const [checkInVideoUrl, setCheckInVideoUrl] = useState('');
-  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  // Floating Coach popup states
+  const [isCoachOpen, setIsCoachOpen] = useState<boolean>(false);
+  const [quickMessage, setQuickMessage] = useState<string>('');
+  const [sendingMessage, setSendingMessage] = useState<boolean>(false);
+  const [quickSuccess, setQuickSuccess] = useState<boolean>(false);
 
-  // Form states: Workout
-  const [showWorkoutForm, setShowWorkoutForm] = useState(false);
-  const [workoutType, setWorkoutType] = useState('Strength');
-  const [workoutDuration, setWorkoutDuration] = useState(45);
-  const [workoutNotes, setWorkoutNotes] = useState('');
-  const [exercises, setExercises] = useState<{ name: string; sets: number; reps: number; weight: number }[]>([
-    { name: '', sets: 3, reps: 10, weight: 10 }
-  ]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form states: Nutrition
-  const [showNutritionForm, setShowNutritionForm] = useState(false);
-  const [selectedFoodIndex, setSelectedFoodIndex] = useState(-1);
-  const [customFoodName, setCustomFoodName] = useState('');
-  const [customCalories, setCustomCalories] = useState(300);
-  const [customProtein, setCustomProtein] = useState(15);
-  const [customCarbs, setCustomCarbs] = useState(40);
-  const [customFat, setCustomFat] = useState(8);
-  const [nutritionNotes, setNutritionNotes] = useState('');
-
-  // AI states
-  const [loadingAI, setLoadingAI] = useState(false);
-  const [aiMessageIndex, setAiMessageIndex] = useState(0);
-  const [aiResult, setAiResult] = useState<any | null>(null);
-  const [aiNutritionResult, setAiNutritionResult] = useState<any | null>(null);
-
-  const loadingMessages = [
-    "Analyzing your physique goals...",
-    "Querying the CoachTrack MY local database...",
-    "Gemini model formulating standard Malaysian calorie adjustments...",
-    "Structuring certified trainers guidelines...",
-    "Almost ready to execute!"
-  ];
+  // Baselines for Today's Nutrition Progress (Initial state when page loads)
+  const BASE_CALORIES = 1450;
+  const BASE_PROTEIN = 95;
+  const BASE_CARBS = 160;
+  const BASE_FAT = 50;
+  const BASE_FIBER = 12;
 
   useEffect(() => {
     fetchTraineeData();
@@ -96,1274 +86,1279 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
 
   const fetchTraineeData = async () => {
     try {
-      const dataProfile = await dbService.getTraineeProfile(traineeUserId);
-      if (!dataProfile) return;
-      setTraineeMeta(dataProfile);
+      // 1. Fetch Trainee Profile
+      let profile = await dbService.getTraineeProfile(traineeUserId);
+      if (!profile) return;
+      
+      // Force 'Ahmad Bin Ibrahim' profile defaults & Trainer Coach Sarah Tan
+      if (profile.id === 'te_ahmad' || profile.userId === 'u_ahmad') {
+        profile.assignedTrainerId = 'tr_sarah';
+        profile.name = 'Ahmad Bin Ibrahim';
+        profile.streakCount = 5;
+        profile.goals = 'Weight Loss & Cardio';
+      }
+      setTraineeMeta(profile);
 
-      const dataWorkouts = await dbService.getWorkouts({ traineeId: dataProfile.id });
-      setWorkouts(dataWorkouts);
+      // 2. Fetch Assigned Trainer (Sarah Tan)
+      const trainerId = profile.assignedTrainerId || 'tr_sarah';
+      const tr = await dbService.getTrainerProfile(trainerId);
+      if (tr) {
+        setTrainer(tr);
+      } else {
+        const fallbackSarah = await dbService.getTrainerProfile('tr_sarah');
+        setTrainer(fallbackSarah);
+      }
 
-      const dataNutrition = await dbService.getNutrition(dataProfile.id);
-      setNutrition(dataNutrition);
-
-      const dataBk = await dbService.getBookings({ traineeId: dataProfile.id });
+      // 3. Fetch Bookings Sessions (Ahmad's scheduled sessions with coach)
+      const dataBk = await dbService.getBookings({ traineeId: profile.id });
       setBookings(dataBk);
 
-      if (dataProfile.assignedTrainerId) {
-        const dataTr = await dbService.getTrainerProfile(dataProfile.assignedTrainerId);
-        if (dataTr) {
-          setTrainer(dataTr);
-        } else {
-          setTrainer(null);
-        }
-      } else {
-        setTrainer(null);
-      }
+      // Fetch all bookings for Coach Sarah to support real blocking logic
+      const trainerBks = await dbService.getBookings({ trainerId: 'tr_sarah' });
+      setAllTrainerBookings(trainerBks);
 
-      // Fetch coach prescribed sessions
-      const dataPW = await dbService.getPrescribedWorkouts(dataProfile.id, 'Pending');
-      setPrescribedWorkouts(dataPW);
-
-      // Fetch trainee connection invitations
-      const dataInv = await dbService.getInvitations({ traineeId: dataProfile.id });
-      setInvitations(dataInv.filter(inv => inv.status === 'Pending'));
-
-      // Fetch trainee notifications
-      const dataNotif = await dbService.getNotifications(dataProfile.id);
-      setNotifications(dataNotif);
+      // 4. Fetch Nutrition Logs of Ahmad
+      const logs = await dbService.getNutrition(profile.id);
+      setNutritionLogs(logs);
     } catch (e) {
-      console.error(e);
+      console.error('Error fetching trainee dashboard data:', e);
     }
   };
 
-  const handleRespondInvitation = async (invId: string, status: 'Accepted' | 'Declined') => {
-    setInvActionLoading(invId);
-    try {
-      await dbService.respondToInvitation(invId, status);
-      await fetchTraineeData();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setInvActionLoading(null);
+  const checkSlotIsBooked = (dateStr: string, timeStr: string, currentBookingId?: string) => {
+    // Current session slot should also show as booked/current
+    if (selectedSession && selectedSession.date === dateStr && selectedSession.timeSlot === timeStr) {
+      return true;
     }
+    if (!allTrainerBookings || !Array.isArray(allTrainerBookings)) return false;
+    return allTrainerBookings.some(b => 
+      b &&
+      b.trainerId === 'tr_sarah' && 
+      b.date === dateStr && 
+      b.timeSlot === timeStr && 
+      b.id !== currentBookingId &&
+      b.status !== 'Cancelled' && 
+      b.status?.toLowerCase() !== 'cancelled' &&
+      b.status !== 'Completed' &&
+      b.status?.toLowerCase() !== 'completed'
+    );
   };
 
-  const handleMarkRead = async (notifId: string) => {
+  const handleOpenReschedule = (session: BookingSession) => {
+    setSelectedSession(session);
+    setNewDate(session.date);
+    setNewTimeSlot(session.timeSlot);
+    setRescheduleReason('');
+    setRescheduleSuccess(false);
+    setModalStep('detail');
+    setIsRescheduling(true);
+  };
+
+  const handleConfirmReschedule = async () => {
+    if (!selectedSession) return;
+    setActionLoading(true);
     try {
-      await dbService.markNotificationRead(notifId);
-      if (traineeMeta) {
-        const dataNotif = await dbService.getNotifications(traineeMeta.id);
-        setNotifications(dataNotif);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleAddExerciseRow = () => {
-    setExercises([...exercises, { name: '', sets: 3, reps: 10, weight: 10 }]);
-  };
-
-  const handleUpdateExerciseRow = (index: number, field: string, value: any) => {
-    const updated = [...exercises];
-    updated[index] = { ...updated[index], [field]: value };
-    setExercises(updated);
-  };
-
-  const handleWorkoutSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!traineeMeta) return;
-
-    try {
-      const payload = {
-        traineeId: traineeMeta.id,
-        trainerId: traineeMeta.assignedTrainerId,
-        workoutType,
-        duration: workoutDuration,
-        exercises: exercises.filter(ex => ex.name.trim() !== ''),
-        notes: workoutNotes
-      };
-
-      const res = await dbService.createWorkoutLog(payload);
+      // 1. Submit trainee-side pending reschedule request
+      const success = await dbService.updateBookingStatus(
+        selectedSession.id, 
+        'Reschedule Requested', 
+        undefined, 
+        undefined, 
+        newDate, 
+        newTimeSlot
+      );
       
-      if (res) {
-        setShowWorkoutForm(false);
-        setWorkoutNotes('');
-        setExercises([{ name: '', sets: 3, reps: 10, weight: 10 }]);
-        fetchTraineeData();
+      if (success) {
+        const origFormattedDate = new Date(selectedSession.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+        const newFormattedDate = new Date(newDate).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        // 2) Dispatch chat message
+        await dbService.createChatMessage({
+          senderId: traineeMeta?.userId || 'te_ahmad',
+          receiverId: 'u_sarah', // Coach Sarah Tan's user ID
+          message: `🕒 Reschedule Request from Ahmad Bin Ibrahim:\nSession: ${selectedSession.title}\nRequested Slot: ${newDate} at ${newTimeSlot}\nOriginal Slot: ${selectedSession.date} at ${selectedSession.timeSlot}`
+        });
+
+        // 3) Create a realistic notification object in database.json / localStorage for Coach Sarah Tan
+        if (typeof window !== 'undefined') {
+          try {
+            const data = localStorage.getItem('coach_track_demo_storage');
+            if (data) {
+              const parsed = JSON.parse(data);
+              if (!parsed.notifications) parsed.notifications = [];
+              parsed.notifications.unshift({
+                id: `res_not_${Date.now()}`,
+                userId: 'u_sarah', // Sarah Tan's user ID
+                group: 'Today',
+                title: 'Ahmad Ibrahim requested reschedule',
+                subtitle: `Ahmad Bin Ibrahim requested to reschedule ${selectedSession.title} from ${origFormattedDate} ${selectedSession.timeSlot} to ${newFormattedDate} ${newTimeSlot}.`,
+                time: 'Just Now',
+                read: false,
+                isUnread: true,
+                bgColor: 'bg-amber-50 text-amber-650 border border-amber-100',
+                emoji: '📅',
+                type: 'reschedule',
+                bookingId: selectedSession.id,
+                requestedDate: newDate,
+                requestedTimeSlot: newTimeSlot
+              });
+              localStorage.setItem('coach_track_demo_storage', JSON.stringify(parsed));
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        }
+
+        setRescheduleSuccess(true);
+        setTimeout(() => {
+          setIsRescheduling(false);
+          setSelectedSession(null);
+          fetchTraineeData();
+        }, 1800);
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const handleNutritionSubmit = async (e: React.FormEvent) => {
+  // Drag and Drop Handles
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!traineeMeta) return;
+    setIsDragging(true);
+  };
 
-    let foodName = customFoodName;
-    let calVal = Number(customCalories);
-    let protVal = Number(customProtein);
-    let carbVal = Number(customCarbs);
-    let fatVal = Number(customFat);
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
 
-    if (selectedFoodIndex >= 0) {
-      const selected = MALAYSIAN_FOODS[selectedFoodIndex];
-      foodName = selected.name;
-      calVal = selected.calories;
-      protVal = selected.protein;
-      carbVal = selected.carbs;
-      fatVal = selected.fat;
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
     }
+  };
 
-    if (!foodName) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const processFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setMealPhoto(reader.result as string);
+      setScanResult(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Fast-track Simulations link triggers
+  const triggerSimulation = (type: 'nasi_lemak' | 'roti_canai') => {
+    if (type === 'nasi_lemak') {
+      setMealPhoto('https://images.unsplash.com/photo-1632203171982-cc0df6e9ceb4?auto=format&fit=crop&q=80&w=240');
+      setScanResult(null);
+    } else {
+      setMealPhoto('https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&q=80&w=240');
+      setScanResult(null);
+    }
+  };
+
+  // Trigger AI analysis simulation
+  const handleAnalyzePhoto = async () => {
+    if (!mealPhoto) return;
+    setIsAnalyzing(true);
+    
+    // Simulate real server response or AI parsing delay
+    setTimeout(() => {
+      const isNasiLemak = mealPhoto.includes('632203171982');
+      if (isNasiLemak) {
+        setScanResult({
+          foodName: 'Ayam Goreng Nasi Lemak',
+          calories: 650,
+          protein: 22,
+          carbs: 85,
+          fat: 25,
+          fiber: 5,
+          comment: 'Detected Ayam Goreng Nasi Lemak. High calorie post-workout option! Try limiting sambal oil portion.'
+        });
+      } else {
+        setScanResult({
+          foodName: 'Telur Roti Canai',
+          calories: 320,
+          protein: 10,
+          carbs: 42,
+          fat: 12,
+          fiber: 2,
+          comment: 'Crispy Roti Canai detected. Moderate wheat gluten load. Good protein buffer from eggs added.'
+        });
+      }
+      setIsAnalyzing(false);
+    }, 1800);
+  };
+
+  // Save parsed meal to persistent database
+  const handleSaveMealLog = async () => {
+    if (!scanResult || !traineeMeta) return;
 
     try {
-      const payload = {
+      const logItem = {
         traineeId: traineeMeta.id,
-        foodName,
-        calories: calVal,
-        protein: protVal,
-        carbs: carbVal,
-        fat: fatVal,
-        notes: nutritionNotes
+        date: new Date().toISOString().substring(0, 10),
+        foodName: scanResult.foodName,
+        calories: scanResult.calories,
+        protein: scanResult.protein,
+        carbs: scanResult.carbs,
+        fat: scanResult.fat,
+        notes: 'Logged via Gemini Food Photo Scanner.'
       };
 
-      const res = await dbService.createNutritionLog(payload);
-
-      if (res) {
-        setShowNutritionForm(false);
-        setCustomFoodName('');
-        setSelectedFoodIndex(-1);
-        setNutritionNotes('');
-        fetchTraineeData();
-      }
-    } catch (err) {
-      console.error(err);
+      await dbService.createNutritionLog(logItem);
+      alert(`${scanResult.foodName} successfully logged to history! Daily metrics consolidated.`);
+      setLastUploadedPhoto(mealPhoto);
+      setShowNutritionInsight(true);
+      setMealPhoto('');
+      setScanResult(null);
+      fetchTraineeData();
+    } catch (e) {
+      console.error('Error saving meal log:', e);
     }
   };
 
-  const handleCheckInSubmit = async (e: React.FormEvent) => {
+  // Compute aggregated dynamic nutrition progress
+  // Today's total logged calories includes baseline + newly logged session calories of today
+  const sessionAddedCals = nutritionLogs
+    .filter(n => n.date === new Date().toISOString().substring(0, 10))
+    .reduce((sum, item) => sum + item.calories, 0);
+
+  const sessionAddedProtein = nutritionLogs
+    .filter(n => n.date === new Date().toISOString().substring(0, 10))
+    .reduce((sum, item) => sum + item.protein, 0);
+
+  const sessionAddedCarbs = nutritionLogs
+    .filter(n => n.date === new Date().toISOString().substring(0, 10))
+    .reduce((sum, item) => sum + item.carbs, 0);
+
+  const sessionAddedFat = nutritionLogs
+    .filter(n => n.date === new Date().toISOString().substring(0, 10))
+    .reduce((sum, item) => sum + item.fat, 0);
+
+  const currentCalories = BASE_CALORIES + sessionAddedCals;
+  const targetCalories = 1800;
+  const remainingCalories = Math.max(0, targetCalories - currentCalories);
+
+  const currentProtein = BASE_PROTEIN + sessionAddedProtein;
+  const currentCarbs = BASE_CARBS + sessionAddedCarbs;
+  const currentFat = BASE_FAT + sessionAddedFat;
+  const currentFiber = BASE_FIBER + Math.round(sessionAddedCals * 0.005); // Simulated fiber ratio
+
+  // Static target levels for UI progress bar visualization
+  const targetProtein = 135;
+  const targetCarbs = 210;
+  const targetFat = 65;
+  const targetFiber = 28;
+
+  // Upcoming Synced Session: Let's find real bookings or map standard upcoming sessions
+  // Ensuring the exact required synced session is always rendered cleanly.
+  const activeSessions = bookings && bookings.length > 0
+    ? bookings
+        .filter(b => b.status !== 'Cancelled' && b.status?.toLowerCase() !== 'cancelled')
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .slice(0, 3)
+    : [];
+
+  const nearestUpcomingSession = (() => {
+    if (!bookings || bookings.length === 0) return null;
+    const activeBk = bookings.filter(b => b.status !== 'Cancelled' && b.status?.toLowerCase() !== 'cancelled');
+    if (activeBk.length === 0) return null;
+    
+    // Sort bookings by date and time
+    const sorted = [...activeBk].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    // Find the first session today or in the future
+    const todayStr = '2026-06-22'; // Reference system date index
+    const futureOrToday = sorted.filter(b => b.date >= todayStr);
+    
+    if (futureOrToday.length > 0) {
+      return futureOrToday[0];
+    }
+    // Fallback if none are future
+    return sorted[sorted.length - 1];
+  })();
+
+  // Multi-messaging handler for floating avatar Quick chat form
+  const handleSendQuickMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!checkingInWorkout) return;
-
-    // Check if video is required
-    const isRequired = checkingInWorkout.videoProofRequired !== false;
-    if (isRequired && !checkInVideoUrl) {
-      alert("Please upload or simulate selecting an exercise proof video before checking in!");
-      return;
-    }
-
+    if (!quickMessage.trim() || !traineeMeta) return;
+    setSendingMessage(true);
     try {
-      const ok = await dbService.checkInPrescribedWorkout(checkingInWorkout.id, {
-        notes: checkInNotes,
-        videoUrl: checkInVideoUrl,
-        difficulties: checkInDifficulties,
-        painLevel: checkInPainLevel,
-        generalComments: checkInGeneralComments
+      await dbService.createChatMessage({
+        senderId: traineeMeta.userId,
+        receiverId: 'u_sarah', // Coach Sarah Tan's user ID
+        message: quickMessage.trim()
       });
-
-      if (ok) {
-        setCheckingInWorkout(null);
-        setCheckInNotes('');
-        setCheckInDifficulties('');
-        setCheckInPainLevel('None');
-        setCheckInGeneralComments('');
-        setCheckInVideoUrl('');
-        fetchTraineeData();
-        alert("Workout checked in successfully! Your coach has been notified to review your video proof.");
-      }
+      setQuickMessage('');
+      setQuickSuccess(true);
+      setTimeout(() => setQuickSuccess(false), 3000);
     } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // Launch AI Assistant
-  const triggerAIWorkoutRec = async () => {
-    if (!traineeMeta) return;
-    setLoadingAI(true);
-    setAiResult(null);
-    setAiMessageIndex(0);
-
-    // Dynamic message switcher to feel incredibly alive & responsive
-    const msgTimer = setInterval(() => {
-      setAiMessageIndex(prev => (prev + 1) % loadingMessages.length);
-    }, 1500);
-
-    try {
-      const res = await fetch('/api/ai/workout-rec', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ traineeId: traineeMeta.id })
-      });
-      const data = await res.json();
-      setAiResult(data);
-    } catch (e) {
-      console.error(e);
+      console.error('Error sending quick chat:', err);
     } finally {
-      clearInterval(msgTimer);
-      setLoadingAI(false);
+      setSendingMessage(false);
     }
   };
-
-  const triggerAINutritionAnalysis = async () => {
-    if (nutrition.length === 0) {
-      alert("No logged meals today to analyze! Please add at least one local meal record first.");
-      return;
-    }
-    setLoadingAI(true);
-    setAiNutritionResult(null);
-    setAiMessageIndex(0);
-
-    const msgTimer = setInterval(() => {
-      setAiMessageIndex(prev => (prev + 1) % loadingMessages.length);
-    }, 1200);
-
-    try {
-      const res = await fetch('/api/ai/meal-analysis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ logs: nutrition })
-      });
-      const data = await res.json();
-      setAiNutritionResult(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      clearInterval(msgTimer);
-      setLoadingAI(false);
-    }
-  };
-
-  // Calculating Daily Calorie Levels
-  const totalCaloriesToday = nutrition.reduce((sum, item) => sum + item.calories, 0);
-  const totalCarbsToday = nutrition.reduce((sum, item) => sum + item.carbs, 0);
-  const totalProteinToday = nutrition.reduce((sum, item) => sum + item.protein, 0);
-  const totalFatToday = nutrition.reduce((sum, item) => sum + item.fat, 0);
 
   return (
-    <div className="w-full bg-slate-50 min-h-screen pb-16 pt-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full bg-[#FAFBFF] min-h-screen pb-24">
+      {/* Strict Mobile viewport containment wrapper */}
+      <div className="mx-auto w-full max-w-[390px] overflow-x-hidden px-5 py-5 bg-[#FAFBFF] flex flex-col gap-6 text-left box-border">
 
-        {/* Onboarding Invitations Alert Banner */}
-        {invitations.length > 0 && (
-          <div className="space-y-4 mb-8">
-            {invitations.map((inv) => (
-              <div
-                key={inv.id}
-                className="bg-gradient-to-r from-teal-50 to-teal-100/50 border-2 border-teal-200 rounded-2xl p-6 shadow-md relative text-left"
-              >
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="bg-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse font-sans">
-                        New Invite
-                      </span>
-                      <span className="text-xs text-slate-500 font-mono font-medium">
-                        Received on {inv.date}
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-display font-bold text-slate-900">
-                      Coaching Invitation from <span className="text-teal-600">{inv.trainerName}</span>
-                    </h3>
-                    <p className="text-slate-600 text-xs mt-1 md:max-w-2xl leading-relaxed">
-                      This Malaysian certified trainer wants to guide your journey. Accepting this will link you directly for chat, personalized workout recipes, and automated payment checkout logs.
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-4 text-xs font-semibold text-slate-700">
-                      <div className="bg-white/80 px-3 py-1.5 rounded-lg border border-teal-100 font-sans">
-                        Package: <span className="text-teal-600 font-bold">{inv.packageName}</span>
-                      </div>
-                      <div className="bg-white/80 px-3 py-1.5 rounded-lg border border-teal-100 font-sans">
-                        Sessions: <span className="text-teal-600 font-bold">{inv.sessions} Sessions</span>
-                      </div>
-                      <div className="bg-white/80 px-3 py-1.5 rounded-lg border border-teal-100 font-sans">
-                        Price: <span className="text-teal-600 font-bold">RM{inv.price}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 shrink-0 w-full md:w-auto">
-                    <button
-                      disabled={invActionLoading === inv.id}
-                      onClick={() => handleRespondInvitation(inv.id, 'Declined')}
-                      className="flex-1 md:flex-none px-4 py-2 border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl cursor-pointer disabled:opacity-50"
-                    >
-                      Decline
-                    </button>
-                    <button
-                      disabled={invActionLoading === inv.id}
-                      onClick={() => handleRespondInvitation(inv.id, 'Accepted')}
-                      className="flex-1 md:flex-none px-5 py-2 bg-[#001F3F] hover:bg-neutral-905 text-teal-400 text-xs font-bold rounded-xl cursor-pointer shadow-md disabled:opacity-50"
-                    >
-                      {invActionLoading === inv.id ? 'Connecting...' : 'Accept & Onboard'}
-                    </button>
-                  </div>
+        {/* 1. HERO DASHBOARD CARD */}
+        <div id="hero-dashboard-card" className="bg-gradient-to-br from-[#081F63] to-[#142D7A] text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
+          {/* Ambient blur lights */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-teal-400/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-teal-400/10 rounded-full blur-xl pointer-events-none"></div>
+
+          {/* Top Row: Welcome & Streak */}
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <span className="text-[10px] bg-teal-400 text-slate-850 font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wider">
+                TRAINEE METRICS
+              </span>
+              <h2 className="text-2xl font-bold font-display mt-2 leading-none">
+                Good Morning Ahmad 👋
+              </h2>
+            </div>
+            {/* 5-Day Streak Badge inside hero card */}
+            <div className="flex items-center gap-1 bg-amber-400 text-slate-950 px-2.5 py-1 rounded-2xl shadow-sm border border-amber-300">
+              <Flame className="w-4 h-4 fill-current animate-pulse text-red-700" />
+              <span className="text-[10px] font-black uppercase">5-Day Streak</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-12 gap-4 items-center">
+            {/* Left stats info */}
+            <div className="col-span-7 space-y-3 text-xs text-slate-200 font-medium">
+              <div className="flex flex-col">
+                <span className="text-slate-300/75 text-[9px] uppercase font-bold tracking-wider mb-0.5">Assigned Coach</span>
+                <strong className="text-white text-sm font-black">{trainer?.name || 'Sarah Tan'}</strong>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-slate-300/75 text-[9px] uppercase font-bold tracking-wider mb-0.5">My Active Goal</span>
+                <strong className="text-white text-sm font-black">{traineeMeta?.goals || 'Weight Loss & Cardio'}</strong>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-slate-300/75 text-[9px] uppercase font-bold tracking-wider mb-0.5">Package Plan</span>
+                <strong className="text-teal-300 text-sm font-black">8 Classes Per Month (RM600 Paid)</strong>
+              </div>
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/10">
+                <div className="flex flex-col">
+                  <span className="text-slate-300/75 text-[9px] uppercase font-bold tracking-wider">Current</span>
+                  <strong className="text-white font-black text-sm">84 kg</strong>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-slate-300/75 text-[9px] uppercase font-bold tracking-wider">Target</span>
+                  <strong className="text-white font-black text-sm">75 kg</strong>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
 
-        {/* Dynamic Notification Panel */}
-        {notifications.filter(n => !n.read).length > 0 && (
-          <div className="mb-6 bg-slate-900 text-white rounded-2xl p-4 shadow-sm border border-slate-800 flex gap-4 items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-xl animate-bounce">🔔</span>
-              <div className="text-left">
-                <p className="text-xs font-semibold text-slate-300">In-App Notification</p>
-                <p className="text-xs text-white font-bold">{notifications.filter(n => !n.read)[0].message}</p>
+            {/* Circular Progress Ring */}
+            <div className="col-span-5 flex flex-col items-center justify-center">
+              <div className="relative w-24 h-24 flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="38"
+                    stroke="rgba(255,255,255,0.08)"
+                    strokeWidth="8"
+                    fill="transparent"
+                  />
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="38"
+                    stroke="#14D8C5"
+                    strokeWidth="8"
+                    fill="transparent"
+                    strokeDasharray={2 * Math.PI * 38}
+                    strokeDashoffset={2 * Math.PI * 38 * (1 - 0.47)}
+                    strokeLinecap="round"
+                    className="transition-all duration-500"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center justify-center">
+                  <span className="text-base font-black text-white leading-none">47%</span>
+                  <span className="text-[7.5px] text-teal-300 font-extrabold uppercase tracking-widest mt-0.5">Complete</span>
+                </div>
               </div>
             </div>
+          </div>
+
+          {/* AI Predictable goal timeline */}
+          <div className="mt-4 pt-4 border-t border-white/10 flex items-start gap-2.5 bg-white/5 p-3 rounded-2xl border border-white/5">
+            <Sparkles className="w-4.5 h-4.5 text-teal-300 shrink-0 mt-0.5 fill-current/10" />
+            <div className="text-left font-sans text-xs">
+              <span className="block text-[8px] font-extrabold text-teal-300 uppercase tracking-widest mb-0.5">AI Goal Prediction</span>
+              <p className="text-slate-100 font-semibold leading-relaxed">
+                Estimated goal completion: <strong className="text-white font-black">Approximately 10–12 weeks remaining</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+
+
+        {/* 2. NEXT SESSION CARD */}
+        <div id="next-session-card" className="flex flex-col gap-2.5">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-[11px] uppercase font-black tracking-widest text-[#081F63] font-mono flex items-center gap-1.5">
+              <Calendar className="w-4.5 h-4.5 text-teal-600" /> Next Session
+            </h3>
+            <span className="text-[8px] font-extrabold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase font-mono">Nearest Active Slot</span>
+          </div>
+
+          {nearestUpcomingSession ? (
+            <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm text-left relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-teal-500/5 rounded-full blur-xl pointer-events-none"></div>
+              
+              <div className="flex justify-between items-start mb-3.5">
+                <span className="text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-100 px-2.5 py-1 rounded-lg font-mono font-bold">
+                  {new Date(nearestUpcomingSession.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })} • {nearestUpcomingSession.timeSlot}
+                </span>
+                
+                <div className="flex flex-col items-end gap-1">
+                  <span className="text-[8px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded bg-teal-100 text-teal-800 border border-teal-200 font-bold">
+                    {nearestUpcomingSession.status || 'Upcoming'}
+                  </span>
+                  <span className="text-[9px] font-extrabold text-indigo-700 font-mono font-bold">
+                    ⏳ {(() => {
+                      const todayVal = new Date('2026-06-22');
+                      const targetDateObj = new Date(nearestUpcomingSession.date);
+                      const diffTime = targetDateObj.getTime() - todayVal.getTime();
+                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                      if (diffDays === 0) return "Today";
+                      if (diffDays === 1) return "Tomorrow";
+                      if (diffDays > 1) return `In ${diffDays} days`;
+                      return "Today";
+                    })()}
+                  </span>
+                </div>
+              </div>
+
+              <h4 className="font-extrabold text-[#081F63] text-sm leading-snug mb-3 font-sans">
+                {nearestUpcomingSession.title}
+              </h4>
+              
+              <div className="space-y-1.5 text-xs text-slate-500 bg-slate-50 p-3 rounded-2xl border border-slate-100 mb-4 font-sans">
+                <div className="flex justify-between">
+                  <span className="font-medium text-slate-400">Coach</span>
+                  <span className="font-bold text-slate-700">Coach Sarah Tan</span>
+                </div>
+                <div className="flex justify-between font-sans">
+                  <span className="font-medium text-slate-400">Location</span>
+                  <span className="font-bold text-slate-700 truncate max-w-[185px]">📍 {nearestUpcomingSession.location || 'SS15 Studio, Selangor'}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5 font-sans">
+                <button
+                  type="button"
+                  id="view-session-details-btn"
+                  onClick={() => handleOpenReschedule(nearestUpcomingSession)}
+                  className="bg-slate-100 hover:bg-slate-200 text-[#081F63] font-extra-bold text-[11px] py-2.5 rounded-xl transition cursor-pointer text-center font-bold"
+                >
+                  View Details
+                </button>
+                <button
+                  type="button"
+                  id="request-session-reschedule-btn"
+                  onClick={() => {
+                    handleOpenReschedule(nearestUpcomingSession);
+                    setTimeout(() => setModalStep('selector'), 120);
+                  }}
+                  className="bg-[#081F63] hover:bg-[#122A7D] text-white font-extra-bold text-[11px] py-2.5 rounded-xl transition cursor-pointer text-center shadow-sm font-bold"
+                >
+                  Reschedule
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-3xl border border-slate-100 p-6 text-center text-slate-400 text-xs font-sans">
+              No sessions assigned yet.
+            </div>
+          )}
+        </div>
+
+
+        {/* 3. LOG TODAY'S MEAL */}
+        <div id="log-todays-meal-card" className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm space-y-4">
+          <div className="flex justify-between items-center">
+            <h4 className="text-[12px] font-black text-[#081F63] flex items-center gap-1.5 uppercase font-mono tracking-wider">
+              <Camera className="w-4 h-4 text-indigo-600" /> Log Today's Meal
+            </h4>
+            <span className="text-[8px] bg-indigo-50 text-indigo-700 tracking-wider uppercase font-black px-2 py-0.5 rounded-full border border-indigo-100 font-mono">
+              AI SCANNER
+            </span>
+          </div>
+
+          {/* Caloric Intake Gauge */}
+          <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100 text-left">
+            <div className="flex justify-between items-center mb-1.5 text-xs">
+              <span className="font-extrabold text-slate-700">Daily Calorie Budget</span>
+              <span className="text-[#081F63] font-mono font-black text-sm font-bold">
+                {currentCalories} / {targetCalories} kcal
+              </span>
+            </div>
+            {/* ProgressBar */}
+            <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-2">
+              <div 
+                className="bg-indigo-600 h-full rounded-full transition-all duration-350" 
+                style={{ width: `${Math.min(100, (currentCalories / targetCalories) * 100)}%` }}
+              ></div>
+            </div>
+            <div className="flex justify-between items-center mt-1.5 font-sans">
+              <p className="text-[10px] text-slate-500 font-semibold truncate pr-1">
+                💡 {remainingCalories > 0 ? `${remainingCalories} kcal left to reach target limit.` : 'Caloric target achieved! Steady state reached.'}
+              </p>
+              <span className="text-[10.5px] font-mono font-black text-[#081F63] shrink-0 font-bold">
+                Left: {remainingCalories} kcal
+              </span>
+            </div>
+          </div>
+
+          <div 
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`cursor-pointer border-2 border-dashed rounded-3xl p-6 text-center flex flex-col items-center justify-center gap-3 transition ${
+              isDragging ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            <input 
+              ref={fileInputRef}
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              onChange={handleFileChange} 
+            />
+            {mealPhoto ? (
+              <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-black">
+                <img src={mealPhoto} className="w-full h-full object-cover" alt="Meal Preview" referrerPolicy="no-referrer" />
+                <button 
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMealPhoto('');
+                    setScanResult(null);
+                  }}
+                  className="absolute top-2.5 right-2.5 bg-black/70 hover:bg-black/90 text-white rounded-full p-1.5 cursor-pointer shadow-md transition"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold text-xl shadow-sm border border-indigo-100">
+                  🍲
+                </div>
+                <span className="text-xs font-black text-indigo-700">Scan Meal Plate</span>
+                <span className="text-[9px] text-slate-400 font-medium">Drag & drop photo or tap to open roll</span>
+                <div className="flex justify-center gap-3 mt-1 text-slate-405 text-[9px] font-extrabold uppercase font-mono">
+                  <span>📸 Camera</span>
+                  <span>🖼️ Gallery</span>
+                  <span>📂 Drag / Drop</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Simulation fast trackers for easier validation */}
+          {!mealPhoto && (
+            <div className="flex flex-col gap-1.5 pt-1 text-left font-sans">
+              <span className="text-[8px] uppercase tracking-wider font-extrabold text-slate-400 font-mono">Quick scan simulation:</span>
+              <div className="grid grid-cols-2 gap-2">
+                <button 
+                  type="button"
+                  onClick={() => triggerSimulation('nasi_lemak')}
+                  className="px-2.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-705 text-[10px] font-bold rounded-xl cursor-pointer transition truncate flex items-center justify-center gap-1 font-bold"
+                >
+                  🍛 Nasi Lemak
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => triggerSimulation('roti_canai')}
+                  className="px-2.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-705 text-[10px] font-bold rounded-xl cursor-pointer transition truncate flex items-center justify-center gap-1 font-bold"
+                >
+                  🫓 Roti Canai
+                </button>
+              </div>
+            </div>
+          )}
+
+          {mealPhoto && !scanResult && (
             <button
-              onClick={() => handleMarkRead(notifications.filter(n => !n.read)[0].id)}
-              className="text-[10px] text-teal-400 hover:text-teal-300 font-bold tracking-wider uppercase underline cursor-pointer shrink-0 font-sans"
+              type="button"
+              disabled={isAnalyzing}
+              onClick={handleAnalyzePhoto}
+              className="w-full bg-[#081F63] hover:bg-[#122A7D] text-white font-extrabold text-xs py-3.5 rounded-xl uppercase tracking-wider cursor-pointer shadow-md disabled:opacity-60 transition"
             >
-              Dismiss
+              {isAnalyzing ? '⚡ AI Deciphering Plate...' : '🔍 Analyze Meal with Gemini AI'}
+            </button>
+          )}
+
+          {scanResult && (
+            <div className="bg-[#081F63] text-white rounded-2xl p-4 shadow-md space-y-3 text-left font-sans">
+              <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                <div>
+                  <span className="text-[8px] text-teal-400 uppercase tracking-widest font-black block font-mono">Plate Decoded</span>
+                  <p className="text-xs font-extrabold text-[#18D4C5]">{scanResult.foodName}</p>
+                </div>
+                <span className="text-xs font-mono font-black text-teal-300">
+                  +{scanResult.calories} kcal
+                </span>
+              </div>
+
+              <div className="grid grid-cols-4 gap-1 text-center text-[10px] font-bold bg-black/15 p-2 rounded-xl font-sans">
+                <div className="flex flex-col">
+                  <span className="text-slate-300 text-[8px] uppercase">Protein</span>
+                  <span>{scanResult.protein}g</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-slate-300 text-[8px] uppercase">Carbs</span>
+                  <span>{scanResult.carbs}g</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-slate-300 text-[8px] uppercase">Fat</span>
+                  <span>{scanResult.fat}g</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-slate-300 text-[8px] uppercase">Fiber</span>
+                  <span>{scanResult.fiber}g</span>
+                </div>
+              </div>
+
+              <p className="text-[10px] text-slate-200 leading-normal italic pl-2.5 border-l-2 border-teal-400">
+                &ldquo;{scanResult.comment}&rdquo;
+              </p>
+
+              <button
+                type="button"
+                onClick={handleSaveMealLog}
+                className="w-full bg-teal-405 hover:bg-teal-35 text-[#081F63] font-black py-2.5 rounded-xl text-xs tracking-wide uppercase transition cursor-pointer font-bold"
+              >
+                📝 Log to Coach Review History
+              </button>
+            </div>
+          )}
+
+          {/* Consolidated Daily Macrominerals */}
+          <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-left font-sans">
+            <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 block font-mono">
+              Consolidated Daily Macrominerals
+            </span>
+            <div className="grid grid-cols-2 gap-2.5 font-sans">
+              
+              <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+                <div className="flex justify-between items-center mb-1 text-[10px]">
+                  <span className="font-bold text-slate-500">Protein</span>
+                  <span className="font-extrabold text-[#081F63]">{currentProtein} / {targetProtein}g</span>
+                </div>
+                <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-[#081F63] h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, (currentProtein / targetProtein) * 100)}%` }}></div>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+                <div className="flex justify-between items-center mb-1 text-[10px]">
+                  <span className="font-bold text-slate-500">Carbs</span>
+                  <span className="font-extrabold text-[#081F63]">{currentCarbs} / {targetCarbs}g</span>
+                </div>
+                <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-[#18D4C5] h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, (currentCarbs / targetCarbs) * 100)}%` }}></div>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+                <div className="flex justify-between items-center mb-1 text-[10px]">
+                  <span className="font-bold text-slate-500">Fat</span>
+                  <span className="font-extrabold text-amber-500">{currentFat} / {targetFat}g</span>
+                </div>
+                <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-amber-500 h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, (currentFat / targetFat) * 100)}%` }}></div>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+                <div className="flex justify-between items-center mb-1 text-[10px]">
+                  <span className="font-bold text-slate-500">Fiber</span>
+                  <span className="font-extrabold text-[#10B981]">{currentFiber} / {targetFiber}g</span>
+                </div>
+                <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-[#10B981] h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, (currentFiber / targetFiber) * 100)}%` }}></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Compact saved logs listing inside Section 3 */}
+          {nutritionLogs.length > 0 && (
+            <div className="pt-3 border-t border-slate-100 text-left">
+              <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 block mb-2">Logged Food History ({nutritionLogs.length})</span>
+              <div className="flex flex-col gap-1.5 max-h-[140px] overflow-y-auto">
+                {nutritionLogs.map((log) => (
+                  <div key={log.id} className="flex justify-between items-center bg-slate-50 px-2.5 py-1.5 rounded border border-slate-100 text-[10.5px]">
+                    <div className="truncate pr-2">
+                      <strong className="text-slate-800 font-bold block truncate">{log.foodName}</strong>
+                      <span className="text-[8px] text-slate-400">{log.date}</span>
+                    </div>
+                    <span className="font-bold text-indigo-700 shrink-0 uppercase bg-indigo-50 border border-indigo-100 px-1 py-0.5 rounded">{log.calories} kcal</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        </div>
+
+
+        {/* 4. AI NUTRITION INSIGHT */}
+        {showNutritionInsight && (
+          <div id="ai-nutrition-insight-card" className="bg-gradient-to-br from-[#081F63] to-[#122F88] text-white rounded-3xl p-5 shadow-lg relative overflow-hidden text-left space-y-4">
+            <button 
+              type="button" 
+              onClick={() => setShowNutritionInsight(false)}
+              className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-1.5 cursor-pointer transition shadow-sm border border-white/5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-teal-400/20 text-teal-300 rounded-full flex items-center justify-center font-bold text-sm border border-teal-400/20">
+                ✨
+              </div>
+              <div>
+                <span className="text-[8px] font-extrabold text-teal-400 uppercase tracking-widest block font-mono">Expert Coach Recommendation</span>
+                <h4 className="text-sm font-extrabold text-slate-100">AI Nutrition Insight</h4>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-100 font-medium leading-relaxed font-sans">
+              "Protein intake is slightly low for your calorie target. Consider supplementing future meal cycles with grilled chicken fillet, steamed barramundi, tofu, or organic local duck eggs to maximize skeletal hypertrophy!"
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 text-[10.5px]">
+              <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
+                <span className="text-teal-300/80 block text-[8px] uppercase tracking-wider font-extrabold mb-0.5 font-bold font-mono">Meal Score</span>
+                <strong className="text-white text-xs font-black">8.5 / 10</strong>
+              </div>
+              <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
+                <span className="text-teal-300/80 block text-[8px] uppercase tracking-wider font-extrabold mb-0.5 font-bold font-mono">Caloric Balance</span>
+                <strong className="text-white text-xs font-black">Optimal Deficit</strong>
+              </div>
+              <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
+                <span className="text-teal-300/80 block text-[8px] uppercase tracking-wider font-extrabold mb-0.5 font-bold font-mono">Protein Quality</span>
+                <strong className="text-white text-xs font-black font-bold">High (Lean Base)</strong>
+              </div>
+              <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
+                <span className="text-teal-300/80 block text-[8px] uppercase tracking-wider font-extrabold mb-0.5 font-bold font-mono font-bold font-mono">Recovery Rating</span>
+                <strong className="text-white text-xs font-black font-bold">Highly Restorative</strong>
+              </div>
+            </div>
+            
+            <button
+              type="button"
+              onClick={() => setShowNutritionInsight(false)}
+              className="w-full bg-white/10 hover:bg-white/15 text-white border border-white/10 text-[10px] font-black py-2 rounded-xl uppercase tracking-wider transition cursor-pointer mt-1"
+            >
+              Dismiss Insight
             </button>
           </div>
         )}
-        
-        {/* Welcome Block & Quick Stats */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-8 gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-2xl">👋</span>
-              <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-800">
-                Selamat Datang, {traineeMeta?.name || 'Ahmad'}!
-              </h2>
-            </div>
-            <p className="text-slate-500 text-sm">
-              Keep moving! View local trainers or log your nasi lemak & training weights below.
-            </p>
-          </div>
 
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 px-4 py-2.5 rounded-xl">
-              <Flame className="w-6 h-6 text-amber-500 animate-bounce" />
-              <div className="text-left">
-                <span className="block text-xs font-semibold text-amber-800 leading-none">Streak</span>
-                <span className="text-lg font-black text-amber-900">{traineeMeta?.streakCount || 0} Days</span>
+        {/* 5. PROGRESS SNAPSHOT */}
+        <div id="progress-snapshot-card" className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm text-left space-y-4">
+          <h4 className="text-[11px] uppercase font-black tracking-widest text-[#081F63] mb-1 flex items-center gap-1.5 font-mono">
+            <TrendingUp className="w-4 h-4 text-emerald-600" /> Progress Snapshot
+          </h4>
+
+          <div className="grid grid-cols-12 gap-4 items-center">
+            {/* Weight Loss Progress Ring */}
+            <div className="col-span-5 flex flex-col items-center justify-center">
+              <div className="relative w-24 h-24 flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="38"
+                    stroke="#F1F5F9"
+                    strokeWidth="7"
+                    fill="transparent"
+                  />
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="38"
+                    stroke="#10B981"
+                    strokeWidth="7"
+                    fill="transparent"
+                    strokeDasharray={2 * Math.PI * 38}
+                    strokeDashoffset={2 * Math.PI * 38 * (1 - 0.133)}
+                    strokeLinecap="round"
+                    className="transition-all duration-500"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center justify-center">
+                  <span className="text-base font-black text-slate-800 leading-none">13%</span>
+                  <span className="text-[7.5px] text-[#10B981] font-black uppercase tracking-wider mt-0.5 font-sans font-bold">Weight Lost</span>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 px-4 py-2.5 rounded-xl">
-              <TrendingUp className="w-6 h-6 text-emerald-500" />
-              <div className="text-left">
-                <span className="block text-xs font-semibold text-emerald-800 leading-none">Target Goal</span>
-                <span className="text-xs font-bold text-emerald-900 block truncate max-w-[150px]">
-                  {traineeMeta?.goals || 'Healthy Life'}
+            {/* Metrics Info */}
+            <div className="col-span-7 space-y-2 text-xs font-sans">
+              <div className="flex justify-between items-center py-1 border-b border-slate-50">
+                <span className="text-slate-400 font-bold">Current Weight</span>
+                <strong className="text-slate-900 font-extrabold text-sm">84.0 kg</strong>
+              </div>
+              <div className="flex justify-between items-center py-1 border-b border-slate-50">
+                <span className="text-slate-400 font-bold">Target Goal</span>
+                <strong className="text-slate-900 font-extrabold text-sm">75.0 kg</strong>
+              </div>
+              <div className="flex justify-between items-center py-1 border-b border-slate-50">
+                <span className="text-slate-400 font-bold">Current BMI</span>
+                <strong className="text-slate-900 font-extrabold text-sm">27.1</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Mini weight trend chart */}
+          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 font-mono">Weight Trend Tracker</span>
+              <span className="text-[10px] bg-emerald-50 text-emerald-700 font-black px-2 py-0.5 rounded-lg border border-emerald-100 shrink-0 font-bold font-sans">
+                ↓ 1.2 kg this month
+              </span>
+            </div>
+            
+            {/* SVG Sparkline Chart */}
+            <div className="w-full h-14 relative flex items-end">
+              <svg className="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10B981" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M 0 5 L 33 22 L 66 8 L 100 28"
+                  fill="transparent"
+                  stroke="#10B981"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M 0 5 L 33 22 L 66 8 L 100 28 L 100 30 L 0 30 Z"
+                  fill="url(#chartGrad)"
+                />
+                {/* Data Points */}
+                <circle cx="0" cy="5" r="2" fill="#10B981" />
+                <circle cx="33" cy="22" r="2" fill="#10B981" />
+                <circle cx="66" cy="8" r="2" fill="#10B981" />
+                <circle cx="100" cy="28" r="2" fill="#10B981" />
+              </svg>
+              
+              {/* Point Labels */}
+              <div className="absolute inset-x-0 bottom-full mb-1 flex justify-between px-1 text-[8px] font-mono font-bold text-slate-400 pointer-events-none">
+                <span>84.0kg</span>
+                <span>83.2kg</span>
+                <span>84.0kg</span>
+                <span>82.8kg</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 6. WEEKLY TREND WIDGET */}
+        <div id="weekly-trend-widget-card" className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm text-left">
+          <h4 className="text-[11px] uppercase font-black tracking-widest text-[#081F63] mb-4 flex items-center gap-1.5 font-mono">
+            <TrendingUp className="w-4 h-4 text-[#081F63]" /> Weekly Trends
+          </h4>
+
+          <div className="grid grid-cols-2 gap-3.5 font-sans">
+            {/* Weight Tile */}
+            <div className="bg-slate-50/75 p-3 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[90px]">
+              <div>
+                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono font-bold">Weight Trend</span>
+                <span className="text-xs font-black text-slate-800 block mt-1">Weight ↓</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between font-sans">
+                <span className="text-[9px] font-mono font-bold text-slate-400 font-bold">Steady</span>
+                <span className="text-[8.5px] font-extrabold text-[#10B981] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 font-sans font-bold">
+                  ↓ 0.5 kg
+                </span>
+              </div>
+            </div>
+
+            {/* Calories Tile */}
+            <div className="bg-slate-50/75 p-3 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[90px]">
+              <div>
+                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono font-bold">Calorie Intake</span>
+                <span className="text-xs font-black text-slate-800 block mt-1">Calories ↓</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between font-sans">
+                <span className="text-[9px] font-mono font-bold text-slate-400 font-bold">Deficit</span>
+                <span className="text-[8.5px] font-extrabold text-[#10B981] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 font-sans font-bold">
+                  ↓ 120 kcal
+                </span>
+              </div>
+            </div>
+
+            {/* Workout Attendance Tile */}
+            <div className="bg-slate-50/75 p-3 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[90px]">
+              <div>
+                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono font-bold">Workouts Logs</span>
+                <span className="text-xs font-black text-slate-800 block mt-1 font-bold">Attendance ↑</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between font-sans">
+                <span className="text-[9px] font-mono font-bold text-slate-400 font-bold">3 of 3 days</span>
+                <span className="text-[8.5px] font-extrabold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 font-sans font-bold">
+                  100% ↑
+                </span>
+              </div>
+            </div>
+
+            {/* Nutrition Compliance Tile */}
+            <div className="bg-slate-50/75 p-3 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[90px]">
+              <div>
+                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono font-bold">Nutri Tracker</span>
+                <span className="text-xs font-black text-slate-800 block mt-1 font-bold">Compliance ↑</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between font-sans">
+                <span className="text-[9px] font-mono font-bold text-slate-400 font-bold">Fiber Rate</span>
+                <span className="text-[8.5px] font-extrabold text-[#10B981] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 font-sans font-bold">
+                  92% ↑
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Dashboard Main Grid Columns */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          
-          {/* Column 1: Today's Intake & Malaysian Nutrition Logger */}
-          <div className="lg:col-span-2 space-y-8">
 
-            {/* Coach-Prescribed Workouts Card */}
-            <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-md border border-slate-800 text-left relative overflow-hidden">
-              <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 opacity-10 pointer-events-none">
-                <Dumbbell className="w-48 h-48 text-teal-400" />
-              </div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="bg-teal-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    Assigned Routines
-                  </span>
-                  <h3 className="font-display font-bold text-lg text-white">Your Coach-Prescribed Workouts</h3>
-                </div>
-                
-                {prescribedWorkouts.length === 0 ? (
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-center text-slate-300 text-xs">
-                    <p className="font-semibold text-white">All caught up! No pending workouts assigned.</p>
-                    <p className="mt-1">You log your workouts by completing what your trainer has assigned. Chat with Sarah Tan to request a customized plan!</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {prescribedWorkouts.map((pw) => (
-                      <div key={pw.id} className="bg-white/10 border border-white/15 hover:bg-white/[0.12] transition rounded-xl p-4 text-left">
-                        <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
-                          <div>
-                            <h4 className="font-bold text-white text-base leading-tight">{pw.workoutType}</h4>
-                            <p className="text-[10px] text-teal-300 font-semibold mt-0.5">Assigned by: Coach Sarah Tan</p>
-                          </div>
-                          <span className="bg-teal-400 text-slate-950 font-black text-xs px-2.5 py-1 rounded-lg shrink-0">
-                            ⏱ {pw.duration} mins
-                          </span>
-                        </div>
-
-                        {pw.notes && (
-                          <div className="text-xs text-slate-300 bg-black/20 p-2.5 rounded-lg mb-3 block border border-white/5">
-                            💡 <strong className="text-teal-200">Coach Guidance:</strong> {pw.notes}
-                          </div>
-                        )}
-
-                        <div className="grid sm:grid-cols-2 gap-2 text-xs text-slate-200 mb-4">
-                          {pw.exercises.map((ex, i) => (
-                            <div key={i} className="bg-white/5 px-2.5 py-1.5 rounded-lg border border-white/10 flex justify-between">
-                              <span>💪 {ex.name}</span>
-                              <span className="font-semibold text-teal-300">{ex.sets}s × {ex.reps}r {ex.weight > 0 ? `@ ${ex.weight}kg` : ''}</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCheckingInWorkout(pw);
-                            setCheckInNotes('');
-                          }}
-                          className="w-full bg-teal-400 hover:bg-teal-300 text-slate-950 font-extrabold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
-                        >
-                          📋 Check In / Log Completed Session
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Check-In Dialog Modal */}
-            {checkingInWorkout && (
-              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] md:max-h-[85vh] flex flex-col shadow-2xl relative border border-slate-100 text-left overflow-hidden">
-                  {/* Fixed Header */}
-                  <div className="p-5 border-b border-slate-100 shrink-0">
-                    <h3 className="font-display font-medium text-lg text-slate-900 mb-1">
-                      Check In to Prescribed Session
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      Verify you finished this assigned workout. Your stats will live-update, and your coach will be notified.
-                    </p>
-                  </div>
-
-                  <form onSubmit={handleCheckInSubmit} className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
-                    <div className="bg-teal-50 border border-teal-100 rounded-xl p-3.5 text-xs text-slate-800">
-                      <p className="font-bold text-teal-950 text-sm mb-1">{checkingInWorkout.workoutType}</p>
-                      <p className="text-slate-500 mb-2">Prescribed Duration: <strong>{checkingInWorkout.duration} minutes</strong></p>
-                      <p className="font-semibold text-slate-700">Target routines completed:</p>
-                      <div className="space-y-1.5 mt-2">
-                        {checkingInWorkout.exercises.map((ex, idx) => (
-                          <div key={idx} className="flex items-center gap-2 font-mono text-slate-650">
-                            <span className="text-teal-600 font-bold">✔</span> 
-                            <span>{ex.name} ({ex.sets}s × {ex.reps}r {ex.weight > 0 ? `@ ${ex.weight}kg` : ''})</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="border border-slate-200 rounded-xl p-3 bg-neutral-50 text-left">
-                        <div className="flex justify-between items-center mb-1.5 text-left">
-                          <label className="block text-2xs font-extrabold text-indigo-950 uppercase tracking-wider">
-                            📹 Workout Video Proof
-                          </label>
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-                            checkingInWorkout.videoProofRequired !== false
-                              ? 'bg-rose-50 text-rose-700 border border-rose-100'
-                              : 'bg-slate-100 text-slate-500'
-                          }`}>
-                            {checkingInWorkout.videoProofRequired !== false ? 'Required by Coach' : 'Optional'}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 mb-2 leading-relaxed text-left">
-                          Please record or select a short exercise proof video (MP4, MOV, WebM, 5-15s). <span className="font-bold text-slate-700">Only ONE set of any exercise is required.</span>
-                        </p>
-
-                        {/* File selector and Simulator */}
-                        <div className="space-y-2 text-left">
-                          <div className="flex gap-2">
-                            <input 
-                              type="file" 
-                              accept="video/mp4,video/quicktime,video/webm"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  setCheckInVideoUrl(URL.createObjectURL(file));
-                                }
-                              }}
-                              className="block w-full text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[10px] file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 text-2xs cursor-pointer"
-                            />
-                          </div>
-
-                          {/* Instant Test Simulator presets */}
-                          <div className="bg-white border border-slate-150 p-2.5 rounded-lg space-y-1.5 text-left">
-                            <span className="text-[9px] uppercase font-bold text-slate-400 block font-mono">⚡ QUICK TEST SIMULATOR</span>
-                            <div className="grid grid-cols-2 gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => setCheckInVideoUrl('https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c054fb1d23eb5d9f07144e5ccb485c64&profile_id=139&oauth2_token_id=57447761')}
-                                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[9.5px] font-bold py-1.5 px-2 rounded border border-emerald-200 truncate cursor-pointer text-center"
-                              >
-                                🏋️ Squat Proof
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setCheckInVideoUrl('https://player.vimeo.com/external/485002934.sd.mp4?s=d0f0c0879ee8ece55b72e0d37e6b02a2ec962a9a&profile_id=165&oauth2_token_id=57447761')}
-                                className="bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-[9.5px] font-bold py-1.5 px-2 rounded border border-indigo-200 truncate cursor-pointer text-center"
-                              >
-                                🧘 Pilates Proof
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Selected Video Preview */}
-                          {checkInVideoUrl && (
-                            <div className="mt-2 space-y-1.5">
-                              <div className="text-2xs bg-white border border-slate-200 px-2 py-1.5 rounded-xl text-left font-sans flex items-center justify-between">
-                                <span className="text-slate-600 truncate max-w-[200px] font-semibold text-[10px]">✓ Video selected & ready</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setCheckInVideoUrl('')}
-                                  className="text-rose-600 hover:text-rose-800 text-3xs font-extrabold cursor-pointer"
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                              <div className="relative w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-900 aspect-video max-h-[220px] md:max-h-[280px] flex items-center justify-center">
-                                <video
-                                  src={checkInVideoUrl}
-                                  controls
-                                  className="w-full h-full object-contain"
-                                  preload="metadata"
-                                  referrerPolicy="no-referrer"
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Active notes */}
-                      <div className="text-left">
-                        <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                          Coach Active Note Checklist
-                        </label>
-                        <textarea
-                          value={checkInNotes}
-                          onChange={(e) => setCheckInNotes(e.target.value)}
-                          placeholder="Your tactical check-in notes..."
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-teal-500 h-16 text-slate-800 focus:outline-[#001F3F]"
-                          required
-                        />
-                      </div>
-
-                      {/* Difficulties */}
-                      <div className="text-left">
-                        <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                          Difficulties Encountered?
-                        </label>
-                        <textarea
-                          value={checkInDifficulties}
-                          onChange={(e) => setCheckInDifficulties(e.target.value)}
-                          placeholder="E.g. Struggled keeping posture straight on reps..."
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-teal-500 h-16 text-slate-800 focus:outline-[#001F3F]"
-                        />
-                      </div>
-
-                      {/* Discomfort / Pain Rating */}
-                      <div className="text-left">
-                        <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                          Discomfort / Pain Experienced
-                        </label>
-                        <div className="grid grid-cols-4 gap-2">
-                          {['None', 'Mild', 'Moderate', 'Severe'].map((lvl) => (
-                            <button
-                              key={lvl}
-                              type="button"
-                              onClick={() => setCheckInPainLevel(lvl)}
-                              className={`py-1.5 rounded-lg text-2xs font-bold border transition cursor-pointer text-center ${
-                                checkInPainLevel === lvl
-                                  ? 'bg-rose-500 border-rose-600 text-white'
-                                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                              }`}
-                            >
-                              {lvl}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* General comments */}
-                      <div className="text-left">
-                        <label className="block text-2xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                          General Comments
-                        </label>
-                        <textarea
-                          value={checkInGeneralComments}
-                          onChange={(e) => setCheckInGeneralComments(e.target.value)}
-                          placeholder="Any extra comments or queries for your coach..."
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-teal-500 h-16 text-slate-800 focus:outline-[#001F3F]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 justify-end pt-3 border-t border-slate-100 text-left sticky bottom-0 bg-white">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCheckingInWorkout(null);
-                          setCheckInVideoUrl('');
-                        }}
-                        className="px-4 py-2 border border-slate-200 rounded-xl text-xs text-slate-600 hover:bg-slate-100 cursor-pointer font-bold"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="bg-teal-600 hover:bg-teal-700 text-white font-extrabold px-5 py-2 rounded-xl text-xs cursor-pointer shadow-sm"
-                      >
-                        Complete Check In
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-            
-            {/* Logs: Workout Track list */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 relative">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center text-teal-600">
-                    <Dumbbell className="w-5 h-5" />
-                  </div>
-                  <h3 className="font-display font-bold text-lg text-slate-900">Training Workouts Logged</h3>
-                </div>
-                <button
-                  id="btn-add-workout"
-                  onClick={() => setShowWorkoutForm(!showWorkoutForm)}
-                  className="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-1 transition"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add Log
-                </button>
-              </div>
-
-              {/* Add Workout Inline Form */}
-              {showWorkoutForm && (
-                <form onSubmit={handleWorkoutSubmit} className="bg-slate-50 border border-slate-100 rounded-xl p-5 mb-6 text-left relative">
-                  <h4 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-1.5">
-                    <span>🏋️</span> New Workout Session Log
-                  </h4>
-                  <div className="grid sm:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                        Discipline / Workout Type
-                      </label>
-                      <input 
-                        type="text" 
-                        value={workoutType}
-                        onChange={(e) => setWorkoutType(e.target.value)}
-                        placeholder="Strength, Core, HIIT, Cardio, Yoga" 
-                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-teal-500"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                        Duration (Minutes)
-                      </label>
-                      <input 
-                        type="number" 
-                        value={workoutDuration}
-                        onChange={(e) => setWorkoutDuration(Number(e.target.value))}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-teal-500"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* Exercises dynamic loop */}
-                  <div className="mb-4">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                      Individual Exercises
-                    </label>
-                    <div className="space-y-2">
-                      {exercises.map((ex, idx) => (
-                        <div key={idx} className="flex gap-2 items-center flex-wrap sm:flex-nowrap">
-                          <input 
-                            type="text"
-                            placeholder="E.g. Bench squat / push press"
-                            value={ex.name}
-                            onChange={(e) => handleUpdateExerciseRow(idx, 'name', e.target.value)}
-                            className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-teal-500 flex-1 min-w-[120px]"
-                          />
-                          <input 
-                            type="number"
-                            placeholder="Sets"
-                            value={ex.sets}
-                            title="Sets"
-                            onChange={(e) => handleUpdateExerciseRow(idx, 'sets', Number(e.target.value))}
-                            className="bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm focus:outline-teal-500 w-16"
-                          />
-                          <input 
-                            type="number"
-                            placeholder="Reps"
-                            value={ex.reps}
-                            title="Reps"
-                            onChange={(e) => handleUpdateExerciseRow(idx, 'reps', Number(e.target.value))}
-                            className="bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm focus:outline-teal-500 w-16"
-                          />
-                          <input 
-                            type="number"
-                            placeholder="Weight (kg)"
-                            value={ex.weight}
-                            title="Weight (kg)"
-                            onChange={(e) => handleUpdateExerciseRow(idx, 'weight', Number(e.target.value))}
-                            className="bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm focus:outline-teal-500 w-24"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <button 
-                      type="button" 
-                      onClick={handleAddExerciseRow}
-                      className="mt-2 text-xs font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1"
-                    >
-                      <Plus className="w-3 h-3" /> Add Exercise Row
-                    </button>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                      Workout Comments / Posture notes
-                    </label>
-                    <textarea 
-                      value={workoutNotes}
-                      onChange={(e) => setWorkoutNotes(e.target.value)}
-                      placeholder="E.g. Muscle fatigue, joint tight, felt strong"
-                      className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-teal-500 h-20"
-                    />
-                  </div>
-
-                  <div className="flex gap-2 justify-end">
-                    <button 
-                      type="button" 
-                      onClick={() => setShowWorkoutForm(false)} 
-                      className="px-3.5 py-1.5 rounded-lg text-slate-600 text-xs hover:bg-slate-200"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      type="submit" 
-                      className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-4 py-2 rounded-lg text-xs"
-                    >
-                      Save Workout Log
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* Workouts History listing */}
-              {workouts.length === 0 ? (
-                <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400">
-                  <p className="text-sm">No workout sessions logged yet.</p>
-                  <p className="text-xs mt-1">Tap Add Log button above to post your first exercise stats!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {workouts.map((w) => (
-                    <div key={w.id} className="border border-slate-100 rounded-xl p-4 text-left hover:border-slate-200 transition bg-slate-50/50">
-                      <div className="flex justify-between items-start mb-2.5">
-                        <div>
-                          <span className="inline-block text-[10px] uppercase font-bold text-slate-400 mb-0.5">{w.date}</span>
-                          <h4 className="font-bold text-slate-800 text-base">{w.workoutType}</h4>
-                        </div>
-                        <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg shrink-0">
-                          ⏱ {w.duration} mins
-                        </span>
-                      </div>
-
-                      {/* Exercises bullets */}
-                      <div className="grid sm:grid-cols-2 gap-2 border-t border-slate-100 pt-2.5 mt-2.5 text-xs text-slate-600">
-                        {w.exercises.map((ex, i) => (
-                          <div key={i} className="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-lg border border-slate-100">
-                            <span className="font-medium text-slate-800">{ex.name}</span>
-                            <span className="font-mono text-slate-500">
-                              {ex.sets}s × {ex.reps}r {ex.weight > 0 ? `@ ${ex.weight}kg` : ''}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {w.notes && (
-                        <p className="text-xs italic text-slate-500 mt-2 bg-white p-2 rounded-lg border border-slate-100 pl-3">
-                          &ldquo;{w.notes}&rdquo;
-                        </p>
-                      )}
-
-                      {/* Instructor Response */}
-                      {w.trainerFeedback ? (
-                        <div className="mt-3 bg-teal-50 border border-teal-100 rounded-lg p-3 text-[11px] text-teal-800 relative">
-                          <span className="absolute -top-2 left-4 px-1.5 py-0.5 text-[8px] font-extrabold uppercase bg-teal-600 text-white rounded-full">
-                            Trainer Feedback Included
-                          </span>
-                          <p className="font-bold mt-1 mb-0.5">Coach Suggestion:</p>
-                          <p className="italic font-medium">&ldquo;{w.trainerFeedback}&rdquo;</p>
-                        </div>
-                      ) : (
-                        <div className="mt-3 text-[10px] text-slate-400 flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                          <span>Waiting for Coach feedback on this workout log...</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Logs: Malaysian Nutrition Tracker */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center text-teal-600">
-                    <Utensils className="w-5 h-5" />
-                  </div>
-                  <h3 className="font-display font-bold text-lg text-slate-900">Today’s Malaysian Nutrition Log</h3>
-                </div>
-                <button
-                  id="btn-add-meal"
-                  onClick={() => setShowNutritionForm(!showNutritionForm)}
-                  className="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-1 transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Log Local Meal
-                </button>
-              </div>
-
-              {/* Dynamic Macro Balance Bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 border border-slate-100 p-4 rounded-xl mb-6 text-left text-xs">
-                <div>
-                  <span className="text-slate-400 font-medium block">Total Calories</span>
-                  <span className="text-lg font-black text-slate-900">{totalCaloriesToday} kcal</span>
-                </div>
-                <div>
-                  <span className="text-teal-600 font-medium block">Protein Intake</span>
-                  <span className="text-lg font-black text-slate-900">{totalProteinToday} g</span>
-                </div>
-                <div>
-                  <span className="text-cyan-600 font-medium block">Total Carbs</span>
-                  <span className="text-lg font-black text-slate-900">{totalCarbsToday} g</span>
-                </div>
-                <div>
-                  <span className="text-amber-600 font-medium block">Fats Logged</span>
-                  <span className="text-lg font-black text-slate-900">{totalFatToday} g</span>
-                </div>
-              </div>
-
-              {/* Inline Nutrition form with predefined Malaysian Foods */}
-              {showNutritionForm && (
-                <form onSubmit={handleNutritionSubmit} className="bg-slate-50 border border-slate-100 rounded-xl p-5 mb-6 text-left">
-                  <h4 className="font-bold text-sm text-slate-800 mb-4 flex items-center gap-1.5">
-                    <span>🍛</span> Log Malaysian Food Delicate
-                  </h4>
-
-                  <div className="mb-4">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                      Choose Traditional Dish
-                    </label>
-                    <select
-                      value={selectedFoodIndex}
-                      onChange={(e) => setSelectedFoodIndex(Number(e.target.value))}
-                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-teal-500"
-                    >
-                      <option value="-1">-- Or Write Custom Meal Below --</option>
-                      {MALAYSIAN_FOODS.map((food, i) => (
-                        <option key={i} value={i}>
-                          {food.name} ({food.calories}kcal • P:{food.protein}g C:{food.carbs}g)
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {selectedFoodIndex === -1 && (
-                    <div className="grid sm:grid-cols-5 gap-3 mb-4">
-                      <div className="sm:col-span-2">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                          Food Title
-                        </label>
-                        <input 
-                          type="text" 
-                          value={customFoodName}
-                          onChange={(e) => setCustomFoodName(e.target.value)}
-                          placeholder="E.g. Nasi Kandas, Tosai" 
-                          className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-teal-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                          Cals
-                        </label>
-                        <input 
-                          type="number" 
-                          value={customCalories}
-                          onChange={(e) => setCustomCalories(Number(e.target.value))}
-                          className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm focus:outline-teal-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                          Prot (g)
-                        </label>
-                        <input 
-                          type="number" 
-                          value={customProtein}
-                          onChange={(e) => setCustomProtein(Number(e.target.value))}
-                          className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm focus:outline-teal-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                          Carbs (g)
-                        </label>
-                        <input 
-                          type="number" 
-                          value={customCarbs}
-                          onChange={(e) => setCustomCarbs(Number(e.target.value))}
-                          className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm focus:outline-teal-500"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mb-4">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                      Meal Notes / Adjustments
-                    </label>
-                    <input 
-                      type="text" 
-                      value={nutritionNotes}
-                      onChange={(e) => setNutritionNotes(e.target.value)}
-                      placeholder="E.g. Extra egg, skipped gravy sugar, added sambal"
-                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-teal-500"
-                    />
-                  </div>
-
-                  <div className="flex gap-2 justify-end">
-                    <button 
-                      type="button" 
-                      onClick={() => setShowNutritionForm(false)} 
-                      className="px-3.5 py-1.5 rounded-lg text-slate-600 text-xs hover:bg-slate-200"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      type="submit" 
-                      className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-4 py-2 rounded-lg text-xs"
-                    >
-                      Save Nutrition Log
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* Logs history output */}
-              {nutrition.length === 0 ? (
-                <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400">
-                  <p className="text-sm">No meals logged for today yet.</p>
-                  <p className="text-xs mt-1">Keep track of your local foods (Nasi Lemak, Teh Tarik, Char Kway Teow, Roti Canai) above!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {nutrition.map((n) => (
-                    <div key={n.id} className="border border-slate-100 bg-slate-50/50 rounded-xl p-4 text-left">
-                      <div className="flex justify-between items-start gap-2 mb-2">
-                        <div>
-                          <span className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Logged Dish</span>
-                          <h4 className="font-bold text-slate-800 text-sm sm:text-base leading-tight">{n.foodName}</h4>
-                        </div>
-                        <span className="text-xs font-extrabold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-lg shrink-0">
-                          🔥 {n.calories} kcal
-                        </span>
-                      </div>
-
-                      {/* Macros badges */}
-                      <div className="flex gap-3 text-[11px] text-slate-500 font-medium mb-2.5 mt-2">
-                        <span className="bg-white border border-slate-100 px-2.5 py-1 rounded-md">Protein: <strong className="text-slate-800 font-bold">{n.protein}g</strong></span>
-                        <span className="bg-white border border-slate-100 px-2.5 py-1 rounded-md">Carbs: <strong className="text-slate-800 font-bold">{n.carbs}g</strong></span>
-                        <span className="bg-white border border-slate-100 px-2.5 py-1 rounded-md">Fats: <strong className="text-slate-800 font-bold">{n.fat}g</strong></span>
-                      </div>
-
-                      {n.notes && (
-                        <p className="text-xs text-slate-500 pl-2 border-l-2 border-slate-300 italic mb-2">
-                          &ldquo;{n.notes}&rdquo;
-                        </p>
-                      )}
-
-                      {/* Coach Reply */}
-                      {n.trainerFeedback ? (
-                        <div className="bg-teal-50 border border-teal-100 rounded-lg p-3 text-[11px] text-teal-800 relative mt-3">
-                          <span className="absolute -top-2 left-4 px-1.5 py-0.5 text-[8px] font-extrabold uppercase bg-teal-600 text-white rounded-full">
-                            Coach Nutrition Review
-                          </span>
-                          <p className="font-bold mt-1 mb-0.5">Sarah Tan Suggestion:</p>
-                          <p className="italic font-medium">&ldquo;{n.trainerFeedback}&rdquo;</p>
-                        </div>
-                      ) : (
-                        <div className="mt-3 text-[10px] text-slate-400 flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                          <span>Waiting for coach dietary advice on this local meal...</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
+        {/* 7. COACHAI GOAL PREDICTION */}
+        <div className="bg-gradient-to-br from-[#081F63] to-[#122A7D] text-white rounded-3xl p-5 shadow-sm text-left relative overflow-hidden font-sans">
+          <div className="absolute -top-3 -right-3 text-white/5 pointer-events-none">
+            <Sparkles className="w-16 h-16" />
           </div>
 
-          {/* Column 2: Assigned Coach, Sessions and AI Advice Center */}
-          <div className="space-y-8 text-left">
+          <div className="flex items-center gap-1.5 mb-2.5">
+            <Sparkles className="w-4 h-4 text-teal-350 fill-current" />
+            <span className="text-[10px] uppercase font-mono font-black text-teal-350 tracking-wider">
+              CoachAI Goal Prediction
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-100 leading-relaxed font-semibold">
+            “At your current daily average metabolic rate, you are on track to achieve your target 75kg goal in around 10–12 weeks. Stay consistent!”
+          </p>
+        </div>
+
+
+        {/* Direct Link to Messages Tab with Active Coach */}
+        <button
+          onClick={() => onNavigateToTab('chats')}
+          className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[#081F63] text-xs font-extrabold py-3.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wider"
+        >
+          <MessageCircle className="w-4 h-4 text-indigo-700" />
+          Chat with Coach Sarah Tan
+        </button>
+
+      </div>
+
+      {/* Reschedule Interactive Modal Sheet */}
+      {isRescheduling && selectedSession && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-sm w-full p-5 relative shadow-2xl space-y-4 animate-slide-up sm:animate-zoom-in text-left">
             
-            {/* Quick Session Booking Status */}
-            <div className="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl shadow-sm p-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl"></div>
-              <h3 className="font-display font-bold text-lg mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-teal-400" />
-                <span>Upcoming Session Agenda</span>
-              </h3>
+            <button 
+              onClick={() => {
+                setIsRescheduling(false);
+                setSelectedSession(null);
+              }}
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 p-1.5 bg-slate-50 rounded-full cursor-pointer font-bold"
+            >
+              <X className="w-4 h-4" />
+            </button>
 
-              {bookings.filter(b => b.status === 'Approved').length === 0 ? (
-                <div className="text-slate-400 font-medium py-4 text-xs">
-                  No approved workout sessions scheduled this week.
-                  <button 
-                    onClick={() => onNavigateToTab('find-trainer')}
-                    className="block mt-3 text-teal-400 hover:text-teal-300 font-bold cursor-pointer"
-                  >
-                    Browse Local Trainers to Book &rarr;
-                  </button>
+            {/* Success screen override */}
+            {rescheduleSuccess ? (
+              <div className="py-6 text-center space-y-4">
+                <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center mx-auto text-teal-600 border border-teal-100 font-bold text-2xl font-mono">
+                  ✓
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {bookings.filter(b => b.status === 'Approved').map(b => (
-                    <div key={b.id} className="bg-white/10 rounded-xl p-3.5 border border-white/10 text-xs">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded-full font-bold text-[9px] uppercase">
-                          Confirmed Slot
-                        </span>
-                        <span className="text-white/60 font-medium text-[10px]">{b.date} • {b.timeSlot}</span>
-                      </div>
-                      <p className="font-bold text-slate-200 text-sm mb-1">{b.notes || 'Coaching Session'}</p>
-                      <p className="text-slate-400">📍 Location: {b.location}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Active Package Widget */}
-            {trainer && (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 relative overflow-hidden text-left">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-xl pointer-events-none"></div>
-                
-                <span className="text-[10px] uppercase font-extrabold text-teal-600 bg-teal-50 px-2.5 py-1 rounded inline-block tracking-wider mb-3 w-max">
-                  Package Status
-                </span>
-                
-                <h4 className="font-display font-medium text-xs text-slate-400 uppercase tracking-wider">
-                  Current Active Package
-                </h4>
-                <p className="font-bold text-base text-slate-900 mt-1">
-                  8 Classes Per Month
-                </p>
-
-                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100 text-xs text-left">
-                  <div>
-                    <span className="text-slate-400 block font-sans">Coach</span>
-                    <strong className="text-slate-800 font-bold">{trainer.name}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block font-sans">Amount Paid</span>
-                    <strong className="text-[#001F3F] font-black">RM 600</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block font-sans">Status</span>
-                    <span className="inline-flex items-center gap-1.5 text-emerald-800 font-bold">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Active
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block font-sans">Renewal</span>
-                    <strong className="text-slate-800 font-bold">Next Month</strong>
-                  </div>
+                <div>
+                  <h4 className="font-display font-black text-slate-900 text-lg">Proposal Dispatched!</h4>
+                  <p className="text-slate-500 text-xs mt-1 leading-relaxed">
+                    Coach Sarah Tan has been notified via chat. You can monitor the reschedule status on your schedule list.
+                  </p>
                 </div>
               </div>
-            )}
+            ) : modalStep === 'detail' ? (
+              /* ================= STEP 1: SESSION DETAIL ================= */
+              <div className="space-y-4">
+                <div>
+                  <span className="text-[9px] uppercase font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md tracking-wider inline-block mb-1">
+                    Booking Detail
+                  </span>
+                  <h4 className="font-display font-black text-slate-900 text-xl leading-snug">
+                    {selectedSession.title || 'HIIT Private Coaching'}
+                  </h4>
+                </div>
 
-            {/* Assigned Coach Contact Card */}
-            {trainer ? (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 block mb-3">
-                  Your Certified Trainer
-                </span>
-                <div className="flex items-center gap-3.5 border-b border-slate-100 pb-3 mb-3">
-                  <img 
-                    referrerPolicy="no-referrer"
-                    src={trainer.avatarUrl} 
-                    className="w-12 h-12 rounded-full object-cover border-2 border-indigo-100 shrink-0" 
-                    alt={trainer.name} 
-                  />
-                  <div>
-                    <h4 className="font-bold text-slate-800 leading-tight text-base flex items-center gap-1">
-                      {trainer.name}
-                      <span className="text-[10px] bg-indigo-50 text-indigo-700 px-1 rounded border border-indigo-100 font-extrabold">✓ Certified</span>
-                    </h4>
-                    <p className="text-slate-500 text-xs mt-0.5">{trainer.discipline}</p>
+                <div className="space-y-2.5 bg-slate-50 rounded-2xl p-4 border border-slate-100 text-xs">
+                  <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                    <span className="text-slate-400 font-bold">Coach</span>
+                    <span className="text-slate-800 font-extrabold">Sarah Tan</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                    <span className="text-slate-400 font-bold">Current Date</span>
+                    <span className="text-slate-800 font-mono font-bold">
+                      {new Date(selectedSession.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                    <span className="text-slate-400 font-bold">Current Time</span>
+                    <span className="text-slate-800 font-mono font-bold">{selectedSession.timeSlot}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                    <span className="text-slate-400 font-bold">Location</span>
+                    <span className="text-slate-800 font-medium">SS15 Studio, Selangor</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-slate-400 font-bold">Status</span>
+                    <span className={`font-black uppercase px-2 py-0.5 text-[10px] rounded-full ${
+                      selectedSession.status === 'Reschedule Requested'
+                        ? 'bg-amber-100 text-amber-800'
+                        : selectedSession.status === 'Approved' || selectedSession.status === 'Completed'
+                          ? 'bg-teal-100 text-teal-800'
+                          : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {selectedSession.status === 'Reschedule Requested' ? 'Pending Reschedule' : (selectedSession.status || 'Upcoming')}
+                    </span>
                   </div>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed italic truncate mb-4">&ldquo;{trainer.bio}&rdquo;</p>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => onNavigateToTab('chats')}
-                    className="flex-1 bg-teal-50 text-teal-700 hover:bg-teal-100 font-bold py-2 rounded-lg text-xs flex items-center justify-center gap-1.5 transition"
+
+                <div className="flex flex-col gap-2 pt-2">
+                  <button
+                    onClick={() => setModalStep('selector')}
+                    className="w-full bg-[#041F63] hover:bg-[#031542] text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition text-center cursor-pointer"
                   >
-                    <MessageCircle className="w-4 h-4" /> Message Coach
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Request Reschedule</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsRescheduling(false);
+                      onNavigateToTab('chats');
+                    }}
+                    className="w-full bg-slate-50 hover:bg-slate-105 border border-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition text-center cursor-pointer"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
+                    <span>Message Coach</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsRescheduling(false);
+                      setSelectedSession(null);
+                    }}
+                    className="w-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 font-bold py-2 rounded-xl text-xs transition text-center cursor-pointer mt-1"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : modalStep === 'selector' ? (
+              /* ================= STEP 2: SLOT SELECTOR ================= */
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-display font-black text-slate-900 text-lg flex items-center gap-1.5">
+                    <RefreshCw className="w-5 h-5 text-teal-600 animate-spin" />
+                    <span>Proposal Details</span>
+                  </h4>
+                  <p className="text-slate-400 text-xs mt-0.5">
+                    Select a date & slot according to Coach Sarah Tan's working calendar.
+                  </p>
+                </div>
+
+                {/* Preferred Replacement Date */}
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-black text-[#041F63] uppercase tracking-wider">
+                    Preferred Replacement Date
+                  </label>
+                  <input 
+                    type="date" 
+                    value={newDate} 
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && new Date(val).getDay() === 0) {
+                        alert("Sundays are unavailable. Trainer schedule is closed.");
+                      } else {
+                        setNewDate(val);
+                      }
+                    }}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-xs text-slate-800 font-medium font-mono focus:outline-[#041F63] focus:ring-1 focus:ring-[#041F63]"
+                  />
+                </div>
+
+                {/* Preferred Replacement Time Slot Grid */}
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-black text-[#041F63] uppercase tracking-wider">
+                    Preferred Time Slot
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM'].map((time) => {
+                      const isBooked = checkSlotIsBooked(newDate, time, selectedSession.id);
+                      const isSelected = newTimeSlot === time;
+
+                      if (isBooked) {
+                        return (
+                          <button
+                            key={time}
+                            type="button"
+                            disabled
+                            className="bg-slate-100 border border-slate-200 opacity-60 text-slate-400 font-bold py-2.5 text-center text-[10px] rounded-xl cursor-not-allowed flex flex-col items-center justify-center h-12"
+                          >
+                            <span>{time}</span>
+                            <span className="text-[7px] font-black uppercase text-rose-500 tracking-wider">Booked</span>
+                          </button>
+                        );
+                      }
+
+                      return (
+                        <button
+                          key={time}
+                          type="button"
+                          onClick={() => setNewTimeSlot(time)}
+                          className={`border py-2.5 text-center font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center cursor-pointer select-none h-12 ${
+                            isSelected
+                              ? 'border-teal-400 bg-teal-50 text-teal-800 ring-2 ring-teal-400'
+                              : 'border-slate-200 hover:bg-slate-50 bg-white text-slate-700'
+                          }`}
+                        >
+                          <span>{time}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Optional Reason textarea */}
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-black text-[#041F63] uppercase tracking-wider">
+                    Reason for Rescheduling
+                  </label>
+                  <textarea 
+                    rows={2}
+                    value={rescheduleReason}
+                    onChange={(e) => setRescheduleReason(e.target.value)}
+                    placeholder="E.g., Client meeting conflict..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 font-medium focus:outline-[#041F63] focus:ring-1 focus:ring-[#041F63]"
+                  />
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    onClick={() => setModalStep('detail')}
+                    className="w-1/3 bg-slate-50 hover:bg-slate-101 border border-slate-200 text-slate-600 font-bold py-3 rounded-xl text-xs text-center cursor-pointer"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!newDate) {
+                        alert("Please select a convenient replacement date first.");
+                        return;
+                      }
+                      if (new Date(newDate).getDay() === 0) {
+                        alert("Sundays are unavailable. Trainer schedule is closed.");
+                        return;
+                      }
+                      if (checkSlotIsBooked(newDate, newTimeSlot, selectedSession.id)) {
+                        alert("The selected slot is busy. Please choose an available slot.");
+                        return;
+                      }
+                      setModalStep('summary');
+                    }}
+                    className="flex-1 bg-[#041F63] hover:bg-[#031542] text-white font-bold py-3 rounded-xl text-xs text-center cursor-pointer"
+                  >
+                    Next
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 text-center">
-                <span className="text-2xl block mb-2">🤝</span>
-                <h4 className="font-bold text-slate-800 text-sm">No trainer assigned yet!</h4>
-                <p className="text-xs text-slate-500 mt-1 max-w-[220px] mx-auto mb-4">
-                  Find some of Klang Valley’s best trainers close to your location to get feedback.
-                </p>
-                <button 
-                  onClick={() => onNavigateToTab('find-trainer')}
-                  className="bg-indigo-950 text-teal-400 font-bold text-xs py-2 px-4 rounded-xl w-full"
-                >
-                  Discover Trainers Near Me
-                </button>
+              /* ================= STEP 3: SUMMARY CONFIRMATION ================= */
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-display font-black text-slate-900 text-lg flex items-center gap-1.5">
+                    <span>Summary of Request</span>
+                  </h4>
+                  <p className="text-slate-400 text-xs mt-0.5">
+                    Please review your proposed schedule assignment details.
+                  </p>
+                </div>
+
+                <div className="space-y-3 bg-slate-50 rounded-2xl p-4 border border-slate-100 text-xs text-slate-700">
+                  <div className="flex justify-between py-1 border-b border-slate-150/50">
+                    <span className="font-bold text-slate-400">Coach</span>
+                    <span className="font-extrabold text-[#041F63]">Sarah Tan</span>
+                  </div>
+                  
+                  <div className="py-1.5 border-b border-slate-150/50 space-y-1">
+                    <span className="font-bold text-slate-400 block">Current Slot</span>
+                    <span className="font-mono font-bold text-slate-500 block">
+                      {new Date(selectedSession.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })} at {selectedSession.timeSlot}
+                    </span>
+                  </div>
+
+                  <div className="py-1.5 space-y-1 bg-teal-500/5 p-2.5 rounded-xl border border-teal-100">
+                    <span className="font-bold text-teal-700 block">Proposed Replacement Slot</span>
+                    <span className="font-mono font-extrabold text-teal-800 block text-sm">
+                      {new Date(newDate).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })} at {newTimeSlot}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    onClick={() => setModalStep('selector')}
+                    className="w-1/3 bg-slate-50 hover:bg-slate-101 border border-slate-200 text-slate-600 font-bold py-3 rounded-xl text-xs text-center cursor-pointer"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={handleConfirmReschedule}
+                    disabled={actionLoading}
+                    className="flex-1 bg-[#041F63] hover:bg-[#031542] text-white font-extrabold py-3.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition text-center cursor-pointer"
+                  >
+                    {actionLoading ? (
+                      <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+                    ) : (
+                      "Send Reschedule Request"
+                    )}
+                  </button>
+                </div>
               </div>
             )}
-
-            {/* CoachTrack MY AI Assistant Coach */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-xl relative border border-slate-700/50">
-              <div className="absolute top-4 right-4 text-[10px] font-bold bg-white/10 text-teal-400 border border-white/10 px-2.5 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider">
-                <Sparkles className="w-3 h-3 text-teal-400" />
-                <span>CoachTrack AI</span>
-              </div>
-
-              <h4 className="font-display font-black text-white text-base mb-1">
-                AI Assistant Recommendations
-              </h4>
-              <p className="text-[11px] text-slate-300 leading-relaxed mb-5">
-                Generate a dynamically customized training plan or analyze your local Malaysian meals instantly with our full-stack Gemini assistant!
-              </p>
-
-              {/* Loader with changing messages */}
-              {loadingAI && (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-5 text-center flex flex-col items-center justify-center">
-                  <div className="w-8 h-8 rounded-full border-2 border-teal-400 border-t-transparent animate-spin mb-3"></div>
-                  <p className="text-[11px] font-bold text-slate-200 animate-pulse">
-                    {loadingMessages[aiMessageIndex]}
-                  </p>
-                </div>
-              )}
-
-              {/* Buttons to trigger */}
-              {!loadingAI && (
-                <div className="grid grid-cols-1 gap-2 mb-4">
-                  <button
-                    onClick={triggerAIWorkoutRec}
-                    className="w-full bg-teal-500 hover:bg-teal-600 text-white text-[10px] font-bold py-2.5 rounded-lg uppercase tracking-wider transition-all"
-                  >
-                    Generate 3-Day AI Workout Plan
-                  </button>
-                  <button
-                    onClick={triggerAINutritionAnalysis}
-                    className="w-full bg-white/10 hover:bg-white/20 border border-white/10 text-white text-[10px] font-bold py-2.5 rounded-lg uppercase tracking-wider transition-all"
-                  >
-                    Analyze Nasi Lemak Logs
-                  </button>
-                </div>
-              )}
-
-              {/* AI output result */}
-              {aiResult && (
-                <div className="bg-teal-50/50 border border-teal-100 rounded-xl p-4 text-xs text-left max-h-[300px] overflow-y-auto mt-4">
-                  <h5 className="font-bold text-teal-900 border-b border-teal-100 pb-1.5 mb-2 flex items-center gap-1 text-sm">
-                    <span>📋</span> {aiResult.workoutName}
-                  </h5>
-                  <p className="text-slate-700 mb-3"><strong className="text-teal-900 font-bold text-[11px]">Primary Focus:</strong> {aiResult.focus}</p>
-                  
-                  <div className="mb-3">
-                    <strong className="block text-[11px] text-teal-900 mb-1">Local Training Adjustments:</strong>
-                    <ul className="list-disc pl-4 space-y-1 text-slate-600">
-                      {aiResult.tips.map((tip: string, idx: number) => (
-                        <li key={idx}>{tip}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="space-y-3">
-                    <strong className="block text-[11px] text-teal-900 border-t border-teal-100 pt-2 font-bold">Routines:</strong>
-                    {aiResult.schedule.map((dayObj: any, idx: number) => (
-                      <div key={idx} className="bg-white p-2.5 rounded-lg border border-teal-100">
-                        <strong className="text-teal-900 text-[11.5px] font-bold block mb-1.5">{dayObj.day}</strong>
-                        <div className="space-y-1.5">
-                          {dayObj.exercises.map((ex: any, i: number) => (
-                            <div key={i} className="text-[11px] text-slate-600 border-b border-slate-50 last:border-none pb-1 last:pb-0">
-                              <span className="font-medium text-slate-800">{ex.name}</span>: {ex.sets}x{ex.reps} ({ex.weight}kg)
-                              <p className="text-[10px] text-slate-500 leading-tight mt-0.5 italic">{ex.descr}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      alert("Workout plan sent to Coach Sarah Tan. Awaiting review.");
-                    }}
-                    className="w-full mt-3 bg-teal-600 text-white font-bold py-1.5 rounded-lg text-center font-sans text-[10px]"
-                  >
-                    Request Coach Approval for AI Routine
-                  </button>
-                </div>
-              )}
-
-              {/* AI nutrition output */}
-              {aiNutritionResult && (
-                <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4 text-xs text-left max-h-[300px] overflow-y-auto mt-4">
-                  <h5 className="font-bold text-emerald-900 border-b border-emerald-100 pb-1.5 mb-2 text-sm flex items-center justify-between">
-                    <span>🥗 Nutrition Critique</span>
-                    <span className="text-[10px] bg-emerald-650 text-teal-800 bg-emerald-100 px-2 py-0.5 rounded">Score: {aiNutritionResult.aiRatingOutOfTen}/10</span>
-                  </h5>
-                  <p className="text-slate-700 mb-2"><strong className="text-emerald-900 font-bold">Intake Feedback:</strong> {aiNutritionResult.caloriesFeedback}</p>
-                  <p className="text-slate-700 mb-2"><strong className="text-emerald-900 font-bold">Macros Balance:</strong> {aiNutritionResult.nutritionalBalance}</p>
-                  <p className="text-slate-600 italic bg-white p-2.5 rounded-lg border border-emerald-100 mb-3 text-[10.5px]">
-                    <strong className="text-emerald-800 block not-italic font-bold mb-0.5">Malaysia Dietary Insight:</strong> 
-                    {aiNutritionResult.malaysianInsights}
-                  </p>
-
-                  <div className="space-y-2 mt-2">
-                    <strong className="block text-[11px] text-emerald-900 font-bold">Healthy local alternatives:</strong>
-                    {aiNutritionResult.healthySubstitutions.map((subObj: any, i: number) => (
-                      <div key={i} className="bg-white p-2 rounded-lg border border-emerald-100 text-[11px]">
-                        <p className="text-slate-500">Instead of: <span className="line-through text-slate-800 font-medium">{subObj.originalFood}</span></p>
-                        <p className="text-emerald-800 font-bold mt-0.5">Eat: {subObj.healthyAlternative}</p>
-                        <p className="text-[10px] text-slate-500 mt-0.5 italic">{subObj.benefit}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
           </div>
-
         </div>
+      )}
 
-      </div>
     </div>
   );
 }

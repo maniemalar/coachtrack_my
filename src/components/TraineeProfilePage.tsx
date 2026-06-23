@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, Fragment } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   User, 
   MapPin, 
@@ -10,55 +11,256 @@ import {
   Heart, 
   Clock, 
   ShieldCheck, 
-  Utensils, 
   Mail, 
   Phone, 
   Scale, 
   Cpu, 
-  MessageSquare, 
   Settings, 
   Bell, 
-  FileText, 
   RefreshCw, 
-  Bookmark, 
   Sparkles,
-  Search,
-  Upload,
   CheckCircle,
-  TrendingDown,
   Save,
-  Star
+  Star,
+  Download,
+  AlertCircle,
+  Lock,
+  PlusCircle,
+  Fingerprint,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
-import { TraineeProfile, TrainerProfile, Payment } from '../types';
+import { TraineeProfile, TrainerProfile } from '../types';
+import { 
+  getSharedBodyLogs, 
+  setSharedBodyLogs, 
+  BodyLog 
+} from '../lib/sharedHistory';
 
 interface TraineeProfilePageProps {
   traineeProfile: TraineeProfile;
   assignedTrainer: TrainerProfile | null;
   onUpdateProfile: (updated: TraineeProfile) => void;
   onNavigateToTab: (tab: string) => void;
+  onLogout?: () => void;
+}
+
+/**
+ * Clean volumetric 3D fitness mannequin scanner model.
+ * Fits the aesthetic look requested by the fitness tracker system (CoachTrack MY).
+ */
+function BodyScannerMannequin({ latestLog, isMale, showCallouts }: { latestLog: any; isMale: boolean; showCallouts?: boolean }) {
+  const chest = latestLog.chest || 104;
+  const waist = latestLog.waist || 94;
+  const hip = latestLog.hip || 108;
+  const arm = latestLog.arm || 38;
+  const thigh = latestLog.thigh || 62;
+
+  // Proportional metrics offsets
+  const chestOffset = Math.max(-8, Math.min(8, (chest - 104) * 0.28));
+  const waistOffset = Math.max(-8, Math.min(8, (waist - 94) * 0.32));
+  const hipOffset = Math.max(-8, Math.min(8, (hip - 108) * 0.28));
+  const armOffset = Math.max(-5, Math.min(5, (arm - 38) * 0.38));
+  const thighOffset = Math.max(-6, Math.min(6, (thigh - 62) * 0.3));
+
+  // Node placements
+  const leftShoulderX = 46 - chestOffset * 0.2;
+  const rightShoulderX = 114 + chestOffset * 0.2;
+  const leftArmpitX = 59 - chestOffset * 0.1;
+  const rightArmpitX = 101 + chestOffset * 0.1;
+  const leftWaistX = 63 - waistOffset * 0.4;
+  const rightWaistX = 97 + waistOffset * 0.4;
+  const leftHipX = 59 - hipOffset * 0.4;
+  const rightHipX = 101 + hipOffset * 0.4;
+  const leftArmX = 35 - armOffset;
+  const rightArmX = 125 + armOffset;
+
+  return (
+    <div className={`relative border border-slate-100 rounded-[24px] bg-[#F8FAFC]/40 p-4 shadow-3xs flex flex-col items-center justify-center overflow-hidden w-full transition-all duration-300 ${showCallouts ? 'min-h-[290px]' : 'min-h-[200px]'}`}>
+      <div className="absolute inset-0 pointer-events-none opacity-[0.06] select-none">
+        <div className="absolute top-1/2 left-0 right-0 h-[0.5px] bg-slate-400" />
+        <div className="absolute left-1/2 top-0 bottom-0 w-[0.5px] bg-slate-400" />
+      </div>
+
+      <svg viewBox="0 0 160 260" className={`w-full overflow-visible drop-shadow-[0_4px_12px_rgba(100,116,139,0.06)] relative z-10 transition-all duration-300 ${showCallouts ? 'h-72' : 'h-48'}`}>
+        <defs>
+          <linearGradient id="mannequin3DGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="30%" stopColor="#E2E8F0" />
+            <stop offset="75%" stopColor="#CBD5E1" />
+            <stop offset="100%" stopColor="#94A3B8" />
+          </linearGradient>
+
+          <linearGradient id="leftArmGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="50%" stopColor="#CBD5E1" />
+            <stop offset="100%" stopColor="#94A3B8" />
+          </linearGradient>
+
+          <linearGradient id="rightArmGrad" x1="100%" y1="0%" x2="0%" y2="0%">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="50%" stopColor="#CBD5E1" />
+            <stop offset="100%" stopColor="#94A3B8" />
+          </linearGradient>
+
+          <linearGradient id="shortsGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#334155" />
+            <stop offset="50%" stopColor="#1E293B" />
+            <stop offset="100%" stopColor="#0F172A" />
+          </linearGradient>
+        </defs>
+
+        {/* HEAD & NECK */}
+        <ellipse cx="80" cy="24" rx="9.5" ry="11" fill="url(#mannequin3DGrad)" stroke="#94A3B8" strokeWidth="0.5" />
+        <path d="M 75,34 L 75,45 Q 80,47 85,45 L 85,34 Z" fill="url(#mannequin3DGrad)" stroke="#CBD5E1" strokeWidth="0.5" />
+
+        {/* TORSO */}
+        <path 
+          d={`
+            M 74,45 
+            C 65,45 52,48 ${leftShoulderX},48 
+            C 42,55 45,72 ${leftArmpitX},74 
+            C 60,90 61,105 ${leftWaistX},115 
+            C 64,125 61,135 ${leftHipX},148 
+            C 65,152 75,160 80,162 
+            C 85,160 95,152 ${rightHipX},148 
+            C 99,135 96,125 ${rightWaistX},115 
+            C 99,105 100,90 ${rightArmpitX},74 
+            C 115,72 118,55 ${rightShoulderX},48 
+            C 108,48 95,45 86,45 
+            Z
+          `}
+          fill="url(#mannequin3DGrad)"
+          stroke="#94A3B8"
+          strokeWidth="0.75"
+          strokeLinejoin="round"
+        />
+
+        {/* ARMS */}
+        {/* Left Arm */}
+        <path 
+          d={`
+            M ${leftShoulderX}, 48 
+            C ${leftArmX}, 55 ${leftArmX}, 75 ${leftArmX}, 95 
+            C ${leftArmX}, 110 ${leftArmX + 1}, 125 ${leftArmX + 1}, 155 
+            C ${leftArmX + 1}, 158 ${leftArmX + 5}, 158 ${leftArmX + 6}, 155 
+            C ${leftArmX + 8}, 125 ${leftArmX + 10}, 110 ${leftArmX + 11}, 95 
+            C ${leftArmX + 12}, 85 ${leftArmX + 17}, 76 ${leftArmpitX}, 74 
+            C ${leftArmX + 9}, 60 ${leftArmX + 7}, 54 ${leftShoulderX}, 48 
+            Z
+          `}
+          fill="url(#leftArmGrad)"
+          stroke="#94A3B8"
+          strokeWidth="0.5"
+        />
+        {/* Left Hand */}
+        <path d={`M ${leftArmX + 1}, 155 C ${leftArmX}, 160 ${leftArmX + 2}, 166 ${leftArmX + 4}, 167 C ${leftArmX + 6}, 166 ${leftArmX + 7}, 160 ${leftArmX + 6}, 155 Z`} fill="url(#leftArmGrad)" stroke="#94A3B8" strokeWidth="0.5" />
+
+        {/* Right Arm */}
+        <path 
+          d={`
+            M ${rightShoulderX}, 48 
+            C ${rightArmX}, 55 ${rightArmX}, 75 ${rightArmX}, 95 
+            C ${rightArmX}, 110 ${rightArmX - 1}, 125 ${rightArmX - 1}, 155 
+            C ${rightArmX - 1}, 158 ${rightArmX - 5}, 158 ${rightArmX - 6}, 155 
+            C ${rightArmX - 8}, 125 ${rightArmX - 10}, 110 ${rightArmX - 11}, 95 
+            C ${rightArmX - 12}, 85 ${rightArmX - 17}, 76 ${rightArmpitX}, 74 
+            C ${rightArmX - 9}, 60 ${rightArmX - 7}, 54 ${rightShoulderX}, 48 
+            Z
+          `}
+          fill="url(#rightArmGrad)"
+          stroke="#94A3B8"
+          strokeWidth="0.5"
+        />
+        {/* Right Hand */}
+        <path d={`M ${rightArmX - 1}, 155 C ${rightArmX}, 160 ${rightArmX - 2}, 166 ${rightArmX - 4}, 167 C ${rightArmX - 6}, 166 ${rightArmX - 7}, 160 ${rightArmX - 6}, 155 Z`} fill="url(#rightArmGrad)" stroke="#94A3B8" strokeWidth="0.5" />
+
+        {/* COMPRESSION SHORTS */}
+        <path 
+          d={`
+            M ${leftWaistX + 1}, 122 
+            L ${rightWaistX - 1}, 122 
+            C ${rightWaistX + 2}, 135 ${rightHipX + 1}, 148 ${rightHipX + 1}, 150 
+            L 99, 175 
+            L 85, 175 
+            L 80, 156 
+            L 75, 175 
+            L 61, 175 
+            C 60, 150 ${leftHipX - 1}, 148 ${leftHipX - 1}, 150 
+            Z
+          `} 
+          fill="url(#shortsGrad)" 
+        />
+
+        {/* LEGS */}
+        {/* Left Leg */}
+        <path d={`M ${leftHipX}, 148 C ${54 - thighOffset * 0.4}, 160 ${55 - thighOffset * 0.4}, 185 63, 202 C 64, 215 60, 222 60, 228 C 60, 235 64, 245 66, 248 L 70, 248 C 71, 245 74, 235 74, 228 C 74, 222 71, 215 71, 202 C 73, 185 75, 172 80, 162 Z`} fill="url(#mannequin3DGrad)" stroke="#94A3B8" strokeWidth="0.5" />
+        <path d="M 66, 248 L 63, 255 L 71, 255 L 70, 248 Z" fill="url(#mannequin3DGrad)" stroke="#94A3B8" strokeWidth="0.5" />
+
+        {/* Right Leg */}
+        <path d={`M ${rightHipX}, 148 C ${106 + thighOffset * 0.4}, 160 ${105 + thighOffset * 0.4}, 185 97, 202 C 96, 215 100, 222 100, 228 C 100, 235 96, 245 94, 248 L 90, 248 C 89, 245 86, 235 86, 228 C 86, 222 89, 215 89, 202 C 87, 185 85, 172 80, 162 Z`} fill="url(#mannequin3DGrad)" stroke="#94A3B8" strokeWidth="0.5" />
+        <path d="M 94, 248 L 97, 255 L 89, 255 L 90, 248 Z" fill="url(#mannequin3DGrad)" stroke="#94A3B8" strokeWidth="0.5" />
+
+        {/* Callout Pins rendering with precise non-overlapping positions outside body */}
+        {showCallouts && (
+          <g>
+            {/* Chest Girth Pin (Teal - Left Side) - Upper chest / pectoral line */}
+            <line x1="66" y1="68" x2="20" y2="68" stroke="#14B8A6" strokeWidth="0.5" />
+            <circle cx="66" cy="68" r="1.5" fill="#14B8A6" />
+            <circle cx="20" cy="68" r="1.5" fill="#14B8A6" />
+            <text x="16" y="71" textAnchor="end" className="text-[8.5px] font-bold fill-[#0d9488] font-sans leading-none">Chest {chest} cm</text>
+
+            {/* Arm Girth Pin (Orange - Left Side) - Upper arm / bicep */}
+            <line x1="36" y1="82" x2="20" y2="82" stroke="#F97316" strokeWidth="0.5" />
+            <circle cx="36" cy="82" r="1.5" fill="#F97316" />
+            <circle cx="20" cy="82" r="1.5" fill="#F97316" />
+            <text x="16" y="85" textAnchor="end" className="text-[8.5px] font-bold fill-[#c2410c] font-sans leading-none">Arm {arm} cm</text>
+
+            {/* Hip Girth Pin (Purple - Left Side) - Hip / pelvis area */}
+            <line x1="59" y1="144" x2="20" y2="144" stroke="#8B5CF6" strokeWidth="0.5" />
+            <circle cx="59" cy="144" r="1.5" fill="#8B5CF6" />
+            <circle cx="20" cy="144" r="1.5" fill="#8B5CF6" />
+            <text x="16" y="147" textAnchor="end" className="text-[8.5px] font-bold fill-[#6d28d9] font-sans leading-none">Hip {hip} cm</text>
+
+            {/* Waist Girth Pin (Blue - Right Side) - Natural waist / abdomen */}
+            <line x1="96" y1="116" x2="140" y2="116" stroke="#3B82F6" strokeWidth="0.5" />
+            <circle cx="96" cy="116" r="1.5" fill="#3B82F6" />
+            <circle cx="140" cy="116" r="1.5" fill="#3B82F6" />
+            <text x="144" y="119" textAnchor="start" className="text-[8.5px] font-bold fill-[#1d4ed8] font-sans leading-none">Waist {waist} cm</text>
+
+            {/* Thigh Girth Pin (Navy - Right Side) - Upper thigh, above knee */}
+            <line x1="90" y1="178" x2="140" y2="178" stroke="#082567" strokeWidth="0.5" />
+            <circle cx="90" cy="178" r="1.5" fill="#082567" />
+            <circle cx="140" cy="178" r="1.5" fill="#082567" />
+            <text x="144" y="181" textAnchor="start" className="text-[8.5px] font-bold fill-[#082567] font-sans leading-none">Thigh {thigh} cm</text>
+          </g>
+        )}
+      </svg>
+    </div>
+  );
 }
 
 export default function TraineeProfilePage({ 
   traineeProfile, 
   assignedTrainer, 
   onUpdateProfile, 
-  onNavigateToTab 
+  onNavigateToTab,
+  onLogout
 }: TraineeProfilePageProps) {
   
   const [profile, setProfile] = useState<TraineeProfile>(traineeProfile);
-  const [activeSubTab, setActiveSubTab] = useState<'hub' | 'goals' | 'preferences' | 'subscription' | 'account'>('hub');
+  const [activeSubTab, setActiveSubTab] = useState<'overview' | 'weight' | 'measurements' | 'medical' | 'settings'>('overview');
+  const [expandedCheckIns, setExpandedCheckIns] = useState<Record<number, boolean>>({});
   
-  // Section 2 - Personal info form inputs
-  const [nameInput, setNameInput] = useState(traineeProfile.name);
+  // Localized Profile States
+  const [nameInput, setNameInput] = useState(traineeProfile.name || "Ahmad Bin Ibrahim");
   const [emailInput, setEmailInput] = useState("ahmad@coachtrack.my");
   const [phoneInput, setPhoneInput] = useState("+60 17-291 3810");
   const [dob, setDob] = useState("1998-04-12");
   const [gender, setGender] = useState("Male");
-  const [height, setHeight] = useState(traineeProfile.height || 176);
-  const [weight, setWeight] = useState(traineeProfile.weight || 84);
-  const [locationStr, setLocationStr] = useState("SS15, Subang Jaya, PJ");
+  const [locationStr, setLocationStr] = useState("SS15, Subang Jaya, Selangor");
 
-  // Section 3 - Fitness Goal Choices
+  // Goals
   const [goalsChecked, setGoalsChecked] = useState([
     { name: 'Weight Loss', checked: true },
     { name: 'Muscle Gain', checked: false },
@@ -68,46 +270,18 @@ export default function TraineeProfilePage({
     { name: 'Rehabilitation', checked: false },
     { name: 'Marathon Training', checked: true },
   ]);
-  const [targetWeight, setTargetWeight] = useState(72);
-  const [targetDate, setTargetDate] = useState("2026-09-01");
+  const [targetWeightConst, setTargetWeightConst] = useState(72.0);
 
-  // Body Metrics
-  const startingWeight = 91.5;
-  const weightChange = (weight - startingWeight).toFixed(1);
-  const bmiValue = (weight / ((height / 100) * (height / 100))).toFixed(1);
-  const [bodyFat, setBodyFat] = useState(24.2);
-  const [muscleMass, setMuscleMass] = useState(61.8);
+  // New persistent states for Medical History records
+  const [bloodType, setBloodType] = useState(() => localStorage.getItem('coachtrack_med_blood') || "O+");
+  const [allergies, setAllergies] = useState(() => localStorage.getItem('coachtrack_med_allergies') || "Peanuts, Shellfish & Trace Soy");
+  const [conditions, setConditions] = useState(() => localStorage.getItem('coachtrack_med_conditions') || "Mild Exercise-Induced Asthma");
+  const [prevInjuries, setPrevInjuries] = useState(() => localStorage.getItem('coachtrack_med_injuries') || "Right shoulder anterior AC sprain (2025 rehabilitation)");
+  const [medications, setMedications] = useState(() => localStorage.getItem('coachtrack_med_medications') || "Ventolin inhaler (1-2 puffs post workout as needed)");
+  const [emergencyContact, setEmergencyContact] = useState(() => localStorage.getItem('coachtrack_med_emergency') || "Ibrahim Bin Abdul Rahman (Father) — +60 12-345 6789");
+  const [coachMedicalNotes, setCoachMedicalNotes] = useState(() => localStorage.getItem('coachtrack_med_coach_notes') || "Tight shoulder extension when tired. Avoid overhead exercises exceeding 25kg. Squat load must be watched.");
 
-  // Section 7 - Achievements list
-  const achievements = [
-    { title: "First Workout Completed", icon: "🏆", desc: "Logged first cardiorespiratory strength training workout.", date: "Aug 2025", achieved: true },
-    { title: "7-Day Streak Achieved", icon: "🔥", desc: "Logged exercise or healthy foods 7 days in a row.", date: "Jan 2026", achieved: true },
-    { title: "50 Workouts Completed", icon: "💪", desc: "Successfully completed 50 full workout recipes.", date: "Pending", achieved: false },
-    { title: "30 Nutrition Logs Submitted", icon: "🥗", desc: "Logged local Malaysian calorie entries 30 times.", date: "Jan 2026", achieved: true },
-    { title: "10 Sessions Attended", icon: "🏃", desc: "Attended 10 coach-guided physical classes.", date: "Pending", achieved: false },
-  ];
-
-  // Section 8 - Preferences state
-  const [workoutPreferences, setWorkoutPreferences] = useState({
-    Gym: true,
-    Yoga: false,
-    Running: true,
-    Sports: true,
-    Pilates: false,
-    HIIT: true,
-  });
-
-  const [dietPreferences, setDietPreferences] = useState({
-    Vegetarian: false,
-    Vegan: false,
-    Halal: true,
-    'Low Carb': true,
-    'High Protein': true,
-  });
-
-  const [injuryNotes, setInjuryNotes] = useState("Slightly tight upper right shoulder during plank holds and heavy chest press routines. Avoid overhead shoulder presses over 25kg.");
-
-  // Section 10 & 11 - Account Settings & notifications
+  // Password / Toggles
   const [passwordInput, setPasswordInput] = useState("********");
   const [twoFactorToken, setTwoFactorToken] = useState(false);
   const [notifications, setNotifications] = useState({
@@ -119,6 +293,22 @@ export default function TraineeProfilePage({
     progressReviews: true,
   });
 
+  // Modal Control for Record New Weight
+  const [showWeightModal, setShowWeightModal] = useState(false);
+  const [inputWeight, setInputWeight] = useState("");
+  const [inputBodyFat, setInputBodyFat] = useState("");
+  const [inputNotes, setInputNotes] = useState("");
+
+  // Modal Control for Record New Girth
+  const [showGirthModal, setShowGirthModal] = useState(false);
+  const [inputChest, setInputChest] = useState("");
+  const [inputWaist, setInputWaist] = useState("");
+  const [inputHip, setInputHip] = useState("");
+  const [inputArm, setInputArm] = useState("");
+  const [inputThigh, setInputThigh] = useState("");
+  const [inputGirthNotes, setInputGirthNotes] = useState("");
+  const [expandedGirthRow, setExpandedGirthRow] = useState<number | null>(null);
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const triggerToast = (msg: string) => {
@@ -126,756 +316,1152 @@ export default function TraineeProfilePage({
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  // Real-time synchronization loader
+  const [sharedBodyLogs, setSharedBodyLogsLocal] = useState<Record<string, BodyLog[]>>(() => getSharedBodyLogs());
+
+  const currentLogs = sharedBodyLogs[profile.id] || [];
+  const latestLog = currentLogs[currentLogs.length - 1] || {
+    date: "2026-06-21",
+    weight: 84,
+    height: 176,
+    waist: 94,
+    chest: 104,
+    hip: 108,
+    arm: 38,
+    thigh: 62,
+    bmi: 27.1,
+    bmr: 1805,
+    bodyFat: 21.8,
+    notes: "Postural stability on deep squats is steady."
+  };
+  const prevLog = currentLogs.length > 1 ? currentLogs[currentLogs.length - 2] : null;
+
+  const currentWeight = latestLog.weight;
+  const height = latestLog.height;
+  const bmiValue = latestLog.bmi;
+  const bmrValue = latestLog.bmr;
+
+  const syncBodyLogsFromStorage = () => {
+    setSharedBodyLogsLocal(getSharedBodyLogs());
+  };
+
+  // Sync state with localstorage on mount and focus
+  useEffect(() => {
+    syncBodyLogsFromStorage();
+    window.addEventListener('focus', syncBodyLogsFromStorage);
+    return () => window.removeEventListener('focus', syncBodyLogsFromStorage);
+  }, []);
+
+  // Save Medical records
+  const handleSaveMedicalHistory = () => {
+    localStorage.setItem('coachtrack_med_blood', bloodType);
+    localStorage.setItem('coachtrack_med_allergies', allergies);
+    localStorage.setItem('coachtrack_med_conditions', conditions);
+    localStorage.setItem('coachtrack_med_injuries', prevInjuries);
+    localStorage.setItem('coachtrack_med_medications', medications);
+    localStorage.setItem('coachtrack_med_emergency', emergencyContact);
+    localStorage.setItem('coachtrack_med_coach_notes', coachMedicalNotes);
+    triggerToast("Medical records and health checklist securely synced!");
+  };
+
   const handleUpdatePersonalInfo = async () => {
-    // Generate updated model
     const updated = {
       ...profile,
       name: nameInput,
-      weight: Number(weight),
-      height: Number(height),
       goals: goalsChecked.filter(g => g.checked).map(g => g.name).join(', ')
     };
+    onUpdateProfile(updated);
+    setProfile(updated);
+    triggerToast("Identity and fitness registry saved!");
+  };
 
-    try {
-      const res = await fetch(`/api/trainees/${profile.id}/profile`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updated)
-      });
-      if (res.ok) {
-        const saved = await res.json();
-        setProfile(saved);
-        onUpdateProfile(saved);
-        triggerToast("Personal health metrics saved securely!");
-      } else {
-        onUpdateProfile(updated);
-        triggerToast("Offline backup active. Preferences stored locally.");
-      }
-    } catch (e) {
-      onUpdateProfile(updated);
-      triggerToast("Changes successfully stored in sandbox local DB.");
+  // Action function to add new scale check-in
+  const handleAddNewWeightCheckIn = () => {
+    const parsedWeight = parseFloat(inputWeight);
+    const parsedFat = parseFloat(inputBodyFat) || 20;
+    
+    if (isNaN(parsedWeight) || parsedWeight <= 0) {
+      triggerToast("Please enter a valid scale weight.");
+      return;
     }
+
+    const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+    const newLogItem: BodyLog = {
+      date: todayStr,
+      weight: parsedWeight,
+      height: latestLog.height || 176,
+      bmi: parseFloat((parsedWeight / Math.pow((latestLog.height || 176) / 100, 2)).toFixed(1)),
+      bmr: latestLog.bmr || 1805,
+      bodyFat: parsedFat,
+      waist: latestLog.waist || 94,
+      chest: latestLog.chest || 104,
+      hip: latestLog.hip || 108,
+      arm: latestLog.arm || 38,
+      thigh: latestLog.thigh || 62,
+      notes: inputNotes || "Scale weight updated."
+    };
+
+    const updatedUserLogs = [...currentLogs, newLogItem];
+    const updatedAllLogs = {
+      ...sharedBodyLogs,
+      [profile.id]: updatedUserLogs
+    };
+
+    // Commit to localStorage
+    setSharedBodyLogs(updatedAllLogs);
+    setSharedBodyLogsLocal(updatedAllLogs);
+    
+    // Close & reset
+    setShowWeightModal(false);
+    setInputWeight("");
+    setInputBodyFat("");
+    setInputNotes("");
+    
+    triggerToast(`Added weight logs: ${parsedWeight}kg registrado! ✓`);
   };
 
-  const toggleGoalSelection = (index: number) => {
-    const next = [...goalsChecked];
-    next[index].checked = !next[index].checked;
-    setGoalsChecked(next);
-    triggerToast("Physical target choices synced.");
+  // Action function to add new girth check-in
+  const handleAddNewGirthCheckIn = () => {
+    const parsedChest = parseFloat(inputChest);
+    const parsedWaist = parseFloat(inputWaist);
+    const parsedHip = parseFloat(inputHip);
+    const parsedArm = parseFloat(inputArm);
+    const parsedThigh = parseFloat(inputThigh);
+
+    if (isNaN(parsedChest) || isNaN(parsedWaist) || isNaN(parsedHip) || isNaN(parsedArm) || isNaN(parsedThigh)) {
+      triggerToast("Please fill in all girth circumference values.");
+      return;
+    }
+
+    const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+    const newLogItem: BodyLog = {
+      date: todayStr,
+      weight: latestLog.weight || 84,
+      height: latestLog.height || 176,
+      bmi: latestLog.bmi || 27.1,
+      bmr: latestLog.bmr || 1805,
+      bodyFat: latestLog.bodyFat || 21.8,
+      chest: parsedChest,
+      waist: parsedWaist,
+      hip: parsedHip,
+      arm: parsedArm,
+      thigh: parsedThigh,
+      notes: inputGirthNotes || "Girth circumferences updated."
+    };
+
+    const updatedUserLogs = [...currentLogs, newLogItem];
+    const updatedAllLogs = {
+      ...sharedBodyLogs,
+      [profile.id]: updatedUserLogs
+    };
+
+    // Commit to localStorage
+    setSharedBodyLogs(updatedAllLogs);
+    setSharedBodyLogsLocal(updatedAllLogs);
+
+    // Close & reset
+    setShowGirthModal(false);
+    setInputChest("");
+    setInputWaist("");
+    setInputHip("");
+    setInputArm("");
+    setInputThigh("");
+    setInputGirthNotes("");
+
+    triggerToast("Girth measurements recorded successfully! ✓");
   };
 
-  const toggleWorkoutPref = (key: string) => {
-    setWorkoutPreferences(prev => ({
-      ...prev,
-      [key as keyof typeof workoutPreferences]: !prev[key as keyof typeof workoutPreferences]
-    }));
-    triggerToast("Workout environment updated.");
+  // CSV Exporters
+  const handleDownloadWeightCSV = () => {
+    const csvHeaders = "Date,Weight (kg),Height (cm),BMI,BMR,Body Fat (%)\n";
+    const csvRows = currentLogs.map(l => {
+      return `"${l.date}",${l.weight},${l.height},${l.bmi},${l.bmr},${l.bodyFat}`;
+    }).join("\n");
+    const blob = new Blob([csvHeaders + csvRows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${profile.name.replace(/\s+/g, '_')}_Weight_History.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    onNavigateToTab('profile');
+    triggerToast("Weight history CSV downloaded successfully! ✓");
   };
 
-  const toggleDietPref = (key: string) => {
-    setDietPreferences(prev => ({
-      ...prev,
-      [key as keyof typeof dietPreferences]: !prev[key as keyof typeof dietPreferences]
-    }));
-    triggerToast("Diet habits updated.");
+  const handleDownloadMeasurementsCSV = () => {
+    const csvHeaders = "Date,Chest (cm),Waist (cm),Hip (cm),Arm (cm),Thigh (cm)\n";
+    const csvRows = currentLogs.map(l => {
+      return `"${l.date}",${l.chest},${l.waist},${l.hip},${l.arm},${l.thigh}`;
+    }).join("\n");
+    const blob = new Blob([csvHeaders + csvRows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${profile.name.replace(/\s+/g, '_')}_Circumference_Girth.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    triggerToast("Girth measurements CSV downloaded successfully! ✓");
   };
 
   return (
-    <div className="w-full bg-slate-50 min-h-screen pb-16 pt-6 text-slate-800 animate-fade-in text-left">
+    <div className="w-full bg-[#FAFBFC] min-h-screen pb-16 pt-5 text-slate-800 text-left relative box-border font-sans">
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+        }
+      `}</style>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Saved Alert Toast */}
         {toastMessage && (
-          <div className="fixed bottom-6 right-6 z-50 bg-slate-900 border border-teal-500/20 text-teal-300 font-bold px-4 py-3 rounded-2xl shadow-2xl text-xs flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-teal-400 animate-pulse" />
+          <div className="fixed bottom-6 right-6 z-55 bg-[#001F3F] border-b-4 border-teal-400 text-teal-300 font-bold px-4 py-3 rounded-2xl shadow-xl text-xs flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-teal-300 animate-pulse" />
             <span>{toastMessage}</span>
           </div>
         )}
 
-        {/* SECTION 1 - TRAINEE HEADLINER PROFILE HEADER */}
-        <div className="relative bg-gradient-to-r from-teal-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl overflow-hidden mb-8 border border-white/5">
-          <div className="absolute right-0 top-0 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute left-1/4 bottom-0 w-60 h-60 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        {/* PREMIUM PROFILE SUMMARY CARD */}
+        <div className="bg-gradient-to-br from-[#081F63] to-[#041033] text-white border border-slate-800 rounded-[28px] p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 mb-8 relative overflow-hidden">
+          {/* Subtle background glow decoration matching CoachTrack MY styling */}
+          <div className="absolute top-0 right-0 w-48 h-48 bg-teal-400/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
-            
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-5 text-center md:text-left">
-              {/* Profile Image with upload overlay */}
-              <div className="relative group cursor-pointer w-20 h-20 md:w-24 md:h-24">
-                <img 
-                  referrerPolicy="no-referrer"
-                  src={profile.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'} 
-                  className="w-full h-full rounded-2xl object-cover border-3 border-teal-400/40 shadow-semibold" 
-                  alt={profile.name}
-                />
-                <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition text-center text-5xs font-black tracking-widest uppercase text-teal-300">
-                  <Upload className="w-4 h-4 mb-1 text-teal-300" />
-                  Replace
-                  <input 
-                    type="file" 
-                    className="hidden" 
-                    accept="image/*"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const fakeUrl = URL.createObjectURL(e.target.files[0]);
-                        setProfile(prev => ({ ...prev, avatarUrl: fakeUrl }));
-                        triggerToast("Photo upload simulated!");
-                      }
-                    }} 
-                  />
-                </label>
+          <div className="flex flex-col sm:flex-row items-center gap-5 z-10 w-full md:w-auto">
+            <img 
+              referrerPolicy="no-referrer"
+              src={profile.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120'} 
+              className="w-16 h-16 rounded-[20px] object-cover border-2 border-teal-400/30 shadow-sm shrink-0" 
+              alt={profile.name}
+            />
+            <div className="text-center sm:text-left space-y-2">
+              <h1 className="text-2xl font-black text-white tracking-tight">{profile.name}</h1>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-400/20 text-teal-300 text-xs font-bold font-sans border border-teal-400/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+                Fitness Goal: Weight Loss
+              </span>
+            </div>
+          </div>
+
+          {/* Quick Stats Block with premium spacing */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full md:w-auto z-10">
+            {/* Assigned Coach */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-3 backdrop-blur-xs">
+              <div className="w-8 h-8 rounded-xl bg-teal-400/20 flex items-center justify-center text-teal-400">
+                <User className="w-4.5 h-4.5" />
               </div>
-
-              {/* Bio summary */}
-              <div className="space-y-1.5 min-w-0">
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-                  <h2 className="text-xl md:text-2xl font-black font-display tracking-tight text-white">{profile.name}</h2>
-                  <span className="bg-teal-550 text-slate-950 font-black text-4xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                    Member Since Aug 2025
-                  </span>
-                </div>
-
-                <p className="text-xs font-semibold text-teal-350 leading-relaxed font-sans max-w-xl">
-                  🎯 Primary Goal: <strong className="text-white">{profile.goals || 'Weight Loss & Cardiovascular Endurance'}</strong>
-                </p>
-
-                {/* Trainer and package micro badges */}
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-1 text-4xs tracking-wide text-slate-350 font-bold uppercase font-sans">
-                  {assignedTrainer ? (
-                    <span className="bg-slate-800/60 border border-slate-700/50 px-2.5 py-1 rounded-full text-slate-300">
-                      Coach: <strong className="text-teal-400">{assignedTrainer.name}</strong>
-                    </span>
-                  ) : (
-                    <span className="bg-amber-950/60 border border-amber-800/40 px-2.5 py-1 rounded-full text-amber-300">
-                      No Trainer Joined
-                    </span>
-                  )}
-                  <span className="bg-slate-800/60 border border-slate-700/50 px-2.5 py-1 rounded-full text-slate-300">
-                    Subscription: <strong className="text-indigo-300">Monthly Roster Plan (12x Classes)</strong>
-                  </span>
-                </div>
+              <div className="text-left">
+                <span className="block text-[10px] text-teal-200/60 font-extrabold uppercase tracking-wider font-sans">Assigned Coach</span>
+                <span className="text-xs font-black text-white">Sarah Tan</span>
               </div>
             </div>
 
-            {/* Header Fast Stats: streak */}
-            <div className="bg-slate-800/40 border border-slate-700/45 p-4 rounded-2xl w-full md:w-auto shrink-0 flex justify-around md:flex-col gap-3">
-              <div className="text-center md:text-left">
-                <span className="block text-4xs uppercase tracking-wider text-slate-400 font-extrabold">Habits Streak count</span>
-                <span className="text-base font-black text-slate-200 flex items-center justify-center md:justify-start gap-1">
-                  <Flame className="w-5 h-5 text-amber-400 inline" /> {profile.streakCount} Active Days
-                </span>
+            {/* Active Streak */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-3 backdrop-blur-xs">
+              <div className="w-8 h-8 rounded-xl bg-teal-400/20 flex items-center justify-center text-teal-350 font-sans">
+                <Flame className="w-4.5 h-4.5" />
               </div>
-              <div className="text-center md:text-left border-l md:border-l-0 md:border-t border-slate-700/55 pl-3 md:pl-0 md:pt-2">
-                <span className="block text-4xs uppercase tracking-wider text-slate-400 font-extrabold">Next Calibration Review</span>
-                <span className="text-xs font-bold text-white">Sunday (2 Days)</span>
+              <div className="text-left">
+                <span className="block text-[10px] text-teal-200/60 font-extrabold uppercase tracking-wider font-sans">Active Streak</span>
+                <span className="text-xs font-black text-teal-300">5 Days</span>
               </div>
             </div>
 
+            {/* Current Plan */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-3 backdrop-blur-xs">
+              <div className="w-8 h-8 rounded-xl bg-teal-400/20 flex items-center justify-center text-teal-400">
+                <Calendar className="w-4.5 h-4.5" />
+              </div>
+              <div className="text-left">
+                <span className="block text-[10px] text-teal-200/60 font-extrabold uppercase tracking-wider font-sans">Current Plan</span>
+                <span className="text-xs font-black text-white">8 Classes / Month</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Refresh Action */}
+          <div className="flex items-center gap-2 z-10 self-stretch sm:self-auto justify-center sm:justify-start">
+            <button 
+              onClick={() => {
+                syncBodyLogsFromStorage();
+                triggerToast("Fetched latest dashboard weights and coach notes! ✓");
+              }}
+              className="w-full sm:w-auto bg-teal-400 hover:bg-teal-350 text-[#081F63] border-none py-2.5 px-4 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Refresh Logs</span>
+            </button>
           </div>
         </div>
 
-        {/* TWO-COLUMN TABBED HUB LAYOUT */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* MAIN SPLIT NAVIGATION GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* Rail items */}
-          <div className="lg:col-span-3 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible gap-2 bg-slate-100 p-1 rounded-2xl border border-slate-205">
-            <button
-              onClick={() => setActiveSubTab('hub')}
-              className={`flex-1 lg:flex-initial text-left px-4 py-3 rounded-xl text-xs font-extrabold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                activeSubTab === 'hub' 
-                  ? 'bg-slate-900 text-teal-400 shadow-md font-black' 
-                  : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
-              }`}
-            >
-              <User className="w-4 h-4" />
-              <span>Personal Stats Hub</span>
-            </button>
-
-            <button
-              id="trainee-tab-goals"
-              onClick={() => setActiveSubTab('goals')}
-              className={`flex-1 lg:flex-initial text-left px-4 py-3 rounded-xl text-xs font-extrabold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                activeSubTab === 'goals' 
-                  ? 'bg-slate-900 text-teal-400 shadow-md font-black' 
-                  : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
-              }`}
-            >
-              <TrendingUp className="w-4 h-4" />
-              <span>Weight & Goals Setup</span>
-            </button>
-
-            <button
-              id="trainee-tab-pref"
-              onClick={() => setActiveSubTab('preferences')}
-              className={`flex-1 lg:flex-initial text-left px-4 py-3 rounded-xl text-xs font-extrabold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                activeSubTab === 'preferences' 
-                  ? 'bg-slate-900 text-teal-400 shadow-md font-black' 
-                  : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
-              }`}
-            >
-              <Utensils className="w-4 h-4" />
-              <span>Diet & Injuries</span>
-            </button>
-
-            <button
-              id="trainee-tab-sub"
-              onClick={() => setActiveSubTab('subscription')}
-              className={`flex-1 lg:flex-initial text-left px-4 py-3 rounded-xl text-xs font-extrabold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                activeSubTab === 'subscription' 
-                  ? 'bg-slate-900 text-teal-400 shadow-md font-black' 
-                  : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              <span>Subscription & Invoices</span>
-            </button>
-
-            <button
-              id="trainee-tab-account"
-              onClick={() => setActiveSubTab('account')}
-              className={`flex-1 lg:flex-initial text-left px-4 py-3 rounded-xl text-xs font-extrabold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                activeSubTab === 'account' 
-                  ? 'bg-slate-900 text-teal-400 shadow-md font-black' 
-                  : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
-              }`}
-            >
-              <Settings className="w-4 h-4" />
-              <span>Security & Alerts</span>
-            </button>
+          {/* Sidebar Tabs Panel - 5 tabs only */}
+          <div className="lg:col-span-3 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible gap-1.5 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200 no-scrollbar select-none scroll-smooth">
+            {[
+              { id: 'overview', icon: User, label: 'Overview' },
+              { id: 'weight', icon: Scale, label: 'Weight Tracking' },
+              { id: 'measurements', icon: TrendingUp, label: 'Body Measurements' },
+              { id: 'medical', icon: ShieldCheck, label: 'Medical History' },
+              { id: 'settings', icon: Settings, label: 'Settings' }
+            ].map((tab) => {
+              const active = activeSubTab === tab.id;
+              const IconComp = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  id={`tab-btn-${tab.id}`}
+                  onClick={() => setActiveSubTab(tab.id as any)}
+                  className={`flex-1 lg:flex-initial text-left px-4 py-2.5 rounded-xl text-xs font-extrabold transition flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                    active 
+                      ? 'bg-slate-900 text-teal-400 shadow-sm font-black' 
+                      : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-950'
+                  }`}
+                >
+                  <IconComp className="w-4 h-4 shrink-0" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* MAIN FIELD BLOCKS */}
+          {/* Main Workspace Frame */}
           <div className="lg:col-span-9 space-y-6">
 
-            {/* SUBTAB 1: PERSONAL STATS HUB & INTERACTIVE STATS CARDS */}
-            {activeSubTab === 'hub' && (
-              <div className="space-y-6">
+            {/* TAB 1: OVERVIEW COMPREHENSIVE HUB */}
+            {activeSubTab === 'overview' && (
+              <div className="space-y-6 animate-fade-in text-left">
                 
-                {/* Body metrics overview Row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-white p-4 rounded-2xl border border-slate-150 shadow-2xs">
-                    <span className="block text-3xs font-extrabold uppercase text-slate-400 tracking-wider">Current Weight</span>
-                    <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-xl font-black text-slate-900">{weight} kg</span>
-                      <span className="text-4xs text-slate-500 font-bold">{height}cm</span>
-                    </div>
+                {/* Primary Metric Metrics: Current Weight vs BMI vs Status */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-3xs text-left">
+                    <span className="block text-xs font-semibold text-slate-500">Current Registered Weight</span>
+                    <strong className="text-4xl font-extrabold text-slate-950 block mt-1.5 leading-none">
+                      {currentWeight} <span className="text-sm font-semibold text-slate-400">kg</span>
+                    </strong>
                   </div>
 
-                  <div className="bg-white p-4 rounded-2xl border border-slate-150 shadow-2xs">
-                    <span className="block text-3xs font-extrabold uppercase text-slate-400 tracking-wider">Weight Change</span>
-                    <div className="flex items-baseline gap-1.5 mt-1">
-                      <span className={`text-xl font-black ${Number(weightChange) < 0 ? 'text-emerald-600' : 'text-slate-800'}`}>
-                        {weightChange} kg
-                      </span>
-                      <span className="text-4xs text-slate-400 font-sans leading-none flex items-center gap-0.5">
-                        <TrendingDown className="w-3" /> from starting
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-2xl border border-slate-150 shadow-2xs">
-                    <span className="block text-3xs font-extrabold uppercase text-slate-400 tracking-wider">Body Mass Index (BMI)</span>
-                    <div className="flex items-baseline gap-1.5 mt-1">
-                      <span className="text-xl font-black text-slate-900">{bmiValue}</span>
-                      <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 font-bold rounded-lg leading-none">
-                        Slight Overweight
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-2xl border border-slate-150 shadow-2xs">
-                    <span className="block text-3xs font-extrabold uppercase text-slate-400 tracking-wider">Fitted Body Fat %</span>
-                    <div className="flex items-baseline gap-1.5 mt-1">
-                      <span className="text-xl font-black text-slate-900">{bodyFat}%</span>
-                      <span className="text-4xs text-slate-400 font-mono font-bold">{muscleMass}kg muscle</span>
-                    </div>
+                  <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-3xs text-left">
+                    <span className="block text-xs font-semibold text-slate-500">BMI</span>
+                    <strong className="text-4xl font-extrabold text-indigo-950 block mt-1.5 leading-none">
+                      {bmiValue} <span className="text-xs font-bold text-[#FF8C00] bg-[#FFF8E7] px-2 py-0.5 rounded-lg ml-2 font-sans">Overweight</span>
+                    </strong>
                   </div>
                 </div>
 
-                {/* COMPACT SECS - ASSIGNED COACH COMPASS CARD */}
-                {assignedTrainer && (
-                  <div className="bg-white border border-slate-205/85 rounded-2xl p-5 shadow-xs text-left">
-                    <h3 className="font-display font-black text-slate-900 text-xs mb-3.5 uppercase tracking-wide text-slate-403">My Linked Certified Trainer</h3>
-                    
-                    <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
-                      <div className="flex items-center gap-3.5 text-center sm:text-left">
-                        <img 
-                          referrerPolicy="no-referrer"
-                          src={assignedTrainer.avatarUrl} 
-                          className="w-12 h-12 rounded-xl object-cover border-2 border-teal-500 shadow-sm"
-                          alt={assignedTrainer.name}
-                        />
-                        <div>
-                          <h4 className="font-display font-extrabold text-slate-900 text-sm leading-tight">{assignedTrainer.name}</h4>
-                          <p className="text-2xs text-slate-500 mt-0.5 font-sans">
-                            {assignedTrainer.discipline} • <Star className="w-3 h-3 text-amber-400 fill-amber-400 inline" /> <strong className="text-slate-700">{assignedTrainer.rating}</strong>
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => onNavigateToTab('chats')}
-                          className="bg-slate-900 hover:bg-slate-800 text-teal-400 px-4 py-2 rounded-xl text-2xs font-extrabold cursor-pointer transition shadow-xs flex items-center gap-1"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5 text-teal-400 inline" /> Direct Chat Messenger
-                        </button>
-                        <button 
-                          onClick={() => onNavigateToTab('find-trainer')}
-                          className="bg-white hover:bg-slate-50 border border-slate-250 text-slate-700 px-4 py-2 rounded-xl text-2xs font-bold cursor-pointer transition"
-                        >
-                          Explore Other Coaches
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* SECTION 5 - GENERAL PERFORMANCE TRACKING EXTRAS */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-display font-black text-slate-900 text-base mb-3 border-b border-slate-100 pb-2">📂 Aggregate Fitness Performance Log</h3>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-150">
-                      <span className="block text-4xs uppercase tracking-wide font-extrabold text-slate-400">Total Workouts</span>
-                      <span className="text-lg font-black text-slate-800">46 Workouts</span>
-                      <p className="text-[10px] text-teal-650 font-bold mt-1">✓ Completion Rate: 94%</p>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-150">
-                      <span className="block text-4xs uppercase tracking-wide font-extrabold text-slate-400">Streak Metrics</span>
-                      <span className="text-lg font-black text-slate-800">{profile.streakCount} Days</span>
-                      <p className="text-[10px] text-orange-600 font-bold mt-1">🔥 Max Streak: 14 Days</p>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-150">
-                      <span className="block text-4xs uppercase tracking-wide font-extrabold text-slate-400">Sessions Attended</span>
-                      <span className="text-lg font-black text-slate-800">18 Classes</span>
-                      <p className="text-[10px] text-slate-500 font-semibold mt-1">Damansara & SS15</p>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-150">
-                      <span className="block text-4xs uppercase tracking-wide font-extrabold text-slate-400">Malaysian Calories Logged</span>
-                      <span className="text-lg font-black text-slate-800">32 Meals</span>
-                      <p className="text-[10px] font-bold text-slate-950 mt-1">🥗 30 Audits Complete</p>
-                    </div>
+                {/* Current Subscription Plan */}
+                <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-3xs text-left">
+                  <h3 className="font-sans font-bold text-[#081F63] text-[13px] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <Flame className="w-4 h-4 text-amber-500" />
+                    <span>Current Subscription Plan</span>
+                  </h3>
+                  <div className="bg-slate-900 text-white rounded-xl p-4 space-y-1 border border-slate-800">
+                    <strong className="block text-xs font-black text-teal-400">8 Classes Per Month</strong>
+                    <span className="text-[11px] block text-slate-300 font-semibold">RM 600 / month recurrence billing</span>
+                    <span className="text-xs text-slate-400 font-medium block mt-1">Next Bill Date: July 01, 2026</span>
                   </div>
                 </div>
 
-                {/* SEC 7 - ACHIEVEMENTS & BADGES ROW */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-display font-black text-slate-900 text-base mb-1">⭐ Earned Badges & Milestones</h3>
-                  <p className="text-[11px] text-slate-400 mb-4">Complete recipes prescribed by Coach Sarah to earn special stickers.</p>
+                {/* Assigned Coach Profile Card */}
+                <div className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-3xs text-left">
+                  <h3 className="text-lg font-bold text-[#081F63] mb-4 font-sans flex items-center gap-1.5">
+                    <User className="w-5 h-5 text-teal-500" />
+                    <span>Assigned Personal Coach</span>
+                  </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    {achievements.map((ach) => (
-                      <div 
-                        key={ach.title} 
-                        className={`p-3.5 rounded-xl border flex items-center gap-3 ${
-                          ach.achieved 
-                            ? 'bg-teal-50/50 border-teal-200 text-slate-800' 
-                            : 'bg-slate-50/40 border-slate-205 text-slate-400 grayscale'
-                        }`}
-                      >
-                        <span className="text-3xl shrink-0">{ach.icon}</span>
-                        <div className="text-left min-w-0">
-                          <p className="text-xs font-black leading-tight truncate">{ach.title}</p>
-                          <p className="text-3xs text-slate-400 mt-1 block truncate leading-none">{ach.desc}</p>
-                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full inline-block mt-1.5 ${
-                            ach.achieved ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-404'
-                          }`}>
-                            {ach.achieved ? `Achieved in ${ach.date}` : `Locked`}
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                      <img 
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdbLazpc2A4eSVhZ_CtAZRTFHNzG3kufmetnxoPLqJqd9Ba1uofmyihn_1XwWE-LFDpPVzy29OMxa5G29qGx3p8kBoe7SZmtqdvrC3El-KKNpBro7q-NKPkywkzkVVPgzfg3cfVHfucP48F4UbrcjhECaqEi5jpLyQPCRELWCt-LEt42L3swdSCYFndC3CR61tZIU2ILlHSOF-UU5T8S3WSIVxg054c1xPEN6J8k4d8bFe0Aneqp9rB8FT_wF1RbSXTa5Jw6SPRHY"
+                        className="w-16 h-16 rounded-2xl object-cover border-2 border-slate-100 shadow-3xs shrink-0"
+                        alt="Coach Sarah Tan"
+                      />
+                      <div className="text-center sm:text-left space-y-1.5">
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                          <h4 className="text-lg font-bold text-[#081F63] leading-none">
+                            Coach Sarah Tan
+                          </h4>
+                          <span className="px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-600 font-bold text-[11px] border border-teal-100 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                            Verified Coach
                           </span>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* SUBTAB 2: HEIGHT & WEIGHT TREND GOAL SETUP */}
-            {activeSubTab === 'goals' && (
-              <div className="space-y-6">
-                
-                <div className="bg-white border border-slate-250/60 rounded-2xl p-6 shadow-sm">
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                    <h3 className="font-display font-black text-slate-900 text-base">⚖ Metrics Calibration & Goal Selection</h3>
-                    <button 
-                      onClick={handleUpdatePersonalInfo}
-                      className="bg-slate-900 hover:bg-slate-800 text-teal-400 text-2xs font-extrabold px-3.5 py-1.5 rounded-xl cursor-pointer shadow-xs transition flex items-center gap-1"
-                    >
-                      <Save className="w-3.5 h-3.5 text-teal-405 inline" /> Save Goal Details
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
-                          Current Height (cm)
-                        </label>
-                        <input 
-                          type="number" 
-                          value={height}
-                          onChange={(e) => setHeight(Number(e.target.value))}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-teal-500 font-semibold"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
-                          Current Weight (kg)
-                        </label>
-                        <input 
-                          type="number" 
-                          value={weight}
-                          onChange={(e) => setWeight(Number(e.target.value))}
-                          className="w-full bg-slate-50 border border-slate-205 rounded-xl px-4 py-2 text-xs focus:ring-teal-500 font-semibold"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
-                          Target Physique Goal Weight (kg)
-                        </label>
-                        <input 
-                          type="number" 
-                          value={targetWeight}
-                          onChange={(e) => setTargetWeight(Number(e.target.value))}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-teal-500 font-semibold"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
-                          Target Calibration Date
-                        </label>
-                        <input 
-                          type="date" 
-                          value={targetDate}
-                          onChange={(e) => setTargetDate(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-teal-500 font-semibold font-mono"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-3xs font-extrabold text-slate-405 uppercase tracking-widest mb-1.5">
-                        Selected Fitness Target Tracks
-                      </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                        {goalsChecked.map((target, index) => (
-                          <button
-                            key={target.name}
-                            type="button"
-                            onClick={() => toggleGoalSelection(index)}
-                            className={`p-3 rounded-xl border text-center font-bold text-2xs cursor-pointer transition flex items-center justify-between gap-1 ${
-                              target.checked 
-                                ? 'bg-teal-50 border-teal-400 text-teal-850 shadow-2xs font-extrabold animate-pulse' 
-                                : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-500'
-                            }`}
-                          >
-                            <span>{target.checked ? '✓' : '○'} {target.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Weight Trend Chart SVG section */}
-                <div className="bg-white border border-slate-250/60 rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-display font-black text-slate-900 text-base mb-1">📈 Weight Trend History Over Time</h3>
-                  <p className="text-[11px] text-slate-400 mb-6">Visual tracking of progress toward {targetWeight}kg milestone.</p>
-                  
-                  {/* SVG Area chart */}
-                  <div className="relative h-48 w-full bg-slate-50 border border-slate-150 rounded-2xl p-4 flex flex-col justify-between">
-                    <div className="absolute inset-x-0 top-1/4 border-b border-dashed border-slate-200/50" />
-                    <div className="absolute inset-x-0 top-2/4 border-b border-dashed border-slate-200/50" />
-                    <div className="absolute inset-x-0 top-3/4 border-b border-dashed border-slate-200/50" />
-
-                    {/* Simple SVG decorative Line graph covering data nodes */}
-                    <div className="absolute inset-4 z-10 pointer-events-none">
-                      <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        {/* Area shading gradient */}
-                        <defs>
-                          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.25"/>
-                            <stop offset="100%" stopColor="#14b8a6" stopOpacity="0"/>
-                          </linearGradient>
-                        </defs>
-                        {/* Filled path */}
-                        <path d="M 0 50 Q 20 40 40 45 T 80 84 T 100 90 L 100 100 L 0 100 Z" fill="url(#chartGrad)" />
-                        {/* Stroke path */}
-                        <path d="M 0 50 Q 20 40 40 45 T 80 84 T 100 90" fill="none" stroke="#0d9488" strokeWidth="2.5" />
                         
-                        {/* Nodes */}
-                        <circle cx="0" cy="50" r="1.5" fill="#0f172a" />
-                        <circle cx="20" cy="40" r="1.5" fill="#0f172a" />
-                        <circle cx="40" cy="45" r="1.5" fill="#0f172a" />
-                        <circle cx="80" cy="84" r="1.5" fill="#001f3f" />
-                        <circle cx="100" cy="90" r="1.5" fill="#14b8a6" />
-                      </svg>
-                    </div>
-
-                    {/* Nodes annotation labels */}
-                    <div className="relative z-20 flex justify-between h-full items-end pb-3 text-4xs font-bold text-slate-500 font-mono">
-                      <div className="flex flex-col items-center">
-                        <span className="bg-slate-900 text-white rounded px-1 py-0.5 text-5xs mb-8">91.5kg</span>
-                        <span>Aug</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <span className="bg-slate-900 text-white rounded px-1 py-0.5 text-5xs mb-10">89kg</span>
-                        <span>Oct</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <span className="bg-slate-900 text-white rounded px-1 py-0.5 text-5xs mb-9">88.2kg</span>
-                        <span>Jan</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <span className="bg-slate-900 text-white rounded px-1 py-0.5 text-5xs mb-3 text-red-100">84kg</span>
-                        <span>Active</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <span className="bg-teal-600 text-white rounded px-1 py-0.5 text-5xs mb-1 text-teal-100">72kg</span>
-                        <span>Target</span>
+                        <p className="text-sm font-medium text-slate-500">
+                          Yoga & Pilates Instructor
+                        </p>
+                        
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-xs font-semibold text-slate-400">
+                          <span className="text-[#FF8C00] font-bold">⭐ 4.8 Rating</span>
+                          <span className="text-slate-300">•</span>
+                          <span>📍 Location: SS15, Subang Jaya</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-              </div>
-            )}
-
-            {/* SUBTAB 3: PREFERENCES & DIETS & INJURIES */}
-            {activeSubTab === 'preferences' && (
-              <div className="space-y-6">
-                
-                {/* Workout Environments Preferences Checkboxes */}
-                <div className="bg-white border border-slate-250/60 rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-display font-black text-slate-900 text-base mb-1">🏋 Preferred Workout Environments</h3>
-                  <p className="text-[11px] text-slate-400 mb-4">Toggle domains where you prefer active physical classes.</p>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
-                    {Object.keys(workoutPreferences).map((env) => {
-                      const active = workoutPreferences[env as keyof typeof workoutPreferences];
-                      return (
-                        <button
-                          key={env}
-                          onClick={() => toggleWorkoutPref(env)}
-                          className={`p-3 rounded-xl border text-center font-bold text-2xs cursor-pointer transition flex items-center justify-between ${
-                            active 
-                              ? 'bg-teal-50 border-teal-500 text-teal-850 font-black' 
-                              : 'bg-white border-slate-200 text-slate-550'
-                          }`}
-                        >
-                          <span>{active ? '✓' : '○'} {env} Track</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Diet Habits & Preferences */}
-                <div className="bg-white border border-slate-250/60 rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-display font-black text-slate-900 text-base mb-1">🥗 Daily Dietary preferences</h3>
-                  <p className="text-[11px] text-slate-400 mb-4 font-sans">Helps Coach Sarah prescribe aligned nasi lemak portion adjustments.</p>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
-                    {Object.keys(dietPreferences).map((diet) => {
-                      const active = dietPreferences[diet as keyof typeof dietPreferences];
-                      return (
-                        <button
-                          key={diet}
-                          onClick={() => toggleDietPref(diet)}
-                          className={`p-3 rounded-xl border text-center font-bold text-2xs cursor-pointer transition flex items-center justify-between ${
-                            active 
-                              ? 'bg-indigo-50 border-indigo-400 text-indigo-950 font-black font-sans' 
-                              : 'bg-white border-slate-200 text-slate-550'
-                          }`}
-                        >
-                          <span>{active ? '✓' : '○'} {diet}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Inury / medical Notes text area */}
-                <div className="bg-white border border-slate-250/60 rounded-2xl p-6 shadow-sm">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <h3 className="font-display font-black text-slate-900 text-base">⚠️ Active Medical & Injury Registry</h3>
-                      <p className="text-[11px] text-slate-404">Critical constraints reviewed by linked coaches before exercises.</p>
-                    </div>
-                    <button 
-                      onClick={() => triggerToast("Medical constraints synced.")}
-                      className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-900 font-black text-2xs px-3 py-1.5 rounded-xl cursor-pointer transition shadow-2xs"
-                    >
-                      Audit Record
-                    </button>
-                  </div>
-
-                  <textarea
-                    rows={3}
-                    value={injuryNotes}
-                    onChange={(e) => setInjuryNotes(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-rose-900 font-semibold focus:ring-red-400"
-                  />
-                </div>
-
-              </div>
-            )}
-
-            {/* SUBTAB 4: SUBSCRIPTION & INVOICES */}
-            {activeSubTab === 'subscription' && (
-              <div className="space-y-6">
-                
-                {/* 1. Subscription current plan billing overview */}
-                <div className="bg-white border border-slate-250/60 rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-display font-black text-slate-900 text-base mb-4 border-b border-slate-100 pb-3">💳 Billing & Coaching Membership</h3>
-
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900 text-white rounded-2xl p-5 border border-slate-800">
-                    <div className="text-left space-y-1">
-                      <span className="text-[10px] font-black uppercase text-teal-400 font-mono tracking-widest leading-none">Roster Status Active</span>
-                      {(() => {
-                        let name = "8 Classes Per Month";
-                        let price = 600;
-                        if (profile.id === 'te_ling' || profile.name?.includes('Mei Ling')) {
-                          name = "4 Classes Per Month";
-                          price = 310;
-                        } else if (profile.id === 'te_jason' || profile.name?.includes('Jason Wong')) {
-                          name = "Single Session";
-                          price = 80;
-                        }
-                        return (
-                          <>
-                            <h4 className="font-display font-black text-white text-base">{name}</h4>
-                            <p className="text-4xs text-slate-400 font-medium font-sans">Auto-renewing recurring checkout (RM {price} / month)</p>
-                          </>
-                        );
-                      })()}
-                    </div>
-
-                    <div className="flex items-center gap-4 shrink-0 w-full md:w-auto border-t md:border-t-0 border-slate-800 pt-3 md:pt-0">
-                      <div className="text-right text-left">
-                        <span className="block text-4xs uppercase tracking-wider text-slate-400 leading-none">Next Bill date</span>
-                        <span className="text-sm font-bold text-white font-mono block mt-1">July 01, 2026</span>
-                      </div>
+                    <div className="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0 shrink-0">
                       <button 
-                        onClick={() => alert("Redirecting secure Malaysia ToyyibPay bank checkout flow...")}
-                        className="bg-teal-500 hover:bg-teal-650 text-slate-950 text-xs font-black px-4.5 py-2.5 rounded-xl cursor-pointer shadow-md transition"
+                        onClick={() => onNavigateToTab('chats')}
+                        className="flex-1 md:flex-none text-white hover:bg-[#041033] bg-[#081F63] font-extrabold text-xs px-5 py-3 rounded-xl cursor-pointer shadow-3xs transition flex items-center justify-center gap-1.5"
                       >
-                        Renew Plan
+                        Chat Coach
+                      </button>
+                      <button 
+                        onClick={() => triggerToast("Coach Sarah Tan is registered Active. Base SS15 Studio Selangor.")}
+                        className="flex-1 md:flex-none text-slate-750 bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 font-bold text-xs px-5 py-3 rounded-xl cursor-pointer transition flex items-center justify-center gap-1.5"
+                      >
+                        View Coach Details
                       </button>
                     </div>
                   </div>
+                </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <button 
-                      onClick={() => onNavigateToTab('payments')}
-                      className="p-4 border border-slate-200 rounded-2xl hover:border-slate-350 transition hover:bg-slate-50 flex items-center justify-between text-left cursor-pointer"
-                    >
-                      <div>
-                        <span className="block text-2xs font-extrabold text-slate-800">View Active Invoices</span>
-                        <span className="text-4xs text-slate-450 block mt-0.5">Audit unpaid checkouts or billing history</span>
-                      </div>
-                      <span className="text-lg">💰</span>
-                    </button>
+                {/* Fitness Performance Quick Statistics */}
+                <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-3xs text-left">
+                  <h3 className="font-sans font-bold text-[#081F63] text-[13px] uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                    <Award className="w-4 h-4 text-indigo-500" />
+                    <span>Quick Performance Statistics</span>
+                  </h3>
 
-                    <button 
-                      onClick={() => onNavigateToTab('payments')}
-                      className="p-4 border border-slate-205 rounded-2xl hover:border-slate-350 transition hover:bg-slate-50 flex items-center justify-between text-left cursor-pointer"
-                    >
-                      <div>
-                        <span className="block text-2xs font-extrabold text-slate-800">Digital Tax Receipts</span>
-                        <span className="text-4xs text-slate-450 block mt-0.5 font-sans">Download PDF receipts for corporate wellness</span>
-                      </div>
-                      <span className="text-lg">📄</span>
-                    </button>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="p-4 bg-indigo-50/50 border border-indigo-100/50 rounded-2xl">
+                      <span className="block text-xs font-medium text-slate-500">Total Workouts</span>
+                      <strong className="block text-slate-900 text-base font-black mt-1">46 Completed</strong>
+                    </div>
+                    <div className="p-4 bg-teal-50/50 border border-teal-100/50 rounded-2xl">
+                      <span className="block text-xs font-medium text-slate-500">Sessions Attended</span>
+                      <strong className="block text-slate-900 text-base font-black mt-1">18 Classes</strong>
+                    </div>
+                    <div className="p-4 bg-amber-50/50 border border-amber-100/50 rounded-2xl">
+                      <span className="block text-xs font-medium text-slate-500">Meals Logged</span>
+                      <strong className="block text-slate-900 text-base font-black mt-1">32 Logged</strong>
+                    </div>
+                    <div className="p-4 bg-rose-50/50 border border-rose-100/50 rounded-2xl">
+                      <span className="block text-xs font-medium text-slate-500">Max Streak reached</span>
+                      <strong className="block text-slate-900 text-base font-black mt-1 text-rose-700">14 Days 🔥</strong>
+                    </div>
                   </div>
                 </div>
 
               </div>
             )}
 
-            {/* SUBTAB 5: SECURITY & DYNAMIC NOTIFICATIONS SETTINGS */}
-            {activeSubTab === 'account' && (
-              <div className="space-y-6">
-                
-                {/* Personal Information editable panel */}
-                <div className="bg-white border border-slate-250/60 rounded-2xl p-6 shadow-sm">
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                    <h3 className="font-display font-black text-slate-900 text-base">⚙ Core Personal Registry</h3>
-                    <button 
-                      onClick={handleUpdatePersonalInfo}
-                      className="bg-slate-900 text-teal-400 font-extrabold text-2xs px-3.5 py-1.5 rounded-xl cursor-pointer"
+            {/* TAB 2: WEIGHT TRACKING SECTION */}
+            {activeSubTab === 'weight' && (() => {
+              const goalW = targetWeightConst;
+              const chartWeights = currentLogs.map(l => l.weight);
+              const minChartW = Math.min(...chartWeights, goalW) - 3;
+              const maxChartW = Math.max(...chartWeights, 85) + 3;
+              const rangeW = maxChartW - minChartW || 10;
+
+              const svgWidth = 320;
+              const svgHeight = 100; // REDUCED BY 40% (Previously 155)
+              const padLeft = 40;
+              const padRight = 10;
+              const padTop = 15;
+              const padBottom = 20;
+
+              const getSvgX = (index: number, total: number) => {
+                if (total <= 1) return padLeft + (svgWidth - padLeft - padRight) / 2;
+                return padLeft + index * (svgWidth - padLeft - padRight) / (total - 1);
+              };
+
+              const getSvgY = (val: number) => {
+                return svgHeight - padBottom - ((val - minChartW) / rangeW) * (svgHeight - padTop - padBottom);
+              };
+
+              let pathD = "";
+              let areaD = "";
+              if (currentLogs.length > 0) {
+                pathD = currentLogs.map((l, idx) => {
+                  const x = getSvgX(idx, currentLogs.length);
+                  const y = getSvgY(l.weight);
+                  return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+                }).join(" ");
+
+                if (currentLogs.length > 1) {
+                  const startX = getSvgX(0, currentLogs.length);
+                  const endX = getSvgX(currentLogs.length - 1, currentLogs.length);
+                  const bottomY = svgHeight - padBottom;
+                  areaD = `${pathD} L ${endX} ${bottomY} L ${startX} ${bottomY} Z`;
+                }
+              }
+
+              const goalY = getSvgY(goalW);
+
+              return (
+                <div className="space-y-6 animate-fade-in text-left">
+                  
+                  {/* Title Bar - Compact */}
+                  <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200/80">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900 flex items-center gap-1.5">
+                        <Scale className="w-5 h-5 text-teal-650" />
+                        <span>Weight Analytics</span>
+                      </h2>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">Last Sync: Today</span>
+                  </div>
+
+                  {/* 1. Weight Overview - Compact 2x2 grid */}
+                  <div className="bg-white border border-slate-200/80 rounded-[20px] p-4 shadow-3xs">
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2.5">Weight Overview</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                        <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Current Weight</span>
+                        <strong className="text-slate-950 text-base font-black mt-0.5 block">{currentWeight} kg</strong>
+                      </div>
+                      <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                        <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Target Weight</span>
+                        <strong className="text-teal-650 text-base font-black mt-0.5 block">{goalW} kg</strong>
+                      </div>
+                      <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                        <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">BMI</span>
+                        <strong className="text-slate-950 text-base font-black mt-0.5 block">{bmiValue}</strong>
+                      </div>
+                      <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                        <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">BMR</span>
+                        <strong className="text-indigo-950 text-base font-black mt-0.5 block">{bmrValue} kcal</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Progress Summary */}
+                  <div className="bg-white border border-slate-200/80 rounded-[20px] p-4 shadow-3xs">
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2.5">Progress Summary</h3>
+                    
+                    <div className="grid grid-cols-3 gap-2 text-center bg-slate-50 border border-slate-100 p-3 rounded-xl mb-3">
+                      <div>
+                        <span className="text-[9px] font-extrabold text-slate-400 block uppercase">Start</span>
+                        <span className="text-xs font-black text-slate-700">91.5 kg</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-extrabold text-slate-400 block uppercase">Current</span>
+                        <span className="text-xs font-black text-slate-950">{currentWeight} kg</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-extrabold text-slate-400 block uppercase">Target</span>
+                        <span className="text-xs font-black text-teal-600">{goalW} kg</span>
+                      </div>
+                    </div>
+
+                    <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden border border-slate-200/50 relative mb-2">
+                      <div className="bg-gradient-to-r from-teal-400 to-indigo-500 h-full rounded-full transition-all duration-500" style={{ width: '38.5%' }} />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium text-slate-500">Goal Progress:</span>
+                        <span className="text-sm font-semibold text-teal-650">38.5%</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium text-slate-500">Total Weight Lost:</span>
+                        <span className="text-sm font-semibold text-teal-650">-7.5 kg achieved</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Weekly Weight Trend - Height reduced approx 40% (to 100px) */}
+                  <div className="bg-white border border-slate-200/80 rounded-[20px] p-4 shadow-3xs">
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2.5">Weekly Weight Trend</h3>
+                    
+                    <div className="w-full h-28 relative bg-slate-50/50 rounded-xl p-2 border border-slate-100">
+                      <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${svgWidth} ${svgHeight}`} preserveAspectRatio="none">
+                        <line x1={padLeft} y1={getSvgY(maxChartW)} x2={svgWidth - padRight} y2={getSvgY(maxChartW)} stroke="#E2E8F0" strokeWidth="0.5" strokeDasharray="2,2" />
+                        <line x1={padLeft} y1={getSvgY(minChartW)} x2={svgWidth - padRight} y2={getSvgY(minChartW)} stroke="#E2E8F0" strokeWidth="0.5" strokeDasharray="2,2" />
+
+                        {/* Benchmark Line */}
+                        <line x1={padLeft} y1={goalY} x2={svgWidth - padRight} y2={goalY} stroke="#F97316" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x={svgWidth - padRight - 5} y={goalY - 2} textAnchor="end" fill="#F97316" className="text-[7.5px] font-black uppercase tracking-wider font-sans">
+                          Goal: {goalW}kg
+                        </text>
+
+                        {areaD && (
+                          <path d={areaD} fill="url(#weightGradCompact)" opacity="0.1" />
+                        )}
+
+                        {pathD && (
+                          <path d={pathD} fill="none" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" />
+                        )}
+
+                        {currentLogs.map((l, idx) => {
+                          const x = getSvgX(idx, currentLogs.length);
+                          const y = getSvgY(l.weight);
+                          return (
+                            <g key={idx}>
+                              <circle cx={x} cy={y} r="3.5" fill="#14B8A6" stroke="#FFF" strokeWidth="1" />
+                              <text x={x} y={y - 5} textAnchor="middle" fill="#082567" className="text-[8px] font-bold font-mono">
+                                {l.weight}
+                              </text>
+                            </g>
+                          );
+                        })}
+
+                        {currentLogs.map((l, idx) => {
+                          const x = getSvgX(idx, currentLogs.length);
+                          const dtLabel = new Date(l.date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+                          return (
+                            <text key={idx} x={x} y={svgHeight - 2} textAnchor="middle" fill="#94A3B8" className="text-[7.5px] font-bold font-sans">
+                              {dtLabel}
+                            </text>
+                          );
+                        })}
+
+                        <defs>
+                          <linearGradient id="weightGradCompact" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#14B8A6" />
+                            <stop offset="100%" stopColor="#14B8A6" stopOpacity="0" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* 4. Recent Check-ins */}
+                  <div className="space-y-3 text-left animate-fade-in">
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Recent Check-ins</h3>
+                    
+                    <div className="space-y-2.5">
+                      {[...currentLogs].reverse().map((l, lIdx) => {
+                        const isExpanded = !!expandedCheckIns[lIdx];
+                        const toggleExpand = () => {
+                          setExpandedCheckIns(prev => ({
+                            ...prev,
+                            [lIdx]: !prev[lIdx]
+                          }));
+                        };
+
+                        return (
+                          <div 
+                            key={lIdx} 
+                            className="bg-white border border-slate-200/80 rounded-2xl shadow-3xs overflow-hidden transition-all duration-300 text-left"
+                          >
+                            {/* Collapsed Header / Row */}
+                            <div 
+                              onClick={toggleExpand}
+                              className="flex items-center justify-between px-4 py-4 md:py-5 min-h-[64px] md:min-h-[72px] cursor-pointer select-none hover:bg-slate-50/50 transition duration-150"
+                            >
+                              <div className="flex items-center gap-4">
+                                <span className="text-sm font-medium text-slate-500">{l.date}</span>
+                                <span className="text-md font-semibold text-slate-900">{l.weight} kg</span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="bg-emerald-50 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                  Validated
+                                </span>
+                                {isExpanded ? (
+                                  <ChevronUp className="w-5 h-5 text-slate-400" />
+                                ) : (
+                                  <ChevronDown className="w-5 h-5 text-slate-400" />
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Expanded State content */}
+                            {isExpanded && (
+                              <div className="border-t border-slate-100 bg-slate-50/50 p-4 space-y-4 animate-fade-in text-left">
+                                <div className="grid grid-cols-3 gap-3 text-center">
+                                  <div className="bg-white p-3 rounded-xl border border-slate-150">
+                                    <span className="text-[10px] font-medium text-slate-500 block uppercase tracking-wider">Weight</span>
+                                    <strong className="text-slate-950 font-black text-sm block mt-0.5">{l.weight} kg</strong>
+                                  </div>
+                                  <div className="bg-white p-3 rounded-xl border border-slate-150">
+                                    <span className="text-[10px] font-medium text-slate-500 block uppercase tracking-wider">Body Fat</span>
+                                    <strong className="text-indigo-950 font-black text-sm block mt-0.5">{l.bodyFat}%</strong>
+                                  </div>
+                                  <div className="bg-white p-3 rounded-xl border border-slate-150">
+                                    <span className="text-[10px] font-medium text-slate-500 block uppercase tracking-wider">BMI</span>
+                                    <strong className="text-slate-800 font-extrabold text-sm block mt-0.5">{l.bmi}</strong>
+                                  </div>
+                                </div>
+
+                                <div className="bg-white border border-slate-150 rounded-xl p-3 text-xs text-slate-650 leading-relaxed">
+                                  <span className="text-[8px] font-black text-[#14B8A6] block uppercase mb-1">Coach Sarah Diagnostic Notes</span>
+                                  {l.notes || "Baseline Calibration."}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 5. Actions */}
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+                    <button
+                      onClick={() => setShowWeightModal(true)}
+                      className="w-full sm:flex-1 bg-[#081F63] hover:bg-slate-900 text-white font-bold text-xs px-5 py-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs"
                     >
-                      Update Identity Profile
+                      <PlusCircle className="w-4 h-4" />
+                      <span>Record New Weight</span>
+                    </button>
+                    <button
+                      onClick={handleDownloadWeightCSV}
+                      className="w-full sm:flex-1 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-350 px-5 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Download Weight CSV</span>
                     </button>
                   </div>
 
-                  <div className="space-y-4">
+                </div>
+              );
+            })()}
+
+            {/* TAB 3: BODY MEASUREMENTS CIRMCUMFERENCE */}
+            {activeSubTab === 'measurements' && (() => {
+              const scaleTicks = [20, 40, 60, 80, 100, 120];
+              const svgWidth = 340;
+              const svgHeight = 175;
+              const padLeft = 40;
+              const padRight = 10;
+              const padTop = 15;
+              const padBottom = 25;
+
+              const getSvgX = (index: number, total: number) => {
+                if (total <= 1) return padLeft + (svgWidth - padLeft - padRight) / 2;
+                return padLeft + index * (svgWidth - padLeft - padRight) / (total - 1);
+              };
+
+              const getGirthY = (val: number) => {
+                const minVal = 15;
+                const maxVal = 125;
+                return svgHeight - padBottom - ((val - minVal) / (maxVal - minVal)) * (svgHeight - padTop - padBottom);
+              };
+
+              // Map curves
+              const makePath = (field: keyof BodyLog) => {
+                if (currentLogs.length === 0) return "";
+                return currentLogs.map((l, idx) => {
+                  const x = getSvgX(idx, currentLogs.length);
+                  const y = getGirthY(Number(l[field]) || 0);
+                  return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+                }).join(" ");
+              };
+
+              const chestPath = makePath('chest');
+              const waistPath = makePath('waist');
+              const hipPath = makePath('hip');
+              const armPath = makePath('arm');
+              const thighPath = makePath('thigh');
+
+              const getDiffObj = (f: keyof BodyLog, label: string) => {
+                const prevMetric = prevLog ? Number(prevLog[f]) : null;
+                const currMetric = Number(latestLog[f]);
+                if (prevMetric === null) return { text: "Initial baseline", color: "text-slate-400" };
+                const difference = currMetric - prevMetric;
+                if (difference < 0) {
+                  return { text: `↓ ${Math.abs(difference).toFixed(1)}cm limit`, color: "text-emerald-700 font-extrabold" };
+                } else if (difference > 0) {
+                  return { text: `↑ ${difference.toFixed(1)}cm growth`, color: "text-indigo-650 font-extrabold" };
+                }
+                return { text: "Stable", color: "text-slate-500 font-extrabold" };
+              };
+
+              const chestDiff = getDiffObj('chest', 'Chest');
+              const waistDiff = getDiffObj('waist', 'Waist');
+              const hipDiff = getDiffObj('hip', 'Hip');
+              const armDiff = getDiffObj('arm', 'Arm');
+              const thighDiff = getDiffObj('thigh', 'Thigh');
+
+              return (
+                <div className="space-y-6 animate-fade-in text-left">
+                  
+                  {/* Title Bar - Identical to Weight Analytics */}
+                  <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200/80">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900 flex items-center gap-1.5">
+                        <TrendingUp className="w-5 h-5 text-teal-650" />
+                        <span>Body Measurements</span>
+                      </h2>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">Last Sync: Today</span>
+                  </div>
+
+                  {/* Silhouettes & Deltas */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
+                    
+                    {/* Interactive Mannequin Blueprint */}
+                    <div className="md:col-span-5 flex flex-col items-center bg-white border border-slate-200/80 rounded-[28px] p-5 shadow-xs">
+                      <h3 className="text-xs font-bold text-slate-900 self-start mb-4 font-sans">Girth Mapping</h3>
+                      <BodyScannerMannequin latestLog={latestLog} isMale={true} showCallouts={true} />
+                    </div>
+
+                    {/* Numeric Girth Boxes List */}
+                    <div className="md:col-span-7 bg-white border border-slate-200/80 rounded-[28px] p-5 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-xs font-bold text-slate-900 mb-4 font-sans">Weekly Circumference Review</h3>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-3">
+                            <span className="text-2xs text-slate-400 font-bold block">Chest Circumference</span>
+                            <strong className="text-base text-slate-900 font-black mt-1 block">{latestLog.chest} cm</strong>
+                            <span className={`text-[10px] mt-1.5 block ${chestDiff.color}`}>{chestDiff.text}</span>
+                          </div>
+                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-3">
+                            <span className="text-2xs text-slate-400 font-bold block">Waist Circumference</span>
+                            <strong className="text-base text-slate-900 font-black mt-1 block">{latestLog.waist} cm</strong>
+                            <span className={`text-[10px] mt-1.5 block ${waistDiff.color}`}>{waistDiff.text}</span>
+                          </div>
+                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-3">
+                            <span className="text-2xs text-slate-400 font-bold block">Hip Circumference</span>
+                            <strong className="text-base text-slate-900 font-black mt-1 block">{latestLog.hip} cm</strong>
+                            <span className={`text-[10px] mt-1.5 block ${hipDiff.color}`}>{hipDiff.text}</span>
+                          </div>
+                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-3">
+                            <span className="text-2xs text-slate-400 font-bold block">Arm Circumference</span>
+                            <strong className="text-base text-slate-900 font-black mt-1 block">{latestLog.arm} cm</strong>
+                            <span className={`text-[10px] mt-1.5 block ${armDiff.color}`}>{armDiff.text}</span>
+                          </div>
+                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-3 col-span-2 sm:col-span-1">
+                            <span className="text-2xs text-slate-400 font-bold block">Thigh Circumference</span>
+                            <strong className="text-base text-slate-900 font-black mt-1 block">{latestLog.thigh} cm</strong>
+                            <span className={`text-[10px] mt-1.5 block ${thighDiff.color}`}>{thighDiff.text}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Multiline multi-girth analytic chart */}
+                  <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-xs">
+                    <h3 className="text-xs font-bold text-slate-900 mb-2.5 font-sans">Girth Trend Over Time</h3>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4 text-xs font-semibold text-slate-500 font-sans">
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#18D2C3]" /> Chest</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6]" /> Waist</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#8B5CF6]" /> Hip</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#F97316]" /> Arm</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#082567]" /> Thigh</span>
+                    </div>
+
+                    <div className="w-full h-44 relative bg-slate-50/50 rounded-2xl p-3 border border-slate-100/65 overflow-hidden">
+                      <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${svgWidth} ${svgHeight}`} preserveAspectRatio="none">
+                        {scaleTicks.map((tickVal, tIdx) => {
+                          const yCoord = getGirthY(tickVal);
+                          return (
+                            <g key={tIdx}>
+                              <line x1={padLeft} y1={yCoord} x2={svgWidth - padRight} y2={yCoord} stroke="#E2E8F0" strokeWidth="0.5" strokeDasharray="2,2" />
+                              <text x={padLeft - 6} y={yCoord + 3} textAnchor="end" fill="#94A3B8" className="text-[9px] font-semibold font-sans">
+                                {tickVal}cm
+                              </text>
+                            </g>
+                          );
+                        })}
+
+                        {chestPath && <path d={chestPath} fill="none" stroke="#18D2C3" strokeWidth="2" strokeLinecap="round" />}
+                        {waistPath && <path d={waistPath} fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" />}
+                        {hipPath && <path d={hipPath} fill="none" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" />}
+                        {armPath && <path d={armPath} fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" />}
+                        {thighPath && <path d={thighPath} fill="none" stroke="#082567" strokeWidth="2" strokeLinecap="round" />}
+
+                        {/* Node Highlight Circles */}
+                        {currentLogs.map((l, idx) => {
+                          const x = getSvgX(idx, currentLogs.length);
+                          return (
+                            <g key={idx}>
+                              <circle cx={x} cy={getGirthY(l.chest)} r="2" fill="#18D2C3" />
+                              <circle cx={x} cy={getGirthY(l.waist)} r="2" fill="#3B82F6" />
+                              <circle cx={x} cy={getGirthY(l.hip)} r="2" fill="#8B5CF6" />
+                              <circle cx={x} cy={getGirthY(l.arm)} r="2" fill="#F97316" />
+                              <circle cx={x} cy={getGirthY(l.thigh)} r="2" fill="#082567" />
+                            </g>
+                          );
+                        })}
+
+                        {currentLogs.map((l, idx) => {
+                          const x = getSvgX(idx, currentLogs.length);
+                          const dtLabel = new Date(l.date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+                          return (
+                            <text key={idx} x={x} y={svgHeight - 6} textAnchor="middle" fill="#94A3B8" className="text-[8px] font-bold font-sans">
+                              {dtLabel}
+                            </text>
+                          );
+                        })}
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Girth Registry table */}
+                  <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-xs overflow-hidden">
+                    <h3 className="text-xs font-bold text-slate-900 mb-4 font-sans">Recent Girth Check-ins</h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs font-sans">
+                        <thead>
+                          <tr className="border-b border-slate-200 text-slate-400 font-extrabold pb-2 uppercase text-[9px] tracking-wider">
+                            <th className="py-2.5">Date</th>
+                            <th className="py-2.5">Chest</th>
+                            <th className="py-2.5">Waist</th>
+                            <th className="py-2.5">Hip</th>
+                            <th className="py-2.5">Arm</th>
+                            <th className="py-2.5">Thigh</th>
+                            <th className="py-2.5 text-right pr-4"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-semibold">
+                          {currentLogs.map((l, idx) => {
+                            const isExpanded = expandedGirthRow === idx;
+                            return (
+                              <Fragment key={idx}>
+                                <tr 
+                                  className="hover:bg-slate-50/50 text-slate-705 cursor-pointer transition-colors"
+                                  onClick={() => setExpandedGirthRow(isExpanded ? null : idx)}
+                                >
+                                  <td className="py-3 font-medium text-slate-500">{l.date}</td>
+                                  <td className="py-3 text-slate-800">{l.chest} cm</td>
+                                  <td className="py-3 text-slate-900 font-black">{l.waist} cm</td>
+                                  <td className="py-3 text-slate-800">{l.hip} cm</td>
+                                  <td className="py-3 text-slate-800">{l.arm} cm</td>
+                                  <td className="py-3 text-[#082567] font-extrabold">{l.thigh} cm</td>
+                                  <td className="py-3 text-right pr-4">
+                                    <span className="text-slate-400 hover:text-slate-600 inline-flex items-center">
+                                      {isExpanded ? (
+                                        <ChevronUp className="w-4 h-4" />
+                                      ) : (
+                                        <ChevronDown className="w-4 h-4" />
+                                      )}
+                                    </span>
+                                  </td>
+                                </tr>
+                                {isExpanded && (
+                                  <tr className="bg-slate-50/40">
+                                    <td colSpan={7} className="py-3 px-4 text-left border-t border-slate-100">
+                                      <div className="py-1">
+                                        <strong className="block text-xs font-extrabold text-slate-900 mb-1 font-sans">Diagnostic Report:</strong>
+                                        <p className="text-xs font-medium text-slate-600 leading-relaxed font-sans">
+                                          {l.notes || "Measurements successfully recorded."}
+                                        </p>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </Fragment>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Bottom Action Buttons */}
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+                    <button
+                      onClick={() => setShowGirthModal(true)}
+                      className="w-full sm:flex-1 bg-[#081F63] hover:bg-slate-900 text-white font-bold text-xs px-5 py-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      <span>Record New Girth</span>
+                    </button>
+                    <button
+                      onClick={handleDownloadMeasurementsCSV}
+                      className="w-full sm:flex-1 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-350 px-5 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Download Girth CSV</span>
+                    </button>
+                  </div>
+
+                </div>
+              );
+            })()}
+
+            {/* TAB 4: MEDICAL HISTORY */}
+            {activeSubTab === 'medical' && (
+              <div className="space-y-6 animate-fade-in text-left">
+                
+                {/* Section Header */}
+                <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-3xs">
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900 flex items-center gap-1.5">
+                      <ShieldCheck className="w-5.5 h-5.5 text-rose-600 animate-pulse" />
+                      <span>Certified Medical Health Record</span>
+                    </h2>
+                    <p className="text-xs text-slate-500 font-sans mt-0.5">
+                      Authorized Medical and Safety parameters for Coach Sarah
+                    </p>
+                  </div>
+                </div>
+
+                {/* Health Record Dashboard Matrix */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  
+                  {/* Blood Type & Allergies Grid */}
+                  <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-3xs space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">Blood Type</label>
+                      <input 
+                        type="text"
+                        value={bloodType}
+                        onChange={(e) => setBloodType(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold text-slate-900 focus:ring-teal-500 focus:bg-white transition"
+                        placeholder="e.g. O+"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">Allergies</label>
+                      <input 
+                        type="text"
+                        value={allergies}
+                        onChange={(e) => setAllergies(e.target.value)}
+                        className="w-full bg-slate-50/80 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-rose-800 focus:ring-teal-500 focus:bg-white transition"
+                        placeholder="e.g. Penicillin, Peanuts"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Existing Conditions & Current Medications */}
+                  <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-3xs space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-705 mb-1.5">Existing Medical Conditions</label>
+                      <input 
+                        type="text"
+                        value={conditions}
+                        onChange={(e) => setConditions(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold text-indigo-950 focus:ring-teal-500 focus:bg-white transition"
+                        placeholder="e.g. Chronic Asthma, Diabetes"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-705 mb-1.5">Current Medication</label>
+                      <input 
+                        type="text"
+                        value={medications}
+                        onChange={(e) => setMedications(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-850 focus:ring-teal-500 focus:bg-white transition"
+                        placeholder="e.g. Inhaler as prescribed"
+                      />
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Previous Injuries Card */}
+                <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-3xs text-left">
+                  <label className="block text-xs font-semibold text-slate-705 mb-2 font-sans">Previous Physical Injuries</label>
+                  <textarea
+                    rows={2}
+                    value={prevInjuries}
+                    onChange={(e) => setPrevInjuries(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-750 focus:ring-teal-500 focus:bg-white transition"
+                    placeholder="Provide description of any historic operations or muscular injury"
+                  />
+                </div>
+
+                {/* Emergency Contact */}
+                <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-3xs text-left text-xs font-sans">
+                  <h3 className="text-xs font-semibold text-slate-705 mb-2 font-sans">Emergency Contact</h3>
+                  <input 
+                    type="text"
+                    value={emergencyContact}
+                    onChange={(e) => setEmergencyContact(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold text-slate-900 focus:ring-teal-500"
+                    placeholder="e.g. Spouse / Parent — Contact number"
+                  />
+                </div>
+
+                {/* Coach Medical Notes */}
+                <div className="bg-amber-50/50 border border-amber-200 rounded-[24px] p-5 text-left text-xs font-sans">
+                  <div className="flex items-center gap-2 mb-2 text-amber-900">
+                    <AlertCircle className="w-4 h-4 text-amber-500" />
+                    <h3 className="text-xs font-semibold text-amber-800">Linked Coach Medical Directive Notes</h3>
+                  </div>
+                  <textarea
+                    rows={3}
+                    value={coachMedicalNotes}
+                    onChange={(e) => setCoachMedicalNotes(e.target.value)}
+                    className="w-full bg-white border border-amber-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-amber-950 focus:ring-amber-400 focus:ring-1"
+                    placeholder="Input physical medical diagnostics issued by sarah."
+                  />
+                </div>
+
+                {/* Save Medical Records Button */}
+                <button
+                  onClick={handleSaveMedicalHistory}
+                  className="w-full bg-[#081F63] hover:bg-slate-900 text-white font-bold text-xs px-5 py-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs mt-4"
+                >
+                  Save Medical Records
+                </button>
+
+              </div>
+            )}
+
+            {/* TAB 5: SETTINGS */}
+            {activeSubTab === 'settings' && (
+              <div className="space-y-6 animate-fade-in text-left">
+                
+                {/* Edit Profile Registry Card */}
+                <div className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-3xs">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 font-sans">Edit Profile Details</h3>
+                      <p className="text-sm text-slate-500 font-sans mt-0.5">Manage your public registration profile information.</p>
+                    </div>
+                    <button 
+                      onClick={handleUpdatePersonalInfo}
+                      className="bg-[#081F63] hover:bg-slate-900 text-teal-400 hover:text-white font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer shadow-3xs transition shrink-0"
+                    >
+                      Update Profile Info
+                    </button>
+                  </div>
+
+                  <div className="space-y-4 font-sans">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-                          Full Name
-                        </label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">Full Name</label>
                         <input 
                           type="text" 
                           value={nameInput}
                           onChange={(e) => setNameInput(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-teal-500 font-semibold"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:ring-teal-500 font-semibold text-slate-800"
                         />
                       </div>
                       <div>
-                        <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-                          Registered Email ID
-                        </label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">Registered Email</label>
                         <input 
                           type="email" 
                           value={emailInput}
                           onChange={(e) => setEmailInput(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-202 rounded-xl px-4 py-2 text-xs focus:ring-teal-500 font-semibold"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:ring-teal-500 font-semibold text-slate-800"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-widest mb-1 font-sans">
-                          Phone Contact
-                        </label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5 font-sans">Phone Contact</label>
                         <input 
                           type="text" 
                           value={phoneInput}
                           onChange={(e) => setPhoneInput(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-teal-500 font-semibold font-mono"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:ring-teal-500 font-semibold text-slate-800"
                         />
                       </div>
                       <div>
-                        <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-                          Date of Birth
-                        </label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">Date of Birth</label>
                         <input 
                           type="date" 
                           value={dob}
                           onChange={(e) => setDob(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-teal-500 font-semibold font-mono"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:ring-teal-500 font-semibold text-slate-800"
                         />
                       </div>
                       <div>
-                        <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
-                          Gender Focus
-                        </label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">Gender</label>
                         <select 
                           value={gender}
                           onChange={(e) => setGender(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-teal-500 font-semibold select-none"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:ring-teal-500 font-semibold text-slate-800"
                         >
                           <option>Male</option>
                           <option>Female</option>
@@ -885,90 +1471,127 @@ export default function TraineeProfilePage({
                     </div>
 
                     <div>
-                      <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
-                        Base Living Location (Klang Valley)
-                      </label>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">Living Location (Selangor / KL)</label>
                       <input 
                         type="text" 
                         value={locationStr}
                         onChange={(e) => setLocationStr(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-203 rounded-xl px-4 py-2 text-xs focus:ring-teal-500 font-semibold"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:ring-teal-500 font-semibold text-slate-800"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Password modification settings */}
-                <div className="bg-white border border-slate-250/60 rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-display font-black text-slate-900 text-base mb-4">🔐 Account Security Credentials</h3>
+                {/* Change Password & Security Card */}
+                <div className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-3xs">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 font-sans">Security Settings</h3>
+                    <p className="text-sm text-slate-500 font-sans mt-0.5 mb-6">Manage authentication settings and two-factor options.</p>
+                  </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-                        Current Account Password
-                      </label>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">New Password</label>
                       <input 
                         type="password" 
                         value={passwordInput}
                         onChange={(e) => setPasswordInput(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:ring-teal-500 font-semibold text-slate-800"
+                        placeholder="Enter credentials password"
                       />
                     </div>
-                    <div className="flex items-center justify-between border border-dashed border-slate-200/80 rounded-xl p-3 bg-slate-50/50 text-left">
+                    <div className="flex items-center justify-between border border-dashed border-slate-200 rounded-2xl p-4 bg-slate-50/50 text-left">
                       <div>
-                        <span className="block text-2xs font-extrabold text-slate-700 leading-none mb-1">2-Factor Authentication</span>
-                        <span className="text-3xs text-slate-400 block max-w-xs font-sans leading-none">Protect account utilizing secure mobile ping alerts</span>
+                        <span className="block text-sm font-semibold text-slate-850 font-sans">Two-Factor Authentication</span>
+                        <p className="text-xs text-slate-500 font-sans mt-0.5">Ping mobile verification alerts on log steps</p>
                       </div>
                       <button
-                        onClick={() => setTwoFactorToken(!twoFactorToken)}
-                        className={`text-2xs font-black uppercase tracking-wider px-3 py-1.5 rounded-xl cursor-pointer ${
-                          twoFactorToken ? 'bg-teal-150 text-teal-800' : 'bg-slate-200 text-slate-600'
+                        onClick={() => {
+                          setTwoFactorToken(!twoFactorToken);
+                          triggerToast("2FA security settings adjusted!");
+                        }}
+                        className={`text-xs font-semibold px-3 py-1.5 rounded-xl cursor-pointer transition shrink-0 ${
+                          twoFactorToken ? 'bg-teal-50 text-teal-700 border border-teal-100' : 'bg-slate-100 text-slate-500 border border-slate-200'
                         }`}
                       >
-                        {twoFactorToken ? 'Enabled' : 'Disabled (Placeholder)'}
+                        {twoFactorToken ? 'Enabled' : 'Disabled'}
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {/* Trainee Live Notification Switches */}
-                <div className="bg-white border border-slate-250/60 rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-display font-black text-slate-900 text-base mb-1">🔔 Live Event Notifications Alerts</h3>
-                  <p className="text-[11px] text-slate-404 mb-4 font-sans">Toggle live email or mobile triggers for ongoing classes.</p>
+                {/* Notification Preferences Card */}
+                <div className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-3xs">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 font-sans">Notification Preferences</h3>
+                    <p className="text-sm text-slate-500 font-sans mt-0.5 mb-6">Toggle mobile email alerts or direct messaging reviews from Coach Sarah Tan.</p>
+                  </div>
 
-                  <div className="space-y-2.5">
+                  <div className="space-y-4">
                     {[
-                      { key: 'workoutReminders', label: 'Daily Workout Reminders', desc: 'Direct workout prompts regarding active prescribed exercises' },
-                      { key: 'sessionReminders', label: 'Physical Sessions Reminders', desc: 'Alerts 1 hour prior to physical training in Subang SS15' },
-                      { key: 'nutritionReminders', label: 'Nutrition Audit Reminders', desc: 'Hydration triggers, macro parameters, and calorie logs reminders' },
-                      { key: 'paymentReminders', label: 'Payment Reminders', desc: 'Confirmation invoice receipts or payment alerts' },
-                      { key: 'trainerMessages', label: 'Trainer Messages & Feedback Reviews', desc: 'Instant alert when Coach Sarah Tan submits workout video reviews' },
-                      { key: 'progressReviews', label: 'Calibration Review Prompts', desc: 'Prompt for weekly waist front/side progress pictures' }
-                    ].map((box) => (
-                      <div 
-                        key={box.key}
-                        onClick={() => {
-                          setNotifications(prev => ({
-                            ...prev,
-                            [box.key as keyof typeof notifications]: !prev[box.key as keyof typeof notifications]
-                          }));
-                          triggerToast("Alert preferences adjusted.");
-                        }}
-                        className="p-3 bg-slate-50 border border-slate-150 rounded-xl hover:border-slate-250 cursor-pointer flex items-center justify-between text-left transition"
-                      >
-                        <div className="min-w-0 pr-4">
-                          <span className="block text-2xs font-extrabold text-slate-700 leading-none mb-1">{box.label}</span>
-                          <span className="text-3xs text-slate-400 font-sans block truncate max-w-[500px] leading-none">{box.desc}</span>
+                      { key: 'workoutReminders', label: 'Workout Reminders', desc: 'Prompts regarding daily physical exercise regimes', icon: Dumbbell },
+                      { key: 'sessionReminders', label: 'Session Reminders', desc: 'Alert notifications 1 hour prior to studio physically', icon: Clock },
+                      { key: 'nutritionReminders', label: 'Nutrition Log Reminders', desc: 'Alert updates if daily macro registers are missing', icon: Flame },
+                      { key: 'paymentReminders', label: 'Payment Receipts', desc: 'Bimonthly renewal invoices and subscription confirmations', icon: Calendar }
+                    ].map((box) => {
+                      const IconComponent = box.icon;
+                      const isEnabled = notifications[box.key as keyof typeof notifications];
+                      return (
+                        <div 
+                          key={box.key}
+                          onClick={() => {
+                            setNotifications(prev => ({
+                              ...prev,
+                              [box.key as keyof typeof notifications]: !prev[box.key as keyof typeof notifications]
+                            }));
+                            triggerToast("Notification configuration updated.");
+                          }}
+                          className="p-4 bg-slate-50 hover:bg-slate-100/70 border border-slate-150 rounded-2xl cursor-pointer flex items-center justify-between text-left transition"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                              isEnabled ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-400'
+                            }`}>
+                              <IconComponent className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <span className="block text-sm font-semibold text-slate-800 font-sans">{box.label}</span>
+                              <span className="text-xs text-slate-500 font-sans block mt-0.5">{box.desc}</span>
+                            </div>
+                          </div>
+                          <span className={`text-xs font-semibold px-3 py-1.5 rounded-xl border shrink-0 transition ${
+                            isEnabled 
+                              ? 'bg-teal-50 text-teal-700 border-teal-100' 
+                              : 'bg-slate-100 text-slate-400 border-slate-200'
+                          }`}>
+                            {isEnabled ? 'Enabled' : 'Muted'}
+                          </span>
                         </div>
-                        <span className={`text-4xs uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border inline-block ${
-                          notifications[box.key as keyof typeof notifications] 
-                            ? 'bg-emerald-150 text-emerald-800 border-emerald-200' 
-                            : 'bg-slate-100 text-slate-404 border-slate-200'
-                        }`}>
-                          {notifications[box.key as keyof typeof notifications] ? '✓ Active' : '○ Muted'}
-                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Privacy Settings Card */}
+                <div className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-3xs">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 font-sans">Privacy Settings</h3>
+                    <p className="text-sm text-slate-500 font-sans mt-0.5 mb-6">Control who has visibility to your physical training logs and performance history.</p>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                        <Lock className="w-5 h-5" />
                       </div>
-                    ))}
+                      <div>
+                        <span className="block text-sm font-semibold text-slate-850 font-sans">Private Profile Scope</span>
+                        <p className="text-xs text-slate-500 font-sans mt-0.5">Only your assigned coach can view your profile.</p>
+                      </div>
+                    </div>
+                    <span className="text-teal-700 bg-teal-50 border border-teal-100 px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0">
+                      Private
+                    </span>
                   </div>
                 </div>
 
@@ -980,6 +1603,173 @@ export default function TraineeProfilePage({
         </div>
 
       </div>
+
+      {/* RECORD NEW WEIGHT MODAL DIALOG */}
+      {showWeightModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-55 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-sm w-full p-6 shadow-2xl animate-fade-in text-left">
+            <h3 className="text-base font-extrabold text-slate-950 flex items-center gap-1.5 mb-2">
+              <Scale className="w-5 h-5 text-teal-600" />
+              <span>Record Scale Log</span>
+            </h3>
+            <p className="text-3xs font-extrabold uppercase text-slate-400 tracking-wider font-mono mb-4">Input daily morning physical metrics.</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-3xs font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Weight (kg)</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  value={inputWeight}
+                  onChange={(e) => setInputWeight(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-black text-slate-900 focus:ring-teal-500"
+                  placeholder="e.g. 83.5"
+                />
+              </div>
+
+              <div>
+                <label className="block text-3xs font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Estimated Body Fat % (Optional)</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  value={inputBodyFat}
+                  onChange={(e) => setInputBodyFat(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-black text-slate-900 focus:ring-teal-500"
+                  placeholder="e.g. 21.5"
+                />
+              </div>
+
+              <div>
+                <label className="block text-3xs font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Check-in Notes / Log description</label>
+                <textarea 
+                  rows={2}
+                  value={inputNotes}
+                  onChange={(e) => setInputNotes(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold text-slate-800 focus:ring-teal-500"
+                  placeholder="Describe muscular status or sleep quality today..."
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => setShowWeightModal(false)}
+                className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-755 border border-slate-200 rounded-xl text-xs font-extrabold py-2.5 text-center cursor-pointer transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddNewWeightCheckIn}
+                className="flex-1 bg-slate-950 text-teal-400 hover:text-white rounded-xl text-xs font-black py-2.5 text-center cursor-pointer transition shadow-3xs"
+              >
+                Save Metrics Log
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RECORD NEW GIRTH MODAL DIALOG */}
+      {showGirthModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-55 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-sm w-full p-6 shadow-2xl animate-fade-in text-left">
+            <h3 className="text-base font-extrabold text-slate-950 flex items-center gap-1.5 mb-2">
+              <TrendingUp className="w-5 h-5 text-teal-650" />
+              <span>Record Girth Circumferences</span>
+            </h3>
+            <p className="text-xs font-semibold text-slate-500 mb-4 font-sans">Input physical body circumference metrics.</p>
+
+            <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+              <div>
+                <label className="block text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1 font-sans">Chest Circumference (cm)</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  value={inputChest}
+                  onChange={(e) => setInputChest(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-black text-slate-900 focus:ring-teal-500"
+                  placeholder="e.g. 104.0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1 font-sans">Waist Circumference (cm)</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  value={inputWaist}
+                  onChange={(e) => setInputWaist(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-black text-slate-900 focus:ring-teal-500"
+                  placeholder="e.g. 94.0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1 font-sans">Hip Circumference (cm)</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  value={inputHip}
+                  onChange={(e) => setInputHip(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-black text-slate-900 focus:ring-teal-500"
+                  placeholder="e.g. 108.0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1 font-sans">Arm Circumference (cm)</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  value={inputArm}
+                  onChange={(e) => setInputArm(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-black text-slate-900 focus:ring-teal-500"
+                  placeholder="e.g. 38.0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1 font-sans">Thigh Circumference (cm)</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  value={inputThigh}
+                  onChange={(e) => setInputThigh(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-black text-slate-900 focus:ring-teal-500"
+                  placeholder="e.g. 62.0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1 font-sans">Check-in Notes / Description</label>
+                <textarea 
+                  rows={2}
+                  value={inputGirthNotes}
+                  onChange={(e) => setInputGirthNotes(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold text-slate-800 focus:ring-teal-500"
+                  placeholder="Describe muscular status or body feeling today..."
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => setShowGirthModal(false)}
+                className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-705 border border-slate-200 rounded-xl text-xs font-extrabold py-2.5 text-center cursor-pointer transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddNewGirthCheckIn}
+                className="flex-1 bg-slate-950 text-teal-400 hover:text-white rounded-xl text-xs font-black py-2.5 text-center cursor-pointer transition shadow-3xs"
+              >
+                Save Girth Log
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

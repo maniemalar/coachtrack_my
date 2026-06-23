@@ -135,76 +135,16 @@ const DEFAULT_TRAINEES: TraineeProfile[] = [
     streakCount: 8
   },
   {
-    id: 'te_jason',
-    userId: 'u_jason',
-    name: 'Jason Wong',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
-    age: 35,
-    weight: 78,
-    height: 175,
-    goals: 'Core strength enhancement and posture optimization due to long working hours behind a desk.',
-    assignedTrainerId: 'tr_sarah',
-    streakCount: 4
-  },
-  {
-    id: 'te_aisyah',
-    userId: 'u_aisyah',
-    name: 'Nur Aisyah',
-    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120',
-    age: 29,
-    weight: 62,
-    height: 165,
-    goals: 'Fat depletion, functional circuit training, and cardiovascular endurance optimization.',
+    id: 'te_faizul',
+    userId: 'u_faizul',
+    name: 'Muhammad Faizul',
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120',
+    age: 34,
+    weight: 79,
+    height: 172,
+    goals: 'High intensity conditioning, fat depletion post-injury, and cardiovascular recovery routing.',
     assignedTrainerId: 'tr_sarah',
     streakCount: 6
-  },
-  {
-    id: 'te_daniel',
-    userId: 'u_daniel',
-    name: 'Daniel Lee',
-    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120',
-    age: 42,
-    weight: 88,
-    height: 182,
-    goals: 'Hypertension mitigation, stamina preservation, and general health alignment.',
-    assignedTrainerId: 'tr_sarah',
-    streakCount: 2
-  },
-  {
-    id: 'te_priya',
-    userId: 'u_priya',
-    name: 'Priya Nair',
-    avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=120',
-    age: 27,
-    weight: 55,
-    height: 160,
-    goals: 'Muscle hypertrophy, overall toning, and core balance stability adjustments.',
-    assignedTrainerId: 'tr_sarah',
-    streakCount: 7
-  },
-  {
-    id: 'te_amir',
-    userId: 'u_amir',
-    name: 'Amir Hakim',
-    avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=120',
-    age: 33,
-    weight: 95,
-    height: 185,
-    goals: 'Strength development, functional squat flexibility, and target metabolic conditioning.',
-    assignedTrainerId: 'tr_sarah',
-    streakCount: 3
-  },
-  {
-    id: 'te_chloe',
-    userId: 'u_chloe',
-    name: 'Chloe Lim',
-    avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=120',
-    age: 26,
-    weight: 52,
-    height: 158,
-    goals: 'Active athletic speed development, lower back routing protection, and meal habit calibration.',
-    assignedTrainerId: 'tr_sarah',
-    streakCount: 9
   }
 ];
 
@@ -214,12 +154,7 @@ const DEFAULT_USERS = [
   { id: 'u_rishi', email: 'rishi@trainer.my', role: UserRole.TRAINER, name: 'Rishi Kumar' },
   { id: 'u_ahmad', email: 'ahmad@trainee.my', role: UserRole.TRAINEE, name: 'Ahmad Bin Ibrahim' },
   { id: 'u_ling', email: 'ling@trainee.my', role: UserRole.TRAINEE, name: 'Mei Ling Tan' },
-  { id: 'u_jason', email: 'jason@trainee.my', role: UserRole.TRAINEE, name: 'Jason Wong' },
-  { id: 'u_aisyah', email: 'aisyah@trainee.my', role: UserRole.TRAINEE, name: 'Nur Aisyah' },
-  { id: 'u_daniel', email: 'daniel@trainee.my', role: UserRole.TRAINEE, name: 'Daniel Lee' },
-  { id: 'u_priya', email: 'priya@trainee.my', role: UserRole.TRAINEE, name: 'Priya Nair' },
-  { id: 'u_amir', email: 'amir@trainee.my', role: UserRole.TRAINEE, name: 'Amir Hakim' },
-  { id: 'u_chloe', email: 'chloe@trainee.my', role: UserRole.TRAINEE, name: 'Chloe Lim' }
+  { id: 'u_faizul', email: 'faizul@trainee.my', role: UserRole.TRAINEE, name: 'Muhammad Faizul' }
 ];
 
 const DEFAULT_WORKOUTS: WorkoutLog[] = [
@@ -1580,6 +1515,28 @@ app.post('/api/ai/meal-analysis', async (req, res) => {
     res.status(500).json({ error: 'AI nutrition analysis failed', details: String(error) });
   }
 });
+
+// Route to intercept and serve high-fidelity local vector illustrations correctly
+app.get('/assets/meals/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(process.cwd(), 'assets', 'meals', filename);
+  if (fs.existsSync(filePath)) {
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      if (content.trim().startsWith('<svg')) {
+        res.setHeader('Content-Type', 'image/svg+xml');
+        return res.send(content);
+      }
+    } catch (e) {
+      // Ignore reading error, fallback to generic sendFile
+    }
+    return res.sendFile(filePath);
+  }
+  res.status(404).send('Meal image not found');
+});
+
+// Serve assets folder statically as fallback
+app.use('/assets', express.static(path.join(process.cwd(), 'assets')));
 
 // Vite Middleware & Static Serving setup
 async function startServer() {

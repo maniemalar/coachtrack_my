@@ -41,6 +41,7 @@ interface AuthFormProps {
   onToggleLiveMode: (live: boolean) => void;
   onResetLocalDb: () => void;
   onSetupSupabaseDb: () => void;
+  initialMode?: 'login' | 'signup';
 }
 
 export default function AuthForm({ 
@@ -50,10 +51,12 @@ export default function AuthForm({
   isLiveMode,
   onToggleLiveMode,
   onResetLocalDb,
-  onSetupSupabaseDb
+  onSetupSupabaseDb,
+  initialMode = 'login'
 }: AuthFormProps) {
   // Auth Form mode: 'login' | 'signup'
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
+  const [showDevTools, setShowDevTools] = useState(false);
   
   // Login fields
   const [loginEmail, setLoginEmail] = useState('');
@@ -338,7 +341,7 @@ export default function AuthForm({
 
     const planLimits = { starter: 5, growth: 20, pro: 50 };
     const planPrices = { starter: 29, growth: 59, pro: 99 };
-    const pNames = { starter: 'Starter Trainer Plan', growth: 'Growth Trainer Plan', pro: 'Pro Trainer Plan' };
+    const pNames = { starter: 'CoachBasic', growth: 'CoachPlus', pro: 'CoachPro' };
 
     const selectedLimit = planLimits[planId];
     const selectedPrice = planPrices[planId];
@@ -625,188 +628,19 @@ export default function AuthForm({
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col items-center">
+    <div className="w-full max-w-[430px] mx-auto px-5 pb-8 flex flex-col items-center bg-white box-border overflow-x-hidden">
       
-      {/* Brand Header block */}
-      <div className="text-center mb-10">
-        <div className="inline-flex items-center justify-center gap-3 mb-3">
-          <img 
-            alt="COACHTRACK MY Logo" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDETvXZjCP6SyPdhxA5LBJxWToef2-2QRTWXAAcbAR1pYCPBQvSJ3JfenXj6iDZVITmo5sPVkUUbY6CFwY_JmfWywrTQ6vMQ17bJvlNGH4dBCAJBZQAbpTyqrM4kh0PaRdmjdFW5e_ga3qBpyVr_yuIpHJ3_B6g5G116iBOCQhZkDgjAZt18i5v1T48bkwzj8qwRAN4PQidoeK2dCT4jg0emt8ViDZeIiKE--IH9uddRKJNsZ2f0AOkUxqqnvBN0WOSIFHezK-Aw6s" 
-            className="h-14 w-14 object-contain bg-transparent"
-          />
-          <div>
-            <h2 className="text-3xl font-black tracking-tight leading-none text-[#001F3F]">
-              COACH<span className="text-teal-500">TRACK MY</span>
-            </h2>
-            <p className="text-[9px] uppercase tracking-[0.25em] font-medium text-slate-500 mt-1">
-              Track • Improve • Achieve
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Main Switcher Card */}
-      <div className="max-w-4xl w-full bg-white rounded-3xl border border-slate-150 shadow-2xl overflow-hidden flex flex-col md:flex-row">
+      <div className="w-full bg-white overflow-hidden flex flex-col">
         
-        {/* Left Aspect: Brand welcome message */}
-        <div className="md:w-5/12 bg-gradient-to-br from-[#001F3F] via-[#052b54] to-teal-900 text-white p-8 md:p-10 flex flex-col justify-between relative">
-          <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none"></div>
-          
-          <div className="space-y-6 relative z-10">
-            <span className="bg-teal-500/10 text-teal-300 text-[10px] font-extrabold uppercase px-3 py-1 rounded-full tracking-wider border border-teal-500/20 inline-block">
-              Premium Coach Suite
-            </span>
-            <h3 className="font-display font-light text-3xl tracking-tight text-slate-50">
-              Transform Your <br />
-              <strong className="font-extrabold text-teal-400">Fitness Connection.</strong>
-            </h3>
-            
-            <p className="text-slate-300 text-xs leading-relaxed">
-              CoachTrack MY empowers Malaysian training professionals to organize schedules, invoice seamlessly, and design targeted regimes with absolute cloud verification.
-            </p>
-          </div>
-
-          <div className="mt-12 space-y-4 pt-6 border-t border-white/10 relative z-10 text-xs">
-            <div className="flex items-center gap-2 text-slate-300">
-              <ShieldCheck className="w-4.5 h-4.5 text-teal-400 shrink-0" />
-              <span>Full Supabase Database Sync</span>
-            </div>
-            <div className="flex items-center gap-2 text-slate-300">
-              <Sparkles className="w-4.5 h-4.5 text-teal-400 shrink-0" />
-              <span>Official SST Billing Statements</span>
-            </div>
-          </div>
-
-          {/* Connected state indicators */}
-          <div className="mt-8 bg-slate-900/50 border border-teal-500/20 rounded-2xl p-4 relative z-10 font-mono text-left">
-            {isSupabaseConfigured ? (
-              <div className="space-y-2">
-                <div className="text-emerald-400 font-extrabold text-xs flex items-center gap-2">
-                  <span>🟢 SUPABASE CLOUD CONNECTED</span>
-                </div>
-                <div className="space-y-1 text-[11px] text-slate-300">
-                  <p><span className="text-slate-500">Project:</span> CoachTrack</p>
-                  <p><span className="text-slate-500">Authentication:</span> Active</p>
-                  <p><span className="text-slate-500">Database:</span> Connected</p>
-                  <p><span className="text-slate-500">Storage:</span> Connected</p>
-                  <p><span className="text-slate-500 font-bold">Realtime:</span> Connected</p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="text-rose-400 font-extrabold text-xs flex items-center gap-2">
-                  <span>🔴 SUPABASE NOT KEYED IN</span>
-                </div>
-                <div className="text-[10px] text-slate-300 leading-normal font-sans space-y-1 bg-slate-950/60 p-2.5 rounded-lg border border-rose-500/10">
-                  <p className="font-semibold text-amber-300 uppercase tracking-wider text-[9px]">How to configure on Netlify:</p>
-                  <p>1. Go to your <span className="font-semibold text-white">Netlify Dashboard</span> &rarr; Site configuration &rarr; <span className="font-semibold text-white">Environment variables</span>.</p>
-                  <p>2. Define two keys:</p>
-                  <div className="bg-slate-950 p-1.5 rounded text-[9px] font-mono select-all text-teal-300 space-y-0.5 border border-slate-900 leading-tight">
-                    <p>VITE_SUPABASE_URL</p>
-                    <p>VITE_SUPABASE_ANON_KEY</p>
-                  </div>
-                  <p>3. Go to <span className="font-semibold text-white">Deploys</span> &rarr; Trigger deploy &rarr; <span className="font-semibold text-white">Clear cache and deploy site</span>.</p>
-                  <p className="text-teal-400 font-bold block pt-1 border-t border-slate-800 tracking-wide">🟢 DEMO SANDBOX MODE ACTIVE OFFLINE FOR ALL FEATURES</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Test Supabase Auth Diagnostic system */}
-          <div className="mt-4 bg-slate-900/50 border border-slate-700/50 rounded-2xl p-4 relative z-10 font-mono text-left space-y-2">
-            <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">
-              🛠️ AUTH TESTING DIAGNOSTIC
-            </span>
-            <button
-              onClick={handleDiagnosticTest}
-              disabled={testStatus === 'testing'}
-              className="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-3 rounded-lg text-[10px] uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              {testStatus === 'testing' ? 'Testing...' : 'Test Supabase Auth'}
-            </button>
-            
-            {testStatus !== 'idle' && (
-              <div className={`p-2.5 rounded-lg text-[10px] font-mono whitespace-pre-wrap border ${
-                testStatus === 'success' 
-                  ? 'bg-emerald-950/20 text-emerald-300 border-emerald-550/30' 
-                  : testStatus === 'failed'
-                  ? 'bg-rose-950/20 text-rose-300 border-rose-550/30'
-                  : 'bg-slate-800/80 text-blue-300 border-slate-700'
-              }`}>
-                {testStatus === 'testing' && 'Executing supabase.auth.signUp() with dummy address...'}
-                {testResult}
-              </div>
-            )}
-          </div>
-
-          {/* SQL Sandbox Utilities (Only shown in Backup/Demo Mode) */}
-          {!isLiveMode && (
-            <div className="mt-4 bg-slate-900/50 border border-slate-700/50 rounded-2xl p-4 relative z-10 font-mono text-left space-y-2">
-              <span className="text-[10px] uppercase font-black tracking-widest text-teal-400 block mb-1">
-                ⚙️ DEMO BACKUP UTILITIES
-              </span>
-              <div className="flex flex-col gap-1.5">
-                <button
-                  type="button"
-                  onClick={onResetLocalDb}
-                  className="w-full bg-slate-800 hover:bg-slate-700 hover:text-rose-450 text-slate-300 text-[10px] font-bold uppercase tracking-wider py-2 px-3 rounded-lg border border-slate-700 transition-all cursor-pointer text-center font-mono"
-                >
-                  Reset Local DB
-                </button>
-                <button
-                  type="button"
-                  onClick={onSetupSupabaseDb}
-                  className="w-full bg-slate-800 hover:bg-slate-700 hover:text-indigo-400 text-slate-300 text-[10px] font-bold uppercase tracking-wider py-2 px-3 rounded-lg border border-slate-700 transition-all cursor-pointer text-center font-mono"
-                >
-                  Setup Supabase Database
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Aspect: Auth Forms */}
-        <div className="md:w-7/12 p-8 md:p-10 text-left bg-white">
-          
-          {/* Small non-intrusive toggle */}
-          <div className="mb-6 pb-4 border-b border-slate-100 flex items-center justify-between font-sans">
-            <span className="text-[10px] lg:text-xs font-extrabold text-slate-400 uppercase tracking-wider block shrink-0">
-              Environment Setup:
-            </span>
-            <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-              <button
-                type="button"
-                onClick={() => onToggleLiveMode(true)}
-                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                  isLiveMode 
-                    ? 'bg-indigo-600 text-white shadow-sm' 
-                    : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                <Shield className="w-3.5 h-3.5" />
-                Live Mode
-              </button>
-              <button
-                type="button"
-                onClick={() => onToggleLiveMode(false)}
-                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                  !isLiveMode 
-                    ? 'bg-teal-500 text-slate-950 shadow-sm' 
-                    : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                <Database className="w-3.5 h-3.5" />
-                Demo Backup
-              </button>
-            </div>
-          </div>
+        {/* Main Content Area: Auth Forms */}
+        <div className="w-full text-left bg-white">
           
           {/* Tab Switcher */}
-          <div className="flex bg-slate-100 rounded-xl p-1 mb-8">
+          <div className="flex bg-slate-100 rounded-xl p-1 mb-6">
             <button
               onClick={() => { setAuthMode('login'); setSignupError(''); setLoginError(''); }}
-              className={`flex-1 text-center py-2.5 text-xs font-bold' uppercase tracking-wider rounded-lg transition-all ${
+              className={`flex-1 text-center py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
                 authMode === 'login'
                   ? 'bg-white text-[#001F3F] shadow-sm font-black'
                   : 'text-slate-500 hover:text-slate-800'
@@ -816,7 +650,7 @@ export default function AuthForm({
             </button>
             <button
               onClick={() => { setAuthMode('signup'); setSelectedRole(null); setSignupStep(1); setSignupError(''); setLoginError(''); }}
-              className={`flex-1 text-center py-2.5 text-xs font-bold' uppercase tracking-wider rounded-lg transition-all ${
+              className={`flex-1 text-center py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
                 authMode === 'signup'
                   ? 'bg-white text-[#001F3F] shadow-sm font-black'
                   : 'text-slate-500 hover:text-slate-800'
@@ -1532,15 +1366,15 @@ export default function AuthForm({
                         >
                           <div className="flex justify-between items-start gap-2">
                             <div>
-                              <span className="text-[9px] uppercase font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Freelancers Level</span>
-                              <h6 className="font-display font-black text-slate-950 text-sm mt-1">Starter Trainer Plan</h6>
+                              <span className="text-[9px] uppercase font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">COACHTRACK BASIC</span>
+                              <h6 className="font-display font-black text-slate-950 text-sm mt-1">CoachBasic</h6>
                             </div>
                             <div className="text-right">
                               <span className="font-display font-black text-[#001F3F] text-lg">RM 29</span>
                               <span className="text-[10px] text-slate-400 font-bold block">/ month</span>
                             </div>
                           </div>
-                          <p className="text-[11px] text-slate-500 mt-1">Simulate managing <strong className="text-[#001F3F]">up to 5 trainees</strong> with essential progress logs.</p>
+                          <p className="text-[11px] text-slate-500 mt-1">Start your fitness journey.</p>
                         </div>
 
                         {/* 2. Growth (RECOMMENDED) */}
@@ -1555,8 +1389,8 @@ export default function AuthForm({
                           </div>
                           <div className="flex justify-between items-start gap-2">
                             <div>
-                              <span className="text-[9px] uppercase font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded">Active Personal Trainers</span>
-                              <h6 className="font-display font-black text-slate-950 text-sm mt-1">Growth Trainer Plan</h6>
+                              <span className="text-[9px] uppercase font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded">MOST POPULAR</span>
+                              <h6 className="font-display font-black text-slate-950 text-sm mt-1">CoachPlus</h6>
                             </div>
                             <div className="text-right">
                               <span className="font-display font-black text-[#001F3F] text-lg">RM 59</span>
@@ -1564,7 +1398,7 @@ export default function AuthForm({
                             </div>
                           </div>
                           
-                          <p className="text-[11px] text-slate-500 mt-2">Simulate coaching <strong className="text-[#001F3F]">up to 20 trainees</strong>. Includes interactive calendar schedules, photo comparator & AI coach builder tools.</p>
+                          <p className="text-[11px] text-slate-500 mt-2">Everything needed for active coaching.</p>
                         </div>
 
                         {/* 3. Pro */}
@@ -1576,36 +1410,44 @@ export default function AuthForm({
                         >
                           <div className="flex justify-between items-start gap-2">
                             <div>
-                              <span className="text-[9px] uppercase font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Established Studios</span>
-                              <h6 className="font-display font-black text-slate-950 text-sm mt-1">Pro Trainer Plan</h6>
+                              <span className="text-[9px] uppercase font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">PREMIUM TRANSFORMATION</span>
+                              <h6 className="font-display font-black text-slate-950 text-sm mt-1">CoachPro</h6>
                             </div>
                             <div className="text-right">
                               <span className="font-display font-black text-[#001F3F] text-lg">RM 99</span>
                               <span className="text-[10px] text-slate-400 font-bold block">/ month</span>
                             </div>
                           </div>
-                          <p className="text-[11px] text-slate-500 mt-1">Simulate coaching <strong className="text-[#001F3F]">up to 50 trainees</strong>. Full revenue dashboards, priority bookings & detailed PDF report export keys.</p>
+                          <p className="text-[11px] text-slate-500 mt-1">Complete transformation ecosystem.</p>
                         </div>
 
                       </div>
 
                       {/* Pricing list features for comparing */}
-                      <div className="bg-slate-50 rounded-2xl p-3.5 text-[11px] text-slate-600 grid grid-cols-2 gap-x-4 gap-y-1.5 border border-slate-150">
+                      <div className="bg-slate-50 rounded-2xl p-3.5 text-[11px] text-slate-600 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 border border-slate-150">
                         <div className="flex items-center gap-1.5">
                           <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                          <span>Assign customized workouts</span>
+                          <span>Coach Marketplace Access</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                          <span>Local Malaysian diet database</span>
+                          <span>Nutrition Tracking Suite</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                          <span>Pending Clearance upload status</span>
+                          <span>Progress Analytics Dashboard</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                          <span>5% Escrow Commission Model</span>
+                          <span>Coach Messaging System</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                          <span>Medical History Repository</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                          <span>Nearby Coach Discovery</span>
                         </div>
                       </div>
 
@@ -1640,6 +1482,111 @@ export default function AuthForm({
 
         </div>
 
+      </div>
+
+      {/* Developer and Sandbox Collapsible Accordion at the bottom of the page */}
+      <div className="w-full mt-8 border-t border-slate-100 pt-6">
+        <button
+          type="button"
+          onClick={() => setShowDevTools(!showDevTools)}
+          className="w-full flex items-center justify-between text-slate-450 hover:text-slate-700 font-bold text-[10px] uppercase tracking-wider py-2.5 px-4 rounded-xl bg-slate-50 border border-slate-150 transition-all cursor-pointer"
+        >
+          <span className="flex items-center gap-1.5">
+            <span>⚙️</span> DEVELOPER SANDBOX & CONNECTIONS
+          </span>
+          <span className="text-slate-400">{showDevTools ? '▲' : '▼'}</span>
+        </button>
+
+        {showDevTools && (
+          <div className="mt-3 p-4 rounded-xl bg-slate-900 text-slate-300 border border-slate-800 space-y-4 font-mono text-xs">
+            {/* Live mode / Sandbox switch */}
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">ENVIRONMENT TARGET:</span>
+              <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => onToggleLiveMode(true)}
+                  className={`flex-1 text-center py-1.5 text-[9px] font-black uppercase tracking-wider rounded-md transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                    isLiveMode 
+                      ? 'bg-indigo-600 text-white shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <Shield className="w-3 h-3" />
+                  Live Mode
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onToggleLiveMode(false)}
+                  className={`flex-1 text-center py-1.5 text-[9px] font-black uppercase tracking-wider rounded-md transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                    !isLiveMode 
+                      ? 'bg-teal-500 text-slate-950 shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <Database className="w-3 h-3" />
+                  Demo Backup
+                </button>
+              </div>
+            </div>
+
+            {/* Supabase Indicator */}
+            <div className="border-t border-slate-800/60 pt-3 space-y-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">CLOUD DATABASE SYNC:</span>
+              {isSupabaseConfigured ? (
+                <div className="space-y-1">
+                  <div className="text-emerald-400 font-bold text-[10px] flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                    <span>SUPABASE CLOUD CONNECTED</span>
+                  </div>
+                  <p className="text-[9px] text-slate-500 leading-normal">Cloud authentication, storage and real-time synchronization are fully active.</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="text-rose-400 font-bold text-[10px] flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-rose-400 rounded-full" />
+                    <span>SUPABASE DISCONNECTED</span>
+                  </div>
+                  <p className="text-[9px] text-slate-500 leading-normal font-sans">
+                    No keys found. Local simulation engine is running fully functional state tracking inside your browser's persistent storage.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Diagnostics */}
+            <div className="border-t border-slate-800/60 pt-3 space-y-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">DIAGNOSTIC TESTER:</span>
+              <button
+                type="button"
+                onClick={handleDiagnosticTest}
+                disabled={testStatus === 'testing'}
+                className="w-full bg-slate-850 hover:bg-slate-800 text-slate-100 font-bold py-1.5 px-3 rounded text-[9px] uppercase tracking-wider transition-all disabled:opacity-50 text-center cursor-pointer border border-slate-800"
+              >
+                {testStatus === 'testing' ? 'Executing Diagnostic...' : 'Run Supabase Connection Test'}
+              </button>
+              {testStatus !== 'idle' && (
+                <pre className="p-2 rounded bg-black/60 text-[9px] text-teal-300 border border-slate-850 whitespace-pre-wrap leading-tight max-h-[120px] overflow-y-auto">
+                  {testResult}
+                </pre>
+              )}
+            </div>
+
+            {/* Reset DB */}
+            {!isLiveMode && (
+              <div className="border-t border-slate-800/60 pt-3 space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">BACKUP MAINTENANCE:</span>
+                <button
+                  type="button"
+                  onClick={onResetLocalDb}
+                  className="w-full bg-slate-850 hover:bg-slate-800 hover:text-rose-450 text-slate-350 text-[9px] font-bold uppercase tracking-wider py-1.5 px-3 rounded border border-slate-800 transition-all cursor-pointer text-center font-mono"
+                >
+                  Reset Sandbox Database
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
     </div>

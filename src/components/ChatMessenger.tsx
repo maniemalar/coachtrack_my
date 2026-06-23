@@ -101,7 +101,7 @@ export default function ChatMessenger({ currentUserId, senderRole, onClose }: Ch
           <div className="text-left">
             <h3 className="font-display font-black text-white text-sm sm:text-base leading-tight">
               {senderRole === 'TRAINER' 
-                ? 'Ahmad Ibrahim (Client)' 
+                ? 'Ahmad Bin Ibrahim (Client)' 
                 : `${activeTrainer?.name || 'Sarah Tan'} (Trainer)`}
             </h3>
             <p className="text-[10px] text-teal-400 font-bold tracking-wider uppercase mt-1">

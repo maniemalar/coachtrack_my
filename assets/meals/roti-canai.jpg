@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <!-- Background table -->
+  <rect width="400" height="300" fill="#ECEFF1"/>
+  <path d="M 0,120 L 400,100" stroke="#CFD8DC" stroke-width="2" stroke-dasharray="10 15" opacity="0.4"/>
+  <path d="M 0,240 L 400,220" stroke="#CFD8DC" stroke-width="2" stroke-dasharray="10 15" opacity="0.4"/>
+
+  <!-- Metal Tray Shadow -->
+  <rect x="55" y="45" width="295" height="215" rx="40" fill="#000000" opacity="0.12"/>
+
+  <!-- Stainless Steel Tray (Traditional Indian-Muslim Stall Style) -->
+  <rect x="50" y="40" width="290" height="210" rx="38" fill="#ECEFF1" stroke="#B0BEC5" stroke-width="4"/>
+  <rect x="53" y="43" width="284" height="204" rx="35" fill="#CFD8DC"/>
+  <rect x="58" y="48" width="274" height="194" rx="30" fill="#90A4AE" stroke="#78909C" stroke-width="1.5"/>
+  <rect x="62" y="52" width="266" height="186" rx="26" fill="#ECEFF1"/>
+
+  <!-- Tray Dividers / Compartments -->
+  <!-- Compartment 1 (Dhal Curry, top-left) -->
+  <ellipse cx="115" cy="95" rx="38" ry="32" fill="#CFD8DC" stroke="#78909C" stroke-width="1.5"/>
+  <ellipse cx="115" cy="95" rx="34" ry="28" fill="#FBC02D"/>
+  <ellipse cx="115" cy="95" rx="30" ry="24" fill="#F57F17"/>
+  <!-- Mustard seed floaters and oil circles in dhal -->
+  <circle cx="110" cy="88" r="1.5" fill="#3E2723"/>
+  <circle cx="125" cy="98" r="1.2" fill="#3E2723"/>
+  <circle cx="102" cy="100" r="1.8" fill="#3E2723"/>
+  <path d="M 112,94 Q 118,91 122,96" stroke="#D84315" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+
+  <!-- Compartment 2 (Spicy Red Sambal, top-right) -->
+  <ellipse cx="285" cy="95" rx="38" ry="32" fill="#CFD8DC" stroke="#78909C" stroke-width="1.5"/>
+  <ellipse cx="285" cy="95" rx="34" ry="28" fill="#D84315"/>
+  <ellipse cx="285" cy="95" rx="30" ry="24" fill="#9E0D0D"/>
+  <circle cx="280" cy="90" r="2" fill="#FF8A80" opacity="0.6"/>
+  <circle cx="292" cy="102" r="1.5" fill="#FF8A80" opacity="0.5"/>
+
+  <!-- ROTI CANAI FLATBREADS (Glistening, layered, golden crispy brown) -->
+  <!-- Bread 1 (Bottom underlayer flaky round) -->
+  <g transform="translate(160, 180) scale(1.1)">
+    <!-- Base shadow -->
+    <ellipse cx="5" cy="5" rx="45" ry="32" fill="#90A4AE" opacity="0.3"/>
+    <!-- Bread body -->
+    <ellipse cx="0" cy="0" rx="45" ry="32" fill="#FFF9C4" stroke="#D7CCC8" stroke-width="1"/>
+    <!-- Outer buttery golden layers -->
+    <path d="M -30,-15 C -15,-25 15,-25 30,-15 C 40,-5 35,15 20,22 C 5,28 -20,25 -35,15 C -45,5 -40,-10 -30,-15 Z" fill="#FFE082" opacity="0.9"/>
+    <!-- Sear marks (roasted brown spot highlights) -->
+    <ellipse cx="-15" cy="-8" rx="10" ry="6" fill="#B7950B" opacity="0.7"/>
+    <ellipse cx="18" cy="4" rx="12" ry="7" fill="#9C640C" opacity="0.8"/>
+    <ellipse cx="-8" cy="12" rx="14" ry="6" fill="#A04000" opacity="0.6"/>
+    <ellipse cx="8" cy="-12" rx="8" ry="4" fill="#784212" opacity="0.8"/>
+    
+    <!-- Crinkle/Layers drawing lines for flaky texture -->
+    <path d="M -35,0 Q -20,-10 0,-15 Q 20, -10 35, 5" stroke="#FFF59D" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.8"/>
+    <path d="M -25,12 Q 0,2 25,10" stroke="#FFF59D" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.8"/>
+    <path d="M -10,-8 Q 10,-2 15,-15" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+  </g>
+
+  <!-- Bread 2 (Top Ripped/Fluffed up flaky bread block, overlapping Tray divider) -->
+  <g transform="translate(240, 175) rotate(-15)">
+    <!-- Shadow -->
+    <ellipse cx="0" cy="5" rx="42" ry="28" fill="#90A4AE" opacity="0.3"/>
+    <!-- Body -->
+    <path d="M -35,-15 C -15,-28 15,-25 35,-12 C 45,2 35,22 15,25 C -5,28 -25,22 -38,12 C -45,2 -45,-8 -35,-15 Z" fill="#FFF9C4" stroke="#D7CCC8" stroke-width="0.8"/>
+    <path d="M -30,-10 C -12,-20 18,-18 30,-5 C 35,10 25,20 10,22 C -8,24 -22,18 -32,8 Z" fill="#FFE082" opacity="0.95"/>
+    <!-- Crispy patches -->
+    <ellipse cx="12" cy="-6" rx="14" ry="7" fill="#9C640C" opacity="0.85"/>
+    <ellipse cx="-18" cy="6" rx="10" ry="5" fill="#A04000" opacity="0.7"/>
+    <circle cx="5" cy="12" r="6" fill="#784212" opacity="0.8"/>
+    <!-- Glistening white butter dots -->
+    <circle cx="-10" cy="-5" r="2.5" fill="#FFFFFF" opacity="0.8"/>
+    <circle cx="20" cy="5" r="1.8" fill="#FFFFFF" opacity="0.8"/>
+    <!-- Layer paths -->
+    <path d="M -30,-5 C -10,12 10,1 25,5" stroke="#FFF9C4" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+    <path d="M -20,-12 C 0,-4 12,-16 22,-8" stroke="#FFF9C4" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7"/>
+  </g>
+
+  <!-- Condiment Cup 3 (Bonus: Pickled green chili or sambal bilis) -->
+  <line x1="170" y1="50" x2="230" y2="50" stroke="#78909C" stroke-width="2" opacity="0.6"/>
+  <ellipse cx="200" cy="70" rx="20" ry="15" fill="#CFD8DC" stroke="#78909C" stroke-width="1"/>
+  <ellipse cx="200" cy="70" rx="17" ry="12" fill="#E8F5E9"/>
+  <circle cx="195" cy="70" r="3.2" fill="#2E7D32"/>
+  <circle cx="204" cy="67" r="2.8" fill="#4CAF50"/>
+  <circle cx="202" cy="74" r="3" fill="#1B5E20"/>
+
+  <!-- Title banner -->
+  <rect x="120" y="255" width="160" height="22" rx="11" fill="#78909C" opacity="0.85"/>
+  <text x="200" y="269" text-anchor="middle" fill="#FFFFFF" font-family="'Inter', sans-serif" font-size="9" font-weight="950" letter-spacing="1">ROTI CANAI DOUBLE</text>
+</svg>

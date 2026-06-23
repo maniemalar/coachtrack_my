@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <!-- Background table -->
+  <rect width="400" height="300" fill="#EADBC8"/>
+  <path d="M 0,80 L 400,60" stroke="#DAC6B3" stroke-width="3" opacity="0.4"/>
+  <path d="M 0,220 L 400,200" stroke="#DAC6B3" stroke-width="3" opacity="0.4"/>
+
+  <!-- Bowl Shadow -->
+  <ellipse cx="205" cy="165" rx="105" ry="85" fill="#000000" opacity="0.18"/>
+
+  <!-- Melamine Bowl (Traditional Red & Black Malaysian Hawker Ware) -->
+  <ellipse cx="200" cy="160" rx="100" ry="80" fill="#212121"/>
+  <ellipse cx="200" cy="160" rx="98" ry="78" fill="#B71C1C"/>
+  <ellipse cx="200" cy="160" rx="90" ry="70" fill="#111111"/>
+
+  <!-- NOODLES COMPOSITION (Spicy Orange-Brown Yellow Noodles) -->
+  <!-- We weave curvy paths together for depth -->
+  <g stroke="#E65100" stroke-width="4.5" fill="none" stroke-linecap="round">
+    <!-- Base Layer Noodles -->
+    <path d="M 140,130 C 130,110 160,105 180,120 S 210,100 240,115 S 260,150 240,170 S 180,185 160,170 S 150,140 140,130"/>
+    <path d="M 150,150 C 140,180 180,195 210,180 S 260,170 240,140 S 180,130 160,150"/>
+    <path d="M 180,110 C 220,110 230,150 200,170 S 150,160 180,110 Z"/>
+    
+    <!-- Top layer highlight noodles (Yellower for visual gloss sheen) -->
+    <path d="M 160,135 C 170,120 200,120 210,140 S 180,175 160,160 S 150,145 160,135" stroke="#FF8F00" stroke-width="3.5"/>
+    <path d="M 220,125 C 240,135 240,165 210,170 S 190,140 220,125" stroke="#F57C00" stroke-width="3.2"/>
+    <path d="M 165,165 C 185,185 225,180 235,155" stroke="#FFB300" stroke-width="2.5"/>
+    <path d="M 145,145 C 150,175 200,160 215,145" stroke="#FF8F00" stroke-width="3"/>
+  </g>
+
+  <!-- GARNISHES -->
+  <!-- Tofu Puffs (Tauhu Pok, cuboid brown shapes) -->
+  <g transform="translate(150, 115) rotate(15)">
+    <rect x="-8" y="-8" width="16" height="16" rx="2" fill="#8D6E63" stroke="#5D4037" stroke-width="1"/>
+    <rect x="-5" y="-5" width="10" height="10" rx="1" fill="#D7CCC8" opacity="0.6"/>
+  </g>
+  <g transform="translate(245, 140) rotate(-40)">
+    <rect x="-7" y="-7" width="14" height="14" rx="2" fill="#8D6E63" stroke="#5D4037" stroke-width="1"/>
+    <rect x="-4" y="-4" width="8" height="8" rx="1" fill="#D7CCC8" opacity="0.6"/>
+  </g>
+
+  <!-- Red Chili Slices (Cili Merah) -->
+  <g transform="translate(190, 125) rotate(25)">
+    <ellipse cx="0" cy="0" rx="6" ry="3.5" fill="#C62828"/>
+    <circle cx="0" cy="0" r="1.5" fill="#FFEE58"/>
+  </g>
+  <g transform="translate(215, 160) rotate(-15)">
+    <ellipse cx="0" cy="0" rx="6" ry="3.5" fill="#C62828"/>
+    <circle cx="0" cy="0" r="1.5" fill="#FFEE58"/>
+  </g>
+  <g transform="translate(170, 165) rotate(50)">
+    <ellipse cx="0" cy="0" rx="6" ry="3.5" fill="#C62828"/>
+    <circle cx="0" cy="0" r="1.5" fill="#FFEE58"/>
+  </g>
+
+  <!-- Fried Shrimp (Udang, pink curved crescent shape) -->
+  <g transform="translate(205, 140) rotate(-60)">
+    <path d="M -12,-4 C -2,-12 12,-4 8,8 C 6,4 -2,2 -8,4 Z" fill="#FF8A80" stroke="#E53935" stroke-width="1"/>
+    <!-- Tail -->
+    <path d="M -12,-4 L -16,-6 L -14,-1 L -12,-4 Z" fill="#D32F2F"/>
+    <!-- segments -->
+    <path d="M -5,-5 C -4,-1 0,1 2,4" stroke="#FFCDD2" stroke-width="1" fill="none"/>
+    <path d="M 0,-6 C 2,-1 4,1 6,4" stroke="#FFCDD2" stroke-width="1" fill="none"/>
+  </g>
+
+  <!-- Fresh Sprouts (Toge, white/yellow small stems) -->
+  <path d="M 160,150 Q 155,140 148,145" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="147" cy="146" r="1.5" fill="#F4FF81"/>
+
+  <path d="M 220,115 Q 225,125 232,120" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <circle cx="233" cy="119" r="1.2" fill="#F4FF81"/>
+  
+  <path d="M 185,180 Q 192,175 190,165" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="190" cy="164" r="1.5" fill="#F4FF81"/>
+
+  <!-- Sliced Lime (Limau Kasturi segment on side of bowl) -->
+  <g transform="translate(265, 190) rotate(35)">
+    <ellipse cx="0" cy="0" rx="14" ry="9" fill="#2E7D32"/>
+    <ellipse cx="0" cy="0" rx="11" ry="7" fill="#C0CA33"/>
+    <!-- Segment lines -->
+    <line x1="-8" y1="0" x2="8" y2="0" stroke="#E8F5E9" stroke-width="1"/>
+    <line x1="0" y1="-5" x2="0" y2="5" stroke="#E8F5E9" stroke-width="1"/>
+    <!-- Glint -->
+    <circle cx="-3" cy="-2" r="1.5" fill="#FFFFFF" opacity="0.6"/>
+  </g>
+
+  <!-- Scallions sprinkle (Daun Bawang, tiny green rings) -->
+  <rect x="180" y="150" width="3" height="1.5" fill="#4CAF50" transform="rotate(20 180 150)"/>
+  <rect x="225" y="130" width="4" height="2" fill="#4CAF50" transform="rotate(-30 225 130)"/>
+  <rect x="155" y="130" width="3" height="1.8" fill="#4CAF50" transform="rotate(45 155 130)"/>
+
+  <!-- Title banner -->
+  <rect x="120" y="255" width="160" height="22" rx="11" fill="#C62828" opacity="0.85"/>
+  <text x="200" y="269" text-anchor="middle" fill="#FFFFFF" font-family="'Inter', sans-serif" font-size="9" font-weight="950" letter-spacing="1">MALAYSIAN MEE GORENG</text>
+</svg>

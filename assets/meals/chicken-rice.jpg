@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <!-- Background table -->
+  <rect width="400" height="300" fill="#EAE2D5"/>
+  <path d="M 0,100 L 400,90" stroke="#DDD2B8" stroke-width="2" stroke-dasharray="8 15" opacity="0.3"/>
+  <path d="M 0,200 L 400,195" stroke="#DDD2B8" stroke-width="2" stroke-dasharray="8 15" opacity="0.3"/>
+
+  <!-- Plate Shadow -->
+  <ellipse cx="205" cy="165" rx="110" ry="90" fill="#000000" opacity="0.1"/>
+
+  <!-- Plate -->
+  <ellipse cx="200" cy="160" rx="105" ry="85" fill="#F8F9F9"/>
+  <ellipse cx="200" cy="160" rx="95" ry="75" fill="#FFFFFF"/>
+  <ellipse cx="200" cy="160" rx="93" ry="73" stroke="#E2E8F0" stroke-width="1.5" fill="none"/>
+
+  <!-- GINGER CHICKEN RICE Mound (Fluffy Yellowish-beige) -->
+  <ellipse cx="160" cy="155" rx="50" ry="40" fill="#000000" opacity="0.08"/>
+  <path d="M 115,155 C 110,125 140,110 160,110 C 180,110 210,125 205,155 C 202,175 185,190 160,190 C 135,190 118,175 115,155 Z" fill="#FFFDE7"/>
+  <ellipse cx="150" cy="130" rx="2" ry="1" fill="#FFF9C4"/>
+  <ellipse cx="170" cy="140" rx="2.5" ry="1.2" fill="#FFF59D"/>
+  <ellipse cx="140" cy="160" rx="3" ry="1.5" fill="#FFF59D"/>
+  <ellipse cx="180" cy="155" rx="3" ry="1.5" fill="#FFF9C4"/>
+  <!-- Cilantro sprig on Rice -->
+  <path d="M 160,125 C 158,118 165,115 160,110 C 155,115 152,118 160,125 Z" fill="#2E7D32"/>
+  <circle cx="160" cy="115" r="3" fill="#2E7D32"/>
+  <circle cx="156" cy="112" r="2" fill="#388E3C"/>
+
+  <!-- POACHED/Glistening ROASTED CHICKEN Slices (Golden skin, white juicy meat) -->
+  <g transform="translate(230, 155) rotate(15)">
+    <!-- Chicken slice 1 -->
+    <path d="M -30,-20 A 15,15 0 0,1 15,-20 L 25,10 A 10,10 0 0,1 -20,15 Z" fill="#D7CCC8" stroke="#8D6E63" stroke-width="1.5"/>
+    <path d="M -30,-21 A 15,15 0 0,1 15,-21" fill="none" stroke="#5D4037" stroke-width="4.5" stroke-linecap="round"/>
+    
+    <!-- Chicken slice 2 -->
+    <path d="M -15,-10 A 15,15 0 0,1 30,-10 L 40,20 A 10,10 0 0,1 -5,25 Z" fill="#EFEBE9" stroke="#8D6E63" stroke-width="1.5"/>
+    <path d="M -15,-11 A 15,15 0 0,1 30,-11" fill="none" stroke="#6D4C41" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Chicken slice 3 (Top Juicy slice) -->
+    <path d="M 0,0 A 15,15 0 0,1 45,0 L 50,25 A 10,10 0 0,1 10,30 Z" fill="#F5F5F5" stroke="#A1887F" stroke-width="1.2"/>
+    <path d="M 0,0 A 17,17 0 0,1 45,0" fill="none" stroke="#8D6E63" stroke-width="3" stroke-linecap="round"/>
+    <path d="M 10,2 A 15,15 0 0,1 38,2" fill="none" stroke="#FFE0B2" stroke-width="1" opacity="0.6"/>
+  </g>
+
+  <!-- Sweet Soy / Sesame Oil Drizzle Lines -->
+  <path d="M 205,140 Q 220,165 255,180" stroke="#3E2723" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.8"/>
+  <path d="M 215,135 Q 235,150 265,160" stroke="#3E2723" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.8"/>
+
+  <!-- Cucumber Garnish Slices (Hainanese style diagonal thick cucumbers) -->
+  <g transform="translate(180, 215) rotate(-35)">
+    <rect x="-15" y="-6" width="30" height="12" rx="4" fill="#1B5E20"/>
+    <rect x="-13" y="-4" width="26" height="8" rx="2" fill="#A5D6A7"/>
+    <circle cx="-5" cy="0" r="1" fill="#FFFFFF" opacity="0.6"/>
+    <circle cx="5" cy="0" r="1" fill="#FFFFFF" opacity="0.6"/>
+  </g>
+  <g transform="translate(210, 205) rotate(-25)">
+    <rect x="-15" y="-6" width="30" height="12" rx="4" fill="#1B5E20"/>
+    <rect x="-13" y="-4" width="26" height="8" rx="2" fill="#A5D6A7"/>
+  </g>
+
+  <!-- Traditional Chili Dip & Soy Sauce Bowls (Side saucers) -->
+  <!-- Red Chili Sauce Saucer -->
+  <circle cx="310" cy="95" r="18" fill="#B0BEC5"/>
+  <circle cx="310" cy="95" r="15" fill="#D84315"/>
+  <circle cx="310" cy="95" r="13" fill="#BF360C"/>
+  <circle cx="307" cy="92" r="2" fill="#FF8A65" opacity="0.8"/>
+  <!-- Soy Sauce Saucer -->
+  <circle cx="90" cy="95" r="18" fill="#B0BEC5"/>
+  <circle cx="90" cy="95" r="15" fill="#212121"/>
+  <circle cx="87" cy="92" r="3" fill="#FFFFFF" opacity="0.2"/>
+
+  <!-- Clear Chicken Soup Bowl (Aistudio-fit) -->
+  <circle cx="200" cy="55" r="28" fill="#37474F" opacity="0.15"/>
+  <circle cx="200" cy="50" r="25" fill="#ECEFF1"/>
+  <circle cx="200" cy="50" r="21" fill="#FFFDE7" stroke="#FFF59D" stroke-width="1"/>
+  <!-- Soup scallions -->
+  <rect x="195" y="45" width="4" height="2" rx="1" fill="#2E7D32" transform="rotate(30 195 45)"/>
+  <rect x="204" y="52" width="5" height="2" rx="1" fill="#2E7D32" transform="rotate(-45 204 52)"/>
+
+  <!-- Soup Title -->
+  <rect x="120" y="260" width="160" height="22" rx="11" fill="#2E7D32" opacity="0.85"/>
+  <text x="200" y="274" text-anchor="middle" fill="#FFFFFF" font-family="'Inter', sans-serif" font-size="9" font-weight="950" letter-spacing="1">HAINANESE CHICKEN RICE</text>
+</svg>

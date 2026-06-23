@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <!-- Background gym styled table/concrete surface -->
+  <rect width="400" height="300" fill="#ECEFF1"/>
+  <rect width="400" height="300" fill="#37474F" opacity="0.1"/>
+  <!-- diagonal lines representing tech/gym patterns -->
+  <line x1="-50" y1="300" x2="350" y2="-100" stroke="#B0BEC5" stroke-width="15" opacity="0.1"/>
+  <line x1="50" y1="350" x2="450" y2="-50" stroke="#B0BEC5" stroke-width="15" opacity="0.1"/>
+
+  <!-- Shaker base shadow -->
+  <ellipse cx="200" cy="240" rx="35" ry="12" fill="#263238" opacity="0.25"/>
+
+  <!-- SHAKER BOTTLE BODY (Translucent dark teal/slate, filled with shake liquid) -->
+  <g transform="translate(200, 150)">
+    <!-- Liquid content inside bottle (lower part) -->
+    <path d="M -26,30 L -21,78 A 7,7 0 0,0 -14,84 L 14,84 A 7,7 0 0,0 21,78 L 26,30 Z" fill="#D7CCC8" stroke="#A1887F" stroke-width="1"/>
+    <!-- Liquid top curved line (creamy head froth) -->
+    <ellipse cx="0" cy="30" rx="26" ry="6" fill="#EFEBE9" stroke="#D7CCC8" stroke-width="1"/>
+    <ellipse cx="-8" cy="30" rx="4" ry="2" fill="#FFFFFF" opacity="0.6"/>
+
+    <!-- Outer Bottle Glass Walls (translucent gradient/layer) -->
+    <path d="M -29,-30 L -21,80 A 6,6 0 0,0 -15,86 L 15,86 A 6,6 0 0,0 21,80 L 29,-30 Z" fill="none" stroke="#607D8B" stroke-width="3"/>
+    <path d="M -29,-30 L -21,80 A 6,6 0 0,0 -15,86 L 15,86 A 6,6 0 0,0 21,80 L 29,-30 Z" fill="#607D8B" opacity="0.15"/>
+
+    <!-- Measurements marker lines on shaker side -->
+    <line x1="-16" y1="-10" x2="-10" y2="-10" stroke="#90A4AE" stroke-width="1.5" opacity="0.8"/>
+    <line x1="-15" y1="10" x2="-10" y2="10" stroke="#90A4AE" stroke-width="1.5" opacity="0.8"/>
+    <line x1="-14" y1="30" x2="-10" y2="30" stroke="#90A4AE" stroke-width="1.5" opacity="0.8"/>
+    <line x1="-13" y1="50" x2="-10" y2="50" stroke="#90A4AE" stroke-width="1.5" opacity="0.8"/>
+    <line x1="-12" y1="70" x2="-10" y2="70" stroke="#90A4AE" stroke-width="1.5" opacity="0.8"/>
+    <text x="-6" y="52" fill="#78909C" font-family="'JetBrains Mono', monospace" font-size="6" font-weight="bold" opacity="0.8">300ml</text>
+
+    <!-- Bottle Collar / Screw thread (Black plastic) -->
+    <rect x="-31" y="-35" width="62" height="10" rx="2" fill="#263238" stroke="#1C282E" stroke-width="1"/>
+    <rect x="-33" y="-32" width="66" height="4" fill="#546E7A"/>
+
+    <!-- Lid Cap (Teal cap with flip loop) -->
+    <path d="M -28,-35 L -10,-55 L 10,-55 L 28,-35 Z" fill="#00838F" stroke="#006064" stroke-width="1"/>
+    <!-- Flip plug closure (neon green/lime accent) -->
+    <path d="M -5,-55 C -5,-62 5,-62 5,-55" fill="none" stroke="#81C784" stroke-width="4.5" stroke-linecap="round"/>
+    <circle cx="10" cy="-55" r="4.5" fill="#263238"/>
+    <circle cx="0" cy="-45" r="5" fill="#81C784"/>
+  </g>
+
+  <!-- FRUITS AND INGREDIENTS LAYING AROUND BASE -->
+  <!-- Strawberry left -->
+  <g transform="translate(145, 230) rotate(-15)">
+    <path d="M -10,-5 C -10,-12 0,-15 10,-5 C 10,5 0,15 -10,-5 Z" fill="#D32F2F"/>
+    <!-- strawberry leaf hat -->
+    <path d="M -5,-11 L 3,-12 L -1,-7 Z" fill="#2E7D32"/>
+    <!-- tiny yellow seed dots -->
+    <circle cx="-3" cy="-7" r="0.6" fill="#FFF59D"/>
+    <circle cx="2" cy="-4" r="0.6" fill="#FFF59D"/>
+    <circle cx="-1" cy="0" r="0.6" fill="#FFF59D"/>
+    <circle cx="4" cy="5" r="0.6" fill="#FFF59D"/>
+  </g>
+  <!-- Blueberries right -->
+  <g transform="translate(250, 235)">
+    <circle cx="0" cy="0" r="7" fill="#1565C0"/>
+    <circle cx="-1" cy="-1" r="6" fill="#1E88E5"/>
+    <path d="M -2,-2 C -3,0 -1,3 0,0" fill="#0D47A1" opacity="0.4"/>
+    <circle cx="3" cy="-3" r="2" fill="#FFFFFF" opacity="0.4"/>
+  </g>
+  <g transform="translate(262, 240) rotate(45)">
+    <circle cx="0" cy="0" r="6" fill="#0D47A1"/>
+    <circle cx="-1" cy="-1" r="5" fill="#1565C0"/>
+    <circle cx="2" cy="-2" r="1.5" fill="#FFFFFF" opacity="0.3"/>
+  </g>
+
+  <!-- Fresh Mint Leaf garnish on table -->
+  <g transform="translate(170, 242) rotate(40)">
+    <path d="M 0,0 C -5,-8 -12,-5 -15,0 C -12,5 -5,8 0,0" fill="#2E7D32"/>
+    <path d="M 0,0 L -15,0" stroke="#1B5E20" stroke-width="0.8"/>
+  </g>
+
+  <!-- Shaker logo "WHEY PRO" on body -->
+  <rect x="180" y="170" width="40" height="12" rx="3" fill="#263238" opacity="0.8"/>
+  <text x="200" y="179" text-anchor="middle" fill="#81C784" font-family="'Inter', sans-serif" font-size="7" font-weight="900" letter-spacing="0.5">WHEY PRO</text>
+
+  <!-- Title banner -->
+  <rect x="115" y="255" width="170" height="22" rx="11" fill="#00838F" opacity="0.85"/>
+  <text x="200" y="269" text-anchor="middle" fill="#FFFFFF" font-family="'Inter', sans-serif" font-size="9" font-weight="950" letter-spacing="1">PREMIUM PROTEIN SHAKE</text>
+</svg>
