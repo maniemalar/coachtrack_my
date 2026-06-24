@@ -568,137 +568,138 @@ export default function BodyMeasurementsRedesign({
         return (
           <div className="space-y-6">
             {/* BODY COMPOSITION OVERVIEW */}
-            <div className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-              <h3 className="text-[20px] font-bold text-[#082567] mb-4 select-none">
+            <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs overflow-hidden">
+              <h3 className="text-xs font-black text-[#082567] mb-3 uppercase tracking-wide select-none">
                 Body Composition Overview
               </h3>
               
-              <div className="grid grid-cols-2 gap-4 select-none">
-                <div className="bg-slate-50/80 border border-slate-100 rounded-2xl p-4 text-left">
-                  <span className="text-[13px] text-slate-500 font-medium block">Weight</span>
-                  <span className="text-[28px] font-bold text-slate-900 block mt-1">
-                    {latestLog.weight} <span className="text-xs font-medium text-slate-500 font-sans">kg</span>
+              <div className="grid grid-cols-2 gap-2.5 select-none">
+                <div className="bg-slate-50/80 border border-slate-100/70 rounded-xl p-2.5 text-left">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight block">Weight</span>
+                  <span className="text-lg font-black text-slate-900 block mt-0.5 leading-none">
+                    {latestLog.weight} <span className="text-3xs font-medium text-slate-500 font-sans">kg</span>
                   </span>
-                  <span className="text-[11px] text-slate-400 block mt-1.5 font-medium">Updated: {lastUpdatedStr}</span>
+                  <span className="text-[9px] text-slate-400 block mt-1 font-medium">Updated: {lastUpdatedStr}</span>
                 </div>
                 
-                <div className="bg-slate-50/80 border border-slate-100 rounded-2xl p-4 text-left">
-                  <span className="text-[13px] text-slate-500 font-medium block">Height</span>
-                  <span className="text-[28px] font-bold text-slate-900 block mt-1">
-                    {selectedTrainee.height || 176} <span className="text-xs font-medium text-slate-500 font-sans">cm</span>
+                <div className="bg-slate-50/80 border border-slate-100/70 rounded-xl p-2.5 text-left">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight block">Height</span>
+                  <span className="text-lg font-black text-slate-900 block mt-0.5 leading-none">
+                    {selectedTrainee.height || 176} <span className="text-3xs font-medium text-slate-500 font-sans">cm</span>
                   </span>
-                  <span className="text-[11px] text-slate-400 block mt-1.5 font-medium">Updated: {lastUpdatedStr}</span>
+                  <span className="text-[9px] text-slate-400 block mt-1 font-medium">Updated: {lastUpdatedStr}</span>
                 </div>
                 
-                <div className="bg-slate-50/80 border border-slate-100 rounded-2xl p-4 text-left">
-                  <span className="text-[13px] text-slate-500 font-medium block">BMI</span>
-                  <span className="text-[28px] font-bold text-[#082567] block mt-1">
+                <div className="bg-slate-50/80 border border-slate-100/70 rounded-xl p-2.5 text-left">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight block">BMI</span>
+                  <span className="text-lg font-black text-[#082567] block mt-0.5 leading-none">
                     {latestLog.bmi ? latestLog.bmi.toFixed(1) : (latestLog.weight / (((selectedTrainee.height || 176)/100)*((selectedTrainee.height || 176)/100))).toFixed(1)}
                   </span>
-                  <span className="text-[11px] text-slate-400 block mt-1.5 font-medium">Updated: {lastUpdatedStr}</span>
+                  <span className="text-[9px] text-slate-400 block mt-1 font-medium">Updated: {lastUpdatedStr}</span>
                 </div>
                 
-                <div className="bg-slate-50/80 border border-slate-100 rounded-2xl p-4 text-left font-sans">
-                  <span className="text-[13px] text-slate-500 font-medium block">BMR</span>
-                  <span className="text-[28px] font-bold text-teal-600 block mt-1">
+                <div className="bg-slate-50/80 border border-slate-100/70 rounded-xl p-2.5 text-left font-sans">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight block">BMR</span>
+                  <span className="text-lg font-black text-teal-600 block mt-0.5 leading-none">
                     {latestLog.bmr ? latestLog.bmr : Math.round(10 * latestLog.weight + 6.25 * (selectedTrainee.height || 176) - 5 * traineeAge + (isTraineeMale ? 5 : -161))}
-                    <span className="text-3xs text-slate-400 font-semibold block font-sans">kcal / day</span>
+                    <span className="text-[8px] text-slate-400 font-bold block font-sans mt-0.5 uppercase tracking-wide leading-none">kcal / day</span>
                   </span>
-                  <span className="text-[11px] text-slate-400 block mt-1.5 font-medium">Updated: {lastUpdatedStr}</span>
+                  <span className="text-[9px] text-slate-400 block mt-1 font-medium">Updated: {lastUpdatedStr}</span>
                 </div>
               </div>
             </div>
 
             {/* BODY TRACKING CENTER */}
-            <div className="space-y-4">
-              <h3 className="text-[20px] font-bold text-[#082567] mb-2 select-none">
+            <div className="space-y-3">
+              <h3 className="text-xs font-black text-[#082567] select-none uppercase tracking-wide">
                 Body Tracking Center
               </h3>
               
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-3">
                 {/* CARD 1: WEIGHT TRACKING */}
                 <div 
                   onClick={() => setBodySubPage('weight')}
-                  className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] hover:border-[#18D2C3]/30 hover:shadow-xs transition-all duration-200 cursor-pointer text-left select-none"
+                  className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs hover:border-[#18D2C3]/30 hover:shadow-2xs transition-all duration-200 cursor-pointer text-left select-none relative overflow-hidden"
                 >
-                  <div className="flex justify-between items-start mb-3">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-1.5 mb-2.5">
                     <div>
-                      <span className="text-[15px] font-bold text-[#082567] block font-sans tracking-wide">WEIGHT TRACKING</span>
-                      <span className="text-[13px] text-slate-500 font-medium block mt-1">
-                        Current Weight: <span className="font-bold text-slate-900 text-base">{latestLog.weight} kg</span>
+                      <span className="text-[11px] font-black text-[#082567] block font-sans tracking-wider uppercase">WEIGHT TRACKING</span>
+                      <span className="text-[11px] text-slate-500 font-medium block mt-0.5">
+                        Current: <span className="font-bold text-slate-900">{latestLog.weight} kg</span>
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="bg-[#082567]/5 text-[#082567] font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider font-sans whitespace-nowrap">
-                        UPDATED {latestLog.date ? new Date(latestLog.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase() : '21 JUN 2026'}
+                    <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                      <span className="bg-[#082567]/5 text-[#082567] font-bold text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-sans whitespace-nowrap">
+                        {latestLog.date ? new Date(latestLog.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short' }).toUpperCase() : '21 JUN'}
                       </span>
-                      <span className="bg-teal-50 text-teal-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-teal-100 uppercase tracking-wider font-sans whitespace-nowrap">
+                      <span className="bg-teal-50 text-teal-650 font-black text-[8px] px-1.5 py-0.5 rounded border border-teal-100 uppercase tracking-wider font-sans whitespace-nowrap">
                         ON TRACK
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between gap-4 mt-2">
-                    <span className="text-[13px] font-semibold text-[#18D2C3] shrink-0 bg-[#18D2C3]/5 px-2.5 py-1.5 rounded-xl border border-teal-500/5">
+                  <div className="flex items-center justify-between gap-4 mt-1.5">
+                    <span className="text-[10px] font-bold text-[#14B8A6] shrink-0 bg-[#14B8A6]/5 px-2 py-1 rounded border border-teal-500/5 leading-none">
                       {weightDiffRawMain < 0 
-                        ? `↓ ${Math.abs(weightDiffRawMain).toFixed(1)}kg since last check-in` 
+                        ? `↓ ${Math.abs(weightDiffRawMain).toFixed(1)}kg checked-in` 
                         : weightDiffRawMain > 0 
-                          ? `↑ ${weightDiffRawMain.toFixed(1)}kg since last check-in` 
-                          : "Steady weight trend"
+                          ? `↑ ${weightDiffRawMain.toFixed(1)}kg checked-in` 
+                          : "Steady weight"
                       }
                     </span>
                     
-                    <div className="w-24 h-10 shrink-0 overflow-visible relative">
-                      <svg className="w-full h-full overflow-visible" viewBox="0 0 100 30" preserveAspectRatio="none">
+                    {/* Fixed Weight Tracking mini graph overflowing card: properly dimensioned, padded and clipped with overflow-hidden */}
+                    <div className="w-20 h-8 shrink-0 overflow-hidden relative border border-slate-100/80 bg-slate-50/50 rounded-md p-1.5">
+                      <svg className="w-full h-full overflow-hidden" viewBox="0 0 100 30" preserveAspectRatio="none">
                         <path 
-                          d={weightDiffRawMain >= 0 ? "M 0,25 L 25,20 L 50,22 L 75,10 L 100,5" : "M 0,5 L 25,12 L 50,15 L 75,22 L 100,25"} 
+                          d={weightDiffRawMain >= 0 ? "M 2,25 L 25,20 L 50,22 L 75,10 L 98,5" : "M 2,5 L 25,12 L 50,15 L 75,22 L 98,25"} 
                           fill="none" 
                           stroke="#18D2C3" 
                           strokeWidth="2.5" 
                           strokeLinecap="round" 
                         />
-                        <circle cx="100" cy={weightDiffRawMain >= 0 ? "5" : "25"} r="3" fill="#18D2C3" stroke="#FFF" strokeWidth="1" />
+                        <circle cx="98" cy={weightDiffRawMain >= 0 ? "5" : "25"} r="3.5" fill="#18D2C3" stroke="#FFF" strokeWidth="1" />
                       </svg>
                     </div>
                   </div>
                   
-                  <p className="text-[13px] font-medium text-indigo-600 mt-4 flex items-center gap-1 font-sans">
-                    <span>Tap to view detailed weight analytics.</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                  <p className="text-[10px] font-bold text-indigo-650 mt-3.5 flex items-center gap-0.5 font-sans leading-none">
+                    <span>Tap to view detailed weight analytics</span>
+                    <ArrowRight className="w-3 h-3" />
                   </p>
                 </div>
 
                 {/* CARD 2: GIRTH MEASUREMENTS */}
                 <div 
                   onClick={() => setBodySubPage('girth')}
-                  className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] hover:border-[#18D2C3]/30 hover:shadow-xs transition-all duration-200 cursor-pointer text-left select-none"
+                  className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs hover:border-[#18D2C3]/30 hover:shadow-2xs transition-all duration-200 cursor-pointer text-left select-none relative overflow-hidden"
                 >
-                  <div className="flex justify-between items-start mb-3">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-1.5 mb-2.5">
                     <div>
-                      <span className="text-[15px] font-bold text-[#082567] block font-sans tracking-wide">GIRTH MEASUREMENTS</span>
-                      <span className="text-[13px] text-slate-500 font-semibold block mt-1">
-                        5 Areas Tracked
+                      <span className="text-[11px] font-black text-[#082567] block font-sans tracking-wider uppercase">GIRTH MEASUREMENTS</span>
+                      <span className="text-[11px] text-slate-500 font-bold block mt-0.5">
+                        5 Areas Circumference
                       </span>
                     </div>
-                    <span className="bg-[#082567]/5 text-[#082567] font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider font-sans">
-                      UPDATED {latestLog.date ? new Date(latestLog.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase() : '21 JUN 2026'}
+                    <span className="bg-[#082567]/5 text-[#082567] font-bold text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-sans whitespace-nowrap shrink-0">
+                      {latestLog.date ? new Date(latestLog.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short' }).toUpperCase() : '21 JUN'}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between gap-4 mt-2">
-                    <div className="space-y-1 font-sans text-[13px] text-slate-600 font-medium">
-                      <p>Chest: <span className="font-bold text-slate-800">{latestLog.chest}cm</span></p>
-                      <p>Waist: <span className="font-bold text-slate-800">{latestLog.waist}cm</span></p>
+                  <div className="flex items-center justify-between gap-4 mt-1.5">
+                    <div className="flex items-center gap-3 font-sans text-[11px] text-slate-600 font-semibold leading-none">
+                      <p>Chest: <span className="font-black text-slate-800">{latestLog.chest}cm</span></p>
+                      <p>Waist: <span className="font-black text-slate-800">{latestLog.waist}cm</span></p>
                     </div>
                     
-                    <div className="w-10 h-10 shrink-0 text-[#18D2C3] border border-teal-500/10 rounded-xl bg-[#18D2C3]/5 flex items-center justify-center">
-                      <Dumbbell className="w-5 h-5 text-teal-600" />
+                    <div className="w-8 h-8 shrink-0 text-[#18D2C3] border border-teal-500/10 rounded-lg bg-[#18D2C3]/5 flex items-center justify-center">
+                      <Dumbbell className="w-4 h-4 text-teal-600" />
                     </div>
                   </div>
 
-                  <p className="text-[13px] font-medium text-indigo-600 mt-4 flex items-center gap-1 font-sans">
-                    <span>Tap to view circumference analytics.</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                  <p className="text-[10px] font-bold text-indigo-650 mt-3.5 flex items-center gap-0.5 font-sans leading-none">
+                    <span>Tap to view circumference analytics</span>
+                    <ArrowRight className="w-3 h-3" />
                   </p>
                 </div>
               </div>
@@ -771,7 +772,7 @@ export default function BodyMeasurementsRedesign({
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] flex items-center justify-between text-left">
+            <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs flex items-center justify-between text-left">
               <div>
                 <span className="text-[13px] font-medium text-slate-500 block">Current Weight</span>
                 <strong className="text-[28px] font-bold text-slate-900 block mt-0.5">
@@ -786,7 +787,7 @@ export default function BodyMeasurementsRedesign({
               </span>
             </div>
 
-            <div className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] text-left select-none">
+            <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs text-left select-none">
               <h4 className="text-[15px] font-semibold text-slate-900 mb-1">Weekly Weight Trend</h4>
               <p className="text-[13px] text-slate-400 font-medium mb-4">Thermodynamic response & fat logs</p>
 
@@ -842,7 +843,7 @@ export default function BodyMeasurementsRedesign({
             </div>
 
             {/* CURRENT WEIGHT OVERVIEW */}
-            <div className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] select-none">
+            <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs select-none">
               <h4 className="text-[15px] font-bold text-[#082567] mb-4 text-left uppercase tracking-wider font-sans">Current Weight Overview</h4>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-center">
@@ -889,8 +890,8 @@ export default function BodyMeasurementsRedesign({
             </div>
 
             {/* RECORD NEW WEIGHT */}
-            <div className="bg-[#F8FAFC] border border-slate-200 rounded-[24px] p-5 text-left">
-              <h4 className="text-[15px] font-semibold text-slate-900 mb-4">Record New Weight</h4>
+            <div className="bg-[#F8FAFC] border border-slate-200 rounded-xl p-3.5 text-left">
+              <h4 className="text-[13px] font-black text-[#082567] mb-3 uppercase tracking-wider">Record New Weight</h4>
               
               <form 
                 key={selectedTrainee.id + "_" + (editingWeightLogDate || 'new')}
@@ -931,7 +932,7 @@ export default function BodyMeasurementsRedesign({
             </div>
 
             {/* WEIGHT HISTORY */}
-            <div className="bg-white border border-slate-200 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] text-left">
+            <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-3xs text-left">
               <h4 className="text-[15px] font-semibold text-slate-900 mb-4 font-sans">Weight History Logs</h4>
               
               <div className="divide-y divide-slate-100">
@@ -1113,7 +1114,7 @@ export default function BodyMeasurementsRedesign({
             </div>
 
             {/* MANNEQUIN DIAGRAM PANEL */}
-            <div className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] text-center select-none">
+            <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs text-center select-none">
               <h4 className="text-[15px] font-bold text-[#082567] mb-4 text-left uppercase tracking-wider font-sans">Body Circumference Overview</h4>
               
               <div className="relative py-2 w-full max-w-[320px] mx-auto">
@@ -1122,7 +1123,7 @@ export default function BodyMeasurementsRedesign({
             </div>
 
             {/* PREVIOUS WEEK STATS GRID */}
-            <div className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] text-left">
+            <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs text-left">
               <h4 className="text-[15px] font-semibold text-slate-900 mb-4 font-sans">Current vs Previous Week</h4>
               
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 select-none">
@@ -1159,7 +1160,7 @@ export default function BodyMeasurementsRedesign({
             </div>
 
             {/* ENHANCED PREMIUM GIRTH ANLYTICS CHART */}
-            <div className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] text-left select-none relative">
+            <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs text-left select-none relative">
               <h4 className="text-[15px] font-semibold text-slate-900 mb-1 font-sans">Girth Trend Over Time</h4>
               <p className="text-[13px] text-slate-400 font-medium mb-3">Body measurement progression over time</p>
 
@@ -1384,8 +1385,8 @@ export default function BodyMeasurementsRedesign({
             </div>
 
             {/* RECORD NEW GIRTH MEASUREMENT */}
-            <div className="bg-[#F8FAFC] border border-slate-200 rounded-[24px] p-5 text-left">
-              <h4 className="text-[15px] font-semibold text-slate-900 mb-4 font-sans">RECORD NEW GIRTH MEASUREMENT</h4>
+            <div className="bg-[#F8FAFC] border border-slate-200 rounded-xl p-3.5 text-left">
+              <h4 className="text-[13px] font-black text-[#082567] mb-3 uppercase tracking-wider font-sans">RECORD NEW GIRTH MEASUREMENT</h4>
               
               <form 
                 key={selectedTrainee.id + "_" + (editingGirthLogDate || 'new')}

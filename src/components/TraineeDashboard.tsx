@@ -504,7 +504,7 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
           <div className="mt-4 pt-4 border-t border-white/10 flex items-start gap-2.5 bg-white/5 p-3 rounded-2xl border border-white/5">
             <Sparkles className="w-4.5 h-4.5 text-teal-300 shrink-0 mt-0.5 fill-current/10" />
             <div className="text-left font-sans text-xs">
-              <span className="block text-[8px] font-extrabold text-teal-300 uppercase tracking-widest mb-0.5">AI Goal Prediction</span>
+              <span className="block text-[8px] font-extrabold text-teal-300 uppercase tracking-widest mb-0.5">CoachAI Analysis</span>
               <p className="text-slate-100 font-semibold leading-relaxed">
                 Estimated goal completion: <strong className="text-white font-black">Approximately 10–12 weeks remaining</strong>
               </p>
@@ -602,7 +602,7 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
               <Camera className="w-4 h-4 text-indigo-600" /> Log Today's Meal
             </h4>
             <span className="text-[8px] bg-indigo-50 text-indigo-700 tracking-wider uppercase font-black px-2 py-0.5 rounded-full border border-indigo-100 font-mono">
-              AI SCANNER
+              CoachAI Analysis
             </span>
           </div>
 
@@ -708,7 +708,7 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
               onClick={handleAnalyzePhoto}
               className="w-full bg-[#081F63] hover:bg-[#122A7D] text-white font-extrabold text-xs py-3.5 rounded-xl uppercase tracking-wider cursor-pointer shadow-md disabled:opacity-60 transition"
             >
-              {isAnalyzing ? '⚡ AI Deciphering Plate...' : '🔍 Analyze Meal with Gemini AI'}
+              {isAnalyzing ? '⚡ CoachAI Analyzing...' : '🔍 Analyze Meal with CoachAI'}
             </button>
           )}
 
@@ -845,7 +845,7 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
               </div>
               <div>
                 <span className="text-[8px] font-extrabold text-teal-400 uppercase tracking-widest block font-mono">Expert Coach Recommendation</span>
-                <h4 className="text-sm font-extrabold text-slate-100">AI Nutrition Insight</h4>
+                <h4 className="text-sm font-extrabold text-slate-100">CoachAI Analysis</h4>
               </div>
             </div>
 
@@ -1060,7 +1060,7 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
           <div className="flex items-center gap-1.5 mb-2.5">
             <Sparkles className="w-4 h-4 text-teal-350 fill-current" />
             <span className="text-[10px] uppercase font-mono font-black text-teal-350 tracking-wider">
-              CoachAI Goal Prediction
+              CoachAI Analysis
             </span>
           </div>
 

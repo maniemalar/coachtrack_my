@@ -16,7 +16,7 @@ export default function PageHeader({ title, subtitle, className = "", children }
     >
       <div className="flex items-center justify-between gap-4">
         <h1 
-          className="text-[32px] font-bold text-[#0F172A] tracking-tight font-sans leading-tight" 
+          className="page-title text-[#0F172A] tracking-tight font-sans leading-tight" 
           style={{ textTransform: 'none' }}
         >
           {title}
@@ -28,7 +28,7 @@ export default function PageHeader({ title, subtitle, className = "", children }
         )}
       </div>
       <p 
-        className="text-[13px] font-normal text-[#64748B] leading-[20px] max-w-sm mt-1.5 font-sans"
+        className="body-text text-[#64748B] leading-[20px] max-w-sm mt-1.5 font-sans"
         style={{
           display: '-webkit-box',
           WebkitLineClamp: 2,

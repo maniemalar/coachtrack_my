@@ -48,6 +48,7 @@ import { dbService } from '../lib/dbService';
 import { AHMAD_COMPLETED_SESSIONS, getSharedBodyLogs, setSharedBodyLogs } from '../lib/sharedHistory';
 import { MealImage } from './MealImage';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import DownloadButton from './DownloadButton';
 
 export function getCleanActiveBookings(bks: any[]) {
   if (!bks) return [];
@@ -2315,7 +2316,7 @@ export function TrainerDashboardInner({
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`fixed top-4 left-4 right-4 z-50 mx-auto px-4 py-3 rounded-xl shadow-2xl text-xs font-bold text-white flex items-center gap-2.5 w-[calc(100%-32px)] max-w-[360px] box-border break-words ${
+              className={`fixed top-4 left-4 right-4 z-50 mx-auto px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold text-white flex items-center gap-2.5 w-[calc(100%-32px)] max-w-[360px] box-border break-words ${
                 alertBanner.type === 'success' ? 'bg-[#001F3F] border-b-4 border-teal-400' : 'bg-slate-900 border-b-4 border-indigo-400'
               }`}
             >
@@ -2326,25 +2327,25 @@ export function TrainerDashboardInner({
         </AnimatePresence>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-6 text-left font-sans max-w-4xl mx-auto pb-12 animate-fade-in mt-4">
+          <div className="space-y-4 text-left font-sans max-w-4xl mx-auto pb-12 animate-fade-in mt-3">
             {/* Sub-Header / Back button */}
-            <div className="flex items-center gap-2 mb-2 select-none">
+            <div className="flex items-center gap-1.5 mb-1 select-none">
               <button 
                 type="button"
                 onClick={() => setSessionToLog(null)}
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 transition cursor-pointer font-bold"
+                className="flex items-center justify-center w-7 h-7 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 transition cursor-pointer font-bold text-xs"
               >
                 ←
               </button>
-              <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest font-sans">Back to Dashboard</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Back to Dashboard</span>
             </div>
 
             {/* 1. Header and Subtitle */}
-            <div className="border-b border-slate-200 pb-4">
-              <h2 className="text-2xl font-black font-display text-slate-900 tracking-tight uppercase">
+            <div className="border-b border-slate-200 pb-2">
+              <h2 className="text-[20px] font-extrabold font-display text-slate-900 tracking-tight uppercase leading-tight">
                 Workout Session
               </h2>
-              <p className="text-xs text-slate-505 mt-1">
+              <p className="text-[11px] text-slate-500 mt-0.5">
                 Record coaching outcomes and client performance
               </p>
             </div>
@@ -2362,41 +2363,41 @@ export function TrainerDashboardInner({
               const sessionWorkoutName = sessionToLog.title || sessionToLog.workoutName || "HIIT Core Strength";
 
               return (
-                <div className="bg-white border border-slate-200/60 rounded-[24px] p-6 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 text-left border-l-4 border-l-indigo-650">
-                  <div className="flex items-center gap-4">
+                <div className="bg-white border border-slate-200/60 rounded-[16px] p-4 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-left border-l-4 border-l-indigo-650">
+                  <div className="flex items-center gap-3">
                     <img 
                       src={traineePhoto} 
                       alt={traineeName} 
-                      className="w-16 h-16 rounded-full object-cover border-2 border-indigo-100 shadow-xs shrink-0" 
+                      className="w-12 h-12 rounded-full object-cover border-2 border-indigo-100 shadow-xs shrink-0" 
                       referrerPolicy="no-referrer"
                     />
                     <div>
-                      <h3 className="font-extrabold text-slate-900 text-base leading-tight">
+                      <h3 className="font-extrabold text-slate-900 text-[14px] leading-tight">
                         {traineeName}
                       </h3>
-                      <p className="text-xs font-semibold text-indigo-700 mt-1 font-sans">
+                      <p className="text-[11px] font-semibold text-indigo-700 mt-0.5 font-sans leading-relaxed">
                         🎯 {traineeGoal}
                       </p>
                       
-                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-3">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">
-                          Today's Session:
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1.5">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">
+                          Session:
                         </span>
-                        <span className="text-2xs font-bold bg-indigo-50 border border-indigo-100 text-indigo-800 px-2.5 py-0.5 rounded-lg">
+                        <span className="text-[10px] font-bold bg-indigo-50 border border-indigo-100 text-indigo-850 px-2 py-0.2 rounded">
                           {sessionWorkoutName}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-start sm:items-end gap-2 self-stretch sm:self-auto pt-4 sm:pt-0 border-t border-slate-100 sm:border-0 font-sans">
-                    <div className="flex items-center gap-1.5 text-slate-500">
-                      <span className="text-sm">⏱</span>
-                      <span className="text-2xs font-extrabold text-[#001F3F] font-mono">
+                  <div className="flex flex-col items-start sm:items-end gap-1.5 self-stretch sm:self-auto pt-3 sm:pt-0 border-t border-slate-100 sm:border-0 font-sans">
+                    <div className="flex items-center gap-1 text-slate-500 text-[11px]">
+                      <span>⏱</span>
+                      <span className="font-bold text-[#001F3F] font-mono">
                         {sessionToLog.timeSlot || "09:00 AM - 10:00 AM"}
                       </span>
                     </div>
-                    <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-100 text-purple-700 border border-purple-200">
+                    <span className="px-2 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider bg-purple-100 text-purple-700 border border-purple-200">
                       Status: In Progress
                     </span>
                   </div>
@@ -2406,59 +2407,59 @@ export function TrainerDashboardInner({
 
             {/* 3. WORKOUT SUMMARY Display as modern fitness cards */}
             <div>
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 font-sans">
+              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 font-sans">
                 Workout Summary
               </h3>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white border border-slate-200/60 rounded-[24px] p-4.5 shadow-xs text-left">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2 font-sans truncate">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="bg-white border border-slate-200/60 rounded-[14px] p-3 shadow-xs text-left">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1 font-sans truncate">
                     Workout Type
                   </span>
                   <input 
                     type="text" 
                     value={logWorkoutType}
                     onChange={(e) => setLogWorkoutType(e.target.value)}
-                    className="text-xs font-extrabold text-slate-800 bg-slate-50/50 border border-slate-200 rounded-xl px-2.5 py-2 w-full focus:ring-1 focus:ring-indigo-400 focus:outline-none"
+                    className="text-xs font-bold text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg px-2 py-1.5 w-full focus:ring-1 focus:ring-indigo-400 focus:outline-none"
                   />
                 </div>
 
-                <div className="bg-white border border-slate-200/60 rounded-[24px] p-4.5 shadow-xs text-left">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5 font-sans truncate">
+                <div className="bg-white border border-slate-200/60 rounded-[14px] p-3 shadow-xs text-left">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1 font-sans truncate">
                     Duration
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <input 
                       type="number" 
                       value={logDuration}
                       onChange={(e) => setLogDuration(Number(e.target.value))}
-                      className="text-xs font-black text-slate-900 bg-slate-50/50 border border-slate-200 rounded-xl px-2.5 py-2 w-20 focus:ring-1 focus:ring-indigo-400 focus:outline-none font-mono"
+                      className="text-xs font-bold text-slate-900 bg-slate-50/50 border border-slate-200 rounded-lg px-2 py-1.5 w-16 focus:ring-1 focus:ring-indigo-400 focus:outline-none font-mono text-center"
                     />
-                    <span className="text-3xs text-slate-400 font-extrabold uppercase font-sans">Mins</span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase font-sans">Mins</span>
                   </div>
                 </div>
 
-                <div className="bg-white border border-slate-200/60 rounded-[24px] p-4.5 shadow-xs text-left">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5 font-sans truncate">
+                <div className="bg-white border border-slate-200/60 rounded-[14px] p-3 shadow-xs text-left">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1 font-sans truncate">
                     Calories Burned
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <input 
                       type="number" 
                       value={logCalories}
                       onChange={(e) => setLogCalories(Number(e.target.value))}
-                      className="text-xs font-black text-slate-900 bg-slate-50/50 border border-slate-200 rounded-xl px-2.5 py-2 w-20 focus:ring-1 focus:ring-indigo-400 focus:outline-none font-mono"
+                      className="text-xs font-bold text-slate-900 bg-slate-50/50 border border-slate-200 rounded-lg px-2 py-1.5 w-16 focus:ring-1 focus:ring-indigo-400 focus:outline-none font-mono text-center"
                     />
-                    <span className="text-3xs text-slate-400 font-extrabold uppercase font-mono">kcal</span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase font-mono">kcal</span>
                   </div>
                 </div>
 
-                <div className="bg-white border border-slate-200/60 rounded-[24px] p-4.5 shadow-xs text-left">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block font-sans truncate">
+                <div className="bg-white border border-slate-200/60 rounded-[14px] p-3 shadow-xs text-left">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block font-sans truncate">
                       Intensity
                     </span>
-                    <span className="text-3xs font-black text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded font-mono">
-                      {logIntensity} / 10
+                    <span className="text-[9px] font-bold text-indigo-700 bg-indigo-50 px-1 py-0.2 rounded font-mono">
+                      {logIntensity}/10
                     </span>
                   </div>
                   <input 
@@ -2467,28 +2468,28 @@ export function TrainerDashboardInner({
                     max="10" 
                     value={logIntensity}
                     onChange={(e) => setLogIntensity(Number(e.target.value))}
-                    className="w-full accent-indigo-600 cursor-pointer"
+                    className="w-full accent-indigo-600 cursor-pointer h-1.5"
                   />
                 </div>
               </div>
             </div>
 
             {/* 4. EXERCISES COMPLETED */}
-            <div className="bg-white border border-slate-200/60 rounded-[24px] p-6 shadow-xs text-left">
-              <div className="flex justify-between items-center mb-4">
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest font-sans">
+            <div className="bg-white border border-slate-200/60 rounded-[16px] p-4 shadow-xs text-left">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">
                   Exercises Completed
                 </h4>
-                <span className="text-3xs bg-emerald-50 text-emerald-700 border border-emerald-100 font-black px-2 py-0.5 rounded uppercase font-sans">
+                <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-100 font-bold px-2 py-0.2 rounded uppercase font-sans">
                   {logExercises.length} Completed
                 </span>
               </div>
 
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {logExercises.map((ex, index) => (
                   <div 
                     key={ex.id || index}
-                    className="bg-slate-50 border border-slate-200/50 rounded-2xl p-4 flex flex-col justify-between relative shadow-2xs hover:border-indigo-200 transition"
+                    className="bg-slate-50 border border-slate-200/50 rounded-[12px] p-3 flex flex-col justify-between relative shadow-2xs hover:border-indigo-200 transition"
                   >
                     {/* Delete button */}
                     <button 
@@ -2496,14 +2497,14 @@ export function TrainerDashboardInner({
                       onClick={() => {
                         setLogExercises(prev => prev.filter((_, i) => i !== index));
                       }}
-                      className="absolute right-3 top-3 text-slate-350 hover:text-rose-500 font-bold text-xs transition cursor-pointer"
+                      className="absolute right-2.5 top-2.5 text-slate-355 hover:text-rose-500 font-bold text-[10px] transition cursor-pointer"
                       title="Remove exercise"
                     >
                       ✕
                     </button>
 
-                    <div className="flex items-start gap-2 mb-3 pr-3">
-                      <span className="text-emerald-500 font-black shrink-0 text-xs mt-1 font-sans">✓</span>
+                    <div className="flex items-start gap-1.5 mb-2 pr-2.5">
+                      <span className="text-emerald-500 font-bold shrink-0 text-xs mt-0.5 font-sans">✓</span>
                       <input 
                         type="text" 
                         value={ex.name}
@@ -2513,13 +2514,13 @@ export function TrainerDashboardInner({
                           setLogExercises(updated);
                         }}
                         placeholder="Exercise name"
-                        className="p-1.5 text-xs font-bold text-slate-800 bg-white border border-slate-200 rounded-xl shadow-2xs w-full focus:ring-1 focus:ring-indigo-400 focus:outline-none"
+                        className="p-1 px-2 text-xs font-bold text-slate-800 bg-white border border-slate-200 rounded-[8px] shadow-2xs w-full focus:ring-1 focus:ring-indigo-400 focus:outline-none"
                       />
                     </div>
 
-                    <div className="grid grid-cols-3 gap-1.5 text-2xs">
+                    <div className="grid grid-cols-3 gap-1 text-[10px]">
                       <div>
-                        <label className="text-[9px] uppercase font-bold text-slate-400 block mb-1 font-sans text-center">Sets</label>
+                        <label className="text-[8px] uppercase font-bold text-slate-400 block mb-0.5 font-sans text-center">Sets</label>
                         <input 
                           type="number" 
                           value={ex.sets}
@@ -2528,11 +2529,11 @@ export function TrainerDashboardInner({
                             updated[index].sets = Number(e.target.value);
                             setLogExercises(updated);
                           }}
-                          className="p-1 px-1 text-3xs font-extrabold text-slate-700 bg-white border border-slate-200 rounded-lg w-full font-mono text-center"
+                          className="p-0.5 text-[10px] font-bold text-slate-700 bg-white border border-slate-200 rounded w-full font-mono text-center"
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] uppercase font-bold text-slate-400 block mb-1 font-sans text-center">Reps</label>
+                        <label className="text-[8px] uppercase font-bold text-slate-400 block mb-0.5 font-sans text-center">Reps</label>
                         <input 
                           type="number" 
                           value={ex.reps}
@@ -2541,11 +2542,11 @@ export function TrainerDashboardInner({
                             updated[index].reps = Number(e.target.value);
                             setLogExercises(updated);
                           }}
-                          className="p-1 px-1 text-3xs font-extrabold text-slate-700 bg-white border border-slate-200 rounded-lg w-full font-mono text-center"
+                          className="p-0.5 text-[10px] font-bold text-slate-700 bg-white border border-slate-200 rounded w-full font-mono text-center"
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] uppercase font-bold text-slate-400 block mb-1 font-sans text-center">Wt (kg)</label>
+                        <label className="text-[8px] uppercase font-bold text-slate-400 block mb-0.5 font-sans text-center">Wt (kg)</label>
                         <input 
                           type="number" 
                           value={ex.weight}
@@ -2554,7 +2555,7 @@ export function TrainerDashboardInner({
                             updated[index].weight = Number(e.target.value);
                             setLogExercises(updated);
                           }}
-                          className="p-1 px-1 text-3xs font-extrabold text-slate-700 bg-white border border-slate-200 rounded-lg w-full font-mono text-center"
+                          className="p-0.5 text-[10px] font-bold text-slate-700 bg-white border border-slate-200 rounded w-full font-mono text-center"
                         />
                       </div>
                     </div>
@@ -2570,7 +2571,7 @@ export function TrainerDashboardInner({
                     { id: 'ex_' + Date.now() + Math.random(), name: '', sets: 3, reps: 10, weight: 0 }
                   ]);
                 }}
-                className="mt-4 flex items-center justify-center gap-1.5 w-full py-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 border-dashed rounded-[16px] text-2xs font-extrabold text-slate-600 cursor-pointer transition font-sans"
+                className="mt-3 flex items-center justify-center gap-1.5 w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 border-dashed rounded-[10px] text-[11px] font-bold text-slate-600 cursor-pointer transition font-sans"
               >
                 <span>➕</span>
                 <span>Add Exercise</span>
@@ -2578,17 +2579,17 @@ export function TrainerDashboardInner({
             </div>
 
             {/* 5. CLIENT PERFORMANCE */}
-            <div className="bg-white border border-slate-200/60 rounded-[24px] p-6 shadow-xs text-left">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 font-sans">
+            <div className="bg-white border border-slate-200/60 rounded-[16px] p-4 shadow-xs text-left">
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 font-sans">
                 Client Performance
               </h4>
 
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 {/* Energy */}
-                <div className="bg-slate-50/50 p-4 border border-slate-200 rounded-2xl flex flex-col justify-between">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-2xs font-bold text-slate-700 uppercase tracking-wider font-sans">Energy Level</span>
-                    <span className="text-2xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded font-mono">{logEnergyLevel}/10</span>
+                <div className="bg-slate-50/50 p-3 border border-slate-200 rounded-xl flex flex-col justify-between">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[9px] font-bold text-slate-700 uppercase tracking-wider font-sans">Energy Level</span>
+                    <span className="text-[9px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded font-mono">{logEnergyLevel}/10</span>
                   </div>
                   <input 
                     type="range" 
@@ -2596,19 +2597,19 @@ export function TrainerDashboardInner({
                     max="10" 
                     value={logEnergyLevel}
                     onChange={(e) => setLogEnergyLevel(Number(e.target.value))}
-                    className="w-full accent-indigo-600 cursor-pointer"
+                    className="w-full accent-indigo-600 cursor-pointer h-1"
                   />
-                  <div className="flex justify-between text-[9px] uppercase font-bold text-slate-450 mt-1.5 font-mono">
+                  <div className="flex justify-between text-[7px] uppercase font-bold text-slate-450 mt-1 font-mono">
                     <span>1 (Low)</span>
                     <span>10 (Peak)</span>
                   </div>
                 </div>
 
                 {/* Effort */}
-                <div className="bg-slate-50/50 p-4 border border-slate-200 rounded-2xl flex flex-col justify-between">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-2xs font-bold text-slate-700 uppercase tracking-wider font-sans">Effort</span>
-                    <span className="text-2xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded font-mono">{logEffort}/10</span>
+                <div className="bg-slate-50/50 p-3 border border-slate-200 rounded-xl flex flex-col justify-between">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[9px] font-bold text-slate-700 uppercase tracking-wider font-sans">Effort</span>
+                    <span className="text-[9px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded font-mono">{logEffort}/10</span>
                   </div>
                   <input 
                     type="range" 
@@ -2616,19 +2617,19 @@ export function TrainerDashboardInner({
                     max="10" 
                     value={logEffort}
                     onChange={(e) => setLogEffort(Number(e.target.value))}
-                    className="w-full accent-indigo-600 cursor-pointer"
+                    className="w-full accent-indigo-600 cursor-pointer h-1"
                   />
-                  <div className="flex justify-between text-[9px] uppercase font-bold text-slate-450 mt-1.5 font-mono">
-                    <span>1 (Minimal)</span>
-                    <span>10 (Maximal)</span>
+                  <div className="flex justify-between text-[7px] uppercase font-bold text-slate-455 mt-1 font-mono">
+                    <span>1 (Min)</span>
+                    <span>10 (Max)</span>
                   </div>
                 </div>
 
                 {/* Form Quality */}
-                <div className="bg-slate-50/50 p-4 border border-slate-200 rounded-2xl flex flex-col justify-between">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-2xs font-bold text-slate-700 uppercase tracking-wider font-sans">Form Quality</span>
-                    <span className="text-2xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded font-mono">{logFormQuality}/10</span>
+                <div className="bg-slate-50/50 p-3 border border-slate-200 rounded-xl flex flex-col justify-between">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[9px] font-bold text-slate-700 uppercase tracking-wider font-sans">Form Quality</span>
+                    <span className="text-[9px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded font-mono">{logFormQuality}/10</span>
                   </div>
                   <input 
                     type="range" 
@@ -2636,19 +2637,19 @@ export function TrainerDashboardInner({
                     max="10" 
                     value={logFormQuality}
                     onChange={(e) => setLogFormQuality(Number(e.target.value))}
-                    className="w-full accent-indigo-600 cursor-pointer"
+                    className="w-full accent-indigo-600 cursor-pointer h-1"
                   />
-                  <div className="flex justify-between text-[9px] uppercase font-bold text-slate-455 mt-1.5 font-mono">
+                  <div className="flex justify-between text-[7px] uppercase font-bold text-slate-455 mt-1 font-mono">
                     <span>1 (Needs Work)</span>
                     <span>10 (Pristine)</span>
                   </div>
                 </div>
 
                 {/* Mobility */}
-                <div className="bg-slate-50/50 p-4 border border-slate-200 rounded-2xl flex flex-col justify-between">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-2xs font-bold text-slate-700 uppercase tracking-wider font-sans">Mobility</span>
-                    <span className="text-2xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded font-mono">{logMobility}/10</span>
+                <div className="bg-slate-50/50 p-3 border border-slate-200 rounded-xl flex flex-col justify-between">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[9px] font-bold text-slate-700 uppercase tracking-wider font-sans">Mobility</span>
+                    <span className="text-[9px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded font-mono">{logMobility}/10</span>
                   </div>
                   <input 
                     type="range" 
@@ -2656,9 +2657,9 @@ export function TrainerDashboardInner({
                     max="10" 
                     value={logMobility}
                     onChange={(e) => setLogMobility(Number(e.target.value))}
-                    className="w-full accent-indigo-600 cursor-pointer"
+                    className="w-full accent-indigo-600 cursor-pointer h-1"
                   />
-                  <div className="flex justify-between text-[9px] uppercase font-bold text-slate-455 mt-1.5 font-mono">
+                  <div className="flex justify-between text-[7px] uppercase font-bold text-slate-455 mt-1 font-mono">
                     <span>1 (Stiff)</span>
                     <span>10 (Fluid)</span>
                   </div>
@@ -2667,36 +2668,36 @@ export function TrainerDashboardInner({
             </div>
 
             {/* 6. TRAINER NOTES */}
-            <div className="bg-white border border-slate-200/60 rounded-[24px] p-6 shadow-xs text-left">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 font-sans">
+            <div className="bg-white border border-slate-200/60 rounded-[16px] p-4 shadow-xs text-left">
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 font-sans">
                 Trainer Notes
               </h4>
               <textarea 
-                rows={4}
+                rows={3}
                 value={logNotes}
                 onChange={(e) => setLogNotes(e.target.value)}
-                className="w-full p-4 bg-slate-50/60 border border-slate-200 rounded-2xl text-xs font-medium text-slate-800 leading-relaxed font-sans focus:ring-1 focus:ring-indigo-400 focus:outline-none"
-                placeholder="Client demonstrated improved squat depth. Core engagement improved significantly..."
+                className="w-full p-2.5 bg-slate-50/60 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 leading-relaxed font-sans focus:ring-1 focus:ring-indigo-400 focus:outline-none"
+                placeholder="Client demonstrated improved squat depth..."
               />
             </div>
 
             {/* 7. CLIENT MOOD */}
-            <div className="bg-white border border-slate-200/60 rounded-[24px] p-6 shadow-xs text-left">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 font-sans">
+            <div className="bg-white border border-slate-200/60 rounded-[16px] p-4 shadow-xs text-left">
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 font-sans">
                 Client Mood
               </h4>
-              <div className="flex flex-wrap gap-2 text-xs select-none font-medium">
+              <div className="flex flex-wrap gap-1.5 text-xs select-none font-medium">
                 {[
-                  { val: 'Excellent', icon: '😀 Excellent', activeBg: 'bg-emerald-100 border-emerald-400 text-emerald-950 border font-extrabold' },
-                  { val: 'Good', icon: '🙂 Good', activeBg: 'bg-indigo-100 border-indigo-400 text-indigo-950 border font-extrabold' },
-                  { val: 'Average', icon: '😐 Average', activeBg: 'bg-amber-100 border-amber-350 text-amber-950 border font-extrabold' },
+                  { val: 'Excellent', icon: '😀 Excellent', activeBg: 'bg-emerald-100 border-emerald-400 text-emerald-950 border font-bold' },
+                  { val: 'Good', icon: '🙂 Good', activeBg: 'bg-indigo-100 border-indigo-400 text-indigo-950 border font-bold' },
+                  { val: 'Average', icon: '😐 Average', activeBg: 'bg-amber-100 border-amber-350 text-amber-950 border font-bold' },
                   { val: 'Low Energy', icon: '😴 Low Energy', activeBg: 'bg-slate-200 border-slate-400 text-slate-900 border font-bold' }
                 ].map((moodItem) => (
                   <button
                     key={moodItem.val}
                     type="button"
                     onClick={() => setLogMood(moodItem.val)}
-                    className={`px-4.5 py-2.5 border rounded-xl text-3xs uppercase font-extrabold cursor-pointer transition duration-100 font-sans ${
+                    className={`px-3 py-1.5 border rounded-lg text-[10px] font-bold uppercase cursor-pointer transition duration-100 font-sans ${
                       logMood === moodItem.val 
                         ? moodItem.activeBg
                         : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50/85'
@@ -2709,22 +2710,22 @@ export function TrainerDashboardInner({
             </div>
 
             {/* 8. SESSION OUTCOME */}
-            <div className="bg-white border border-slate-200/60 rounded-[24px] p-6 shadow-xs text-left">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 font-sans">
+            <div className="bg-white border border-slate-200/60 rounded-[16px] p-4 shadow-xs text-left">
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 font-sans">
                 Session Outcome
               </h4>
-              <div className="flex flex-wrap gap-2 text-xs select-none font-medium text-left">
+              <div className="flex flex-wrap gap-1.5 text-xs select-none font-medium text-left">
                 {[
-                  { val: 'Completed Successfully', activeBg: 'bg-teal-100 border-teal-400 text-teal-900 border font-extrabold' },
-                  { val: 'Modified Workout', activeBg: 'bg-purple-100 border-purple-400 text-purple-900 border font-extrabold' },
-                  { val: 'Partial Completion', activeBg: 'bg-amber-100 border-amber-400 text-amber-900 border font-extrabold' },
-                  { val: 'Recovery Session', activeBg: 'bg-indigo-100 border-indigo-400 text-indigo-900 border font-extrabold' }
+                  { val: 'Completed Successfully', activeBg: 'bg-teal-100 border-teal-400 text-teal-900 border font-bold' },
+                  { val: 'Modified Workout', activeBg: 'bg-purple-100 border-purple-400 text-purple-900 border font-bold' },
+                  { val: 'Partial Completion', activeBg: 'bg-amber-100 border-amber-400 text-amber-900 border font-bold' },
+                  { val: 'Recovery Session', activeBg: 'bg-indigo-100 border-indigo-400 text-indigo-900 border font-bold' }
                 ].map((outcomeItem) => (
                   <button
                     key={outcomeItem.val}
                     type="button"
                     onClick={() => setLogOutcome(outcomeItem.val)}
-                    className={`px-4.5 py-2.5 border rounded-xl text-3xs uppercase font-extrabold cursor-pointer transition duration-100 font-sans ${
+                    className={`px-3 py-1.5 border rounded-lg text-[10px] font-bold uppercase cursor-pointer transition duration-100 font-sans ${
                       logOutcome === outcomeItem.val
                         ? outcomeItem.activeBg
                         : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50/85'
@@ -2737,12 +2738,12 @@ export function TrainerDashboardInner({
             </div>
 
             {/* 9. BOTTOM STICKY ACTIONS */}
-            <div className="pt-5 border-t border-slate-200 flex flex-col gap-3 mt-4 font-sans max-w-xl ml-auto">
-              <div className="flex flex-col sm:flex-row justify-end items-stretch sm:items-center gap-3">
+            <div className="pt-4 border-t border-slate-200 flex flex-col gap-2 mt-3 font-sans max-w-xl ml-auto">
+              <div className="flex justify-end items-center gap-2">
                 <button 
                   type="button"
                   onClick={() => setSessionToLog(null)}
-                  className="flex-1 sm:flex-initial px-6 py-3.5 bg-white border border-slate-205 hover:bg-slate-50 text-slate-700 rounded-2xl font-bold text-xs cursor-pointer text-center"
+                  className="flex-1 h-[44px] bg-white border border-slate-205 hover:bg-slate-50 text-slate-700 rounded-[10px] font-bold text-[13px] cursor-pointer text-center flex items-center justify-center"
                 >
                   Cancel
                 </button>
@@ -2763,7 +2764,7 @@ export function TrainerDashboardInner({
                     setSessionToLog(null);
                     fetchTrainerData();
                   }}
-                  className="flex-1 sm:flex-initial px-6 py-3.5 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-900 rounded-2xl font-extrabold text-xs cursor-pointer text-center"
+                  className="flex-1 h-[44px] bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-900 rounded-[10px] font-bold text-[13px] cursor-pointer text-center flex items-center justify-center"
                 >
                   Save Workout
                 </button>
@@ -2790,11 +2791,11 @@ export function TrainerDashboardInner({
                       localStorage.setItem(`bookings_fallback_${trainerProfile.id}`, JSON.stringify(next));
                       return next;
                     });
-                    triggerToast(`Session with ${sessionToLog.traineeName || 'Ahmad Ibrahim'} successfully completed and logged! ✓`, "success");
+                    triggerToast(`Session successfully completed and logged! ✓`, "success");
                     setSessionToLog(null);
                     fetchTrainerData();
                   }}
-                  className={`w-full px-8 py-4.5 rounded-2xl font-black text-xs cursor-pointer text-center transition flex justify-center items-center h-14 ${
+                  className={`w-full h-[44px] rounded-[10px] font-bold text-[13px] cursor-pointer text-center transition flex justify-center items-center ${
                     isFormComplete 
                       ? 'bg-[#041F63] hover:bg-[#041F63]/90 text-white shadow-md' 
                       : 'bg-slate-200 text-slate-400 cursor-not-allowed'
@@ -3207,35 +3208,35 @@ export function TrainerDashboardInner({
           </button>
           
           {/* CLIENT HEADER COMPACT CARD */}
-          <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] mb-5 text-left relative">
-            <div className="flex items-center gap-4">
-              <div className="relative">
+          <div className="bg-white border border-slate-200/80 rounded-xl p-3.5 shadow-3xs mb-4 text-left relative">
+            <div className="flex items-center gap-3">
+              <div className="relative shrink-0">
                 <img 
                   src={selectedTrainee.avatarUrl} 
                   alt={selectedTrainee.name}
-                  className="w-16 h-16 rounded-full object-cover border-2 border-[#14B8A6] shadow-xs"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-[#14B8A6] shadow-3xs"
                 />
-                <span className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" />
+                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="font-extrabold text-slate-900 text-base truncate font-sans tracking-tight">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h2 className="font-extrabold text-slate-900 text-sm truncate font-sans tracking-tight leading-none">
                     {selectedTrainee.name}
                   </h2>
-                  <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full font-extrabold font-sans uppercase tracking-wide border border-emerald-200/50">
+                  <span className="text-[8px] bg-emerald-50 text-emerald-700 px-1.5 py-0.2 rounded-full font-black font-sans uppercase tracking-wide border border-emerald-200/50 leading-none shrink-0">
                     Active
                   </span>
                 </div>
-                <p className="text-2xs text-slate-500 font-bold uppercase tracking-wider mb-1.5 font-sans">
+                <p className="text-[10px] text-slate-500 font-semibold truncate mb-1 leading-none">
                   Goal: {selectedTrainee.goals.toLowerCase().includes('post') ? 'Post-partum restoration' : 'Weight Loss & Cardio'}
                 </p>
-                <div className="flex items-center gap-3 select-none">
-                  <span className="text-[10.5px] font-extrabold text-[#061A4D] bg-indigo-50/70 border border-indigo-100 px-2 py-0.5 rounded-lg">
+                <div className="flex items-center gap-2 select-none">
+                  <span className="text-[9px] font-extrabold text-[#061A4D] bg-indigo-50/70 border border-indigo-100 px-1.5 py-0.5 rounded">
                     📦 {getTraineeStats(selectedTrainee.id).packageName || "8 Classes Per Month"}
                   </span>
-                  <span className="text-[10.5px] font-extrabold text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-lg flex items-center gap-1">
-                    <Flame className="w-3 h-3 text-amber-500 fill-amber-500" />
-                    <span>Streak: {selectedTrainee.streakCount || 5} Days</span>
+                  <span className="text-[9px] font-extrabold text-amber-700 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                    <Flame className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
+                    <span>{selectedTrainee.streakCount || 5} Days</span>
                   </span>
                 </div>
               </div>
@@ -3243,7 +3244,7 @@ export function TrainerDashboardInner({
           </div>
 
           {/* DYNAMIC SECTION PILLS */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none mb-5 select-none touch-pan-x">
+          <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none mb-4 select-none touch-pan-x">
             {[
               { id: 'body', label: 'Body Measurements' },
               { id: 'sessions', label: 'Session History' },
@@ -3253,9 +3254,9 @@ export function TrainerDashboardInner({
               <button
                 key={sec.id}
                 onClick={() => setProfileSection(sec.id as any)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-black whitespace-nowrap transition-all duration-150 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-[11px] font-black whitespace-nowrap transition-all duration-150 cursor-pointer ${
                   profileSection === sec.id
-                    ? 'bg-[#061A4D] text-white shadow-md shadow-indigo-950/10 scale-102 font-sans'
+                    ? 'bg-[#061A4D] text-white shadow-sm font-sans'
                     : 'bg-white text-slate-500 border border-slate-200/80 hover:bg-slate-50 font-sans'
                 }`}
               >
@@ -3296,59 +3297,59 @@ export function TrainerDashboardInner({
                   WEEKLY PERFORMANCE OVERVIEW
                 </p>
                 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
                   {/* Card 1: Calories Burned */}
-                  <div className="bg-white border border-slate-200/80 rounded-[20px] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md transition-all duration-200 select-none">
-                    <div className="flex items-center gap-1.5 mb-2 text-amber-500">
-                      <Flame className="w-4 h-4 fill-amber-500" />
-                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Calories Burned</span>
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-3xs hover:shadow-2xs transition-all duration-200 select-none">
+                    <div className="flex items-center gap-1 mb-1.5 text-amber-500">
+                      <Flame className="w-3.5 h-3.5 fill-amber-500" />
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">Calories Burned</span>
                     </div>
-                    <p className="font-extrabold text-slate-900 text-lg leading-none mb-1">
-                      450 <span className="text-2xs text-slate-400 font-bold">kcal</span>
+                    <p className="font-black text-slate-900 text-sm leading-none mb-1">
+                      450 <span className="text-3xs text-slate-400 font-bold">kcal</span>
                     </p>
-                    <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">
                       ↑ 16% vs last week
                     </span>
                   </div>
 
                   {/* Card 2: Sessions Completed */}
-                  <div className="bg-white border border-slate-200/80 rounded-[20px] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md transition-all duration-200 select-none">
-                    <div className="flex items-center gap-1.5 mb-2 text-indigo-500">
-                      <Calendar className="w-4 h-4" />
-                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Sess. Completed</span>
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-3xs hover:shadow-2xs transition-all duration-200 select-none">
+                    <div className="flex items-center gap-1 mb-1.5 text-indigo-500">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">Sess. Completed</span>
                     </div>
-                    <p className="font-extrabold text-slate-900 text-lg leading-none mb-1">
+                    <p className="font-black text-slate-900 text-sm leading-none mb-1">
                       3
                     </p>
-                    <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">
                       ↑ 1 vs last week
                     </span>
                   </div>
 
                   {/* Card 3: Training Duration */}
-                  <div className="bg-white border border-slate-200/80 rounded-[20px] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md transition-all duration-200 select-none">
-                    <div className="flex items-center gap-1.5 mb-2 text-teal-500">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Duration</span>
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-3xs hover:shadow-2xs transition-all duration-200 select-none">
+                    <div className="flex items-center gap-1 mb-1.5 text-teal-500">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">Duration</span>
                     </div>
-                    <p className="font-extrabold text-slate-900 text-lg leading-none mb-1">
-                      180 <span className="text-2xs text-slate-400 font-bold">mins</span>
+                    <p className="font-black text-slate-900 text-sm leading-none mb-1">
+                      180 <span className="text-3xs text-slate-400 font-bold">mins</span>
                     </p>
-                    <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">
                       ↑ 20 mins vs last wk
                     </span>
                   </div>
 
                   {/* Card 4: Average Session Rating */}
-                  <div className="bg-white border border-slate-200/80 rounded-[20px] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md transition-all duration-200 select-none">
-                    <div className="flex items-center gap-1.5 mb-2 text-amber-400">
-                      <Star className="w-4 h-4 fill-amber-400" />
-                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Avg. Session Rating</span>
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-3xs hover:shadow-2xs transition-all duration-200 select-none">
+                    <div className="flex items-center gap-1 mb-1.5 text-amber-400">
+                      <Star className="w-3.5 h-3.5 fill-amber-400" />
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wide">Avg. Rating</span>
                     </div>
-                    <p className="font-extrabold text-slate-900 text-lg leading-none mb-1">
-                      4.8 <span className="text-2xs text-slate-400 font-bold">/ 5</span>
+                    <p className="font-black text-slate-900 text-sm leading-none mb-1">
+                      4.8 <span className="text-3xs text-slate-400 font-bold">/ 5</span>
                     </p>
-                    <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">
                       ↑ 0.3 vs last week
                     </span>
                   </div>
@@ -3359,7 +3360,7 @@ export function TrainerDashboardInner({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 
                 {/* SECTION 2 - CALORIES BURNED TREND */}
-                <div className="bg-white border border-slate-200/80 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] md:col-span-2 select-none relative">
+                <div className="bg-white border border-slate-200/80 rounded-xl p-3.5 shadow-3xs md:col-span-2 select-none relative">
                   <div className="flex items-center justify-between gap-2 mb-4">
                     <p className="text-[10.5px] font-black text-[#061A4D] uppercase tracking-widest font-sans">
                       CALORIES BURNED TREND (LAST 8 WEEKS)
@@ -3456,7 +3457,7 @@ export function TrainerDashboardInner({
                 </div>
 
                 {/* SECTION 3 - CONSISTENCY SCORE */}
-                <div className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] flex flex-col justify-between select-none">
+                <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs flex flex-col justify-between select-none">
                   <p className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest font-sans mb-3 text-left">
                     CONSISTENCY SCORE
                   </p>
@@ -3512,7 +3513,7 @@ export function TrainerDashboardInner({
               </div>
 
               {/* SECTION 4 - SESSION HISTORY TABLE */}
-              <div className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+              <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest font-sans">
                     SESSION HISTORY
@@ -3580,9 +3581,9 @@ export function TrainerDashboardInner({
                                     <p className="text-[10px] font-black text-[#061A4D] uppercase tracking-wider mb-2.5 select-none">
                                       🏋️ Exercises Performed
                                     </p>
-                                    <ul className="space-y-1.5">
+                                    <ul className="space-y-1">
                                       {row.exercises.map((ex, exIdx) => (
-                                        <li key={exIdx} className="font-extrabold text-slate-700 font-sans text-left">
+                                        <li key={exIdx} className="text-[14px] font-medium text-slate-700 font-sans text-left leading-tight">
                                           {ex}
                                         </li>
                                       ))}
@@ -3592,28 +3593,28 @@ export function TrainerDashboardInner({
                                   {/* Right: Detailed Session Specs */}
                                   <div className="grid grid-cols-2 gap-3">
                                     <div className="bg-white rounded-xl border border-slate-200/50 p-2.5 shadow-xs text-left">
-                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block">Duration</span>
-                                      <span className="font-extrabold text-[#061A4D]">{row.duration}</span>
+                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block mb-0.5">Duration</span>
+                                      <span className="text-[14px] font-semibold text-[#061A4D] block">{row.duration}</span>
                                     </div>
                                     <div className="bg-white rounded-xl border border-slate-200/50 p-2.5 shadow-xs text-left">
-                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block">Calories Burned</span>
-                                      <span className="font-extrabold text-[#14B8A6]">{row.calories}</span>
+                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block mb-0.5">Calories Burned</span>
+                                      <span className="text-[14px] font-semibold text-[#14B8A6] block">{row.calories}</span>
                                     </div>
                                     <div className="bg-white rounded-xl border border-slate-200/50 p-2.5 shadow-xs text-left col-span-2">
-                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block">Pain/Discomfort</span>
-                                      <span className="font-bold text-slate-700">{row.pain}</span>
+                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block mb-0.5">Pain/Discomfort</span>
+                                      <span className="text-[14px] font-medium text-slate-700 leading-[1.4] block">{row.pain}</span>
                                     </div>
                                     <div className="bg-white rounded-xl border border-slate-200/50 p-2.5 shadow-xs text-left col-span-2">
-                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block">Trainer Notes</span>
-                                      <p className="font-bold text-slate-600 leading-normal italic">"{row.notes}"</p>
+                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block mb-0.5">Trainer Notes</span>
+                                      <p className="text-[14px] font-medium text-slate-600 leading-snug italic">"{row.notes}"</p>
                                     </div>
                                     <div className="bg-white rounded-xl border border-slate-200/50 p-2.5 shadow-xs text-left">
-                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block">Client Mood</span>
-                                      <span className="font-extrabold text-indigo-700 text-2xs truncate block">{row.mood}</span>
+                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block mb-0.5">Client Mood</span>
+                                      <span className="text-xs font-semibold text-indigo-700 block leading-tight">{row.mood}</span>
                                     </div>
                                     <div className="bg-white rounded-xl border border-slate-200/50 p-2.5 shadow-xs text-left">
-                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block">Outcome</span>
-                                      <span className="font-extrabold text-emerald-700 text-2xs truncate block">{row.outcome}</span>
+                                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block mb-0.5">Outcome</span>
+                                      <span className="text-xs font-semibold text-emerald-700 block leading-tight">{row.outcome}</span>
                                     </div>
                                   </div>
                                 </div>
@@ -3629,14 +3630,11 @@ export function TrainerDashboardInner({
               </div>
 
               {/* SECTION 5 - DOWNLOAD BUTTON */}
-              <button 
+              <DownloadButton 
                 id="btn-dl-sessions-premium-refcard"
                 onClick={handleDownloadSessionsCSV}
-                className="w-full flex items-center justify-center gap-2 bg-transparent hover:bg-[#061A4D]/5 text-[#061A4D] border-2 border-[#061A4D] font-extrabold text-xs py-3.5 px-4 rounded-xl uppercase tracking-wider transition-all cursor-pointer font-sans select-none shadow-xs active:scale-98"
-              >
-                <Download className="w-4 h-4 text-[#061A4D]" />
-                <span>⬇ DOWNLOAD SESSION HISTORY CSV</span>
-              </button>
+                label="DOWNLOAD SESSION REPORT"
+              />
 
               {/* SECTION 6 - PERSONAL RECORDS */}
               <div>
@@ -3845,59 +3843,59 @@ export function TrainerDashboardInner({
                 )}
 
                 {/* SECTION 1 – NUTRITION OVERVIEW HERO CARD */}
-                <div className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-xs select-none">
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-3xs select-none">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                     
                     {/* Score (circular progress ring) on left */}
-                    <div className="md:col-span-4 flex items-center justify-center md:border-r md:border-slate-100 pr-0 md:pr-6">
+                    <div className="md:col-span-4 flex items-center justify-center md:border-r md:border-slate-100 pr-0 md:pr-4">
                       <div className="flex flex-col items-center">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">Nutrition Score</span>
-                        <div className="relative w-28 h-28 flex items-center justify-center">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">Nutrition Score</span>
+                        <div className="relative w-24 h-24 flex items-center justify-center">
                           {/* Svg Circle indicator */}
-                          <svg className="w-full h-full transform -rotate-90">
+                          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 96 96">
                             <circle 
-                              cx="56" 
-                              cy="56" 
-                              r="48" 
+                              cx="48" 
+                              cy="48" 
+                              r="38" 
                               className="text-[#F5F7FA]" 
-                              strokeWidth="8.5" 
+                              strokeWidth="7" 
                               stroke="currentColor" 
                               fill="transparent" 
                             />
                             <circle 
-                              cx="56" 
-                              cy="56" 
-                              r="48" 
+                              cx="48" 
+                              cy="48" 
+                              r="38" 
                               className="text-[#18D4C5] transition-all duration-500" 
-                              strokeWidth="8.5" 
-                              strokeDasharray={2 * Math.PI * 48} 
-                              strokeDashoffset={2 * Math.PI * 48 * (1 - nutritionScore / 100)} 
+                              strokeWidth="7" 
+                              strokeDasharray={2 * Math.PI * 38} 
+                              strokeDashoffset={2 * Math.PI * 38 * (1 - nutritionScore / 100)} 
                               strokeLinecap="round" 
                               stroke="currentColor" 
                               fill="transparent" 
                             />
                           </svg>
                           <div className="absolute text-center flex flex-col items-center justify-center">
-                            <span className="text-2xl font-extrabold text-[#081F63] tracking-tight">{nutritionScore}</span>
-                            <span className="text-[9px] font-bold text-slate-400 border-t border-slate-100/80 pt-0.5 mt-0.5 uppercase tracking-widest">{scoreRating}</span>
+                            <span className="text-xl font-black text-[#081F63] tracking-tight">{nutritionScore}</span>
+                            <span className="text-[8px] font-bold text-slate-400 border-t border-slate-100/80 pt-0.5 mt-0.5 uppercase tracking-widest">{scoreRating}</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Calories consumed vs daily targets */}
-                    <div className="md:col-span-8 space-y-4">
+                    <div className="md:col-span-8 space-y-3">
                       <div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Daily Intake Summary</span>
-                        <div className="flex items-baseline gap-2 mt-1">
-                          <span className="text-3xl font-extrabold text-[#081F63]">{totalDailyCal}</span>
-                          <span className="text-slate-400 text-sm font-semibold">/ {targetCalorieGoal} kcal consumed</span>
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Daily Intake Summary</span>
+                        <div className="flex items-baseline gap-1.5 mt-0.5">
+                          <span className="text-xl font-black text-[#081F63]">{totalDailyCal}</span>
+                          <span className="text-slate-400 text-xs font-semibold">/ {targetCalorieGoal} kcal consumed</span>
                         </div>
                       </div>
 
                       {/* Bar indicator */}
                       <div className="relative">
-                        <div className="w-full bg-[#F5F7FA] h-3 rounded-full overflow-hidden border border-slate-100">
+                        <div className="w-full bg-[#F5F7FA] h-2.5 rounded-full overflow-hidden border border-slate-100">
                           <div 
                             className={`h-full rounded-full transition-all duration-300 ${
                               calDiff > 0 ? 'bg-rose-500' : 'bg-[#18D4C5]'
@@ -3909,11 +3907,11 @@ export function TrainerDashboardInner({
 
                       {/* Status row */}
                       <div className="flex items-center justify-between">
-                        <div className={`px-3 py-1.5 rounded-full border text-xs font-bold font-sans flex items-center gap-1.5 ${statusColorClass}`}>
-                          <span className={`w-2 h-2 rounded-full ${statusDotColor}`} />
+                        <div className={`px-2.5 py-1 rounded-full border text-[10px] font-bold font-sans flex items-center gap-1.5 ${statusColorClass}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusDotColor}`} />
                           <span>{statusLabel}</span>
                         </div>
-                        <span className="text-xs font-semibold text-slate-400">
+                        <span className="text-[11px] font-semibold text-slate-400">
                           {calDiff > 0 ? 'Under target by 0 kcal' : `${1800 - totalDailyCal} kcal remaining`}
                         </span>
                       </div>
@@ -3926,10 +3924,10 @@ export function TrainerDashboardInner({
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   
                   {/* Weekly Calorie Trend Line Chart */}
-                  <div className="lg:col-span-7 bg-white border border-slate-200 rounded-[24px] p-5 shadow-xs flex flex-col justify-between">
+                  <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-3.5 shadow-3xs flex flex-col justify-between">
                     <div>
-                      <h4 className="text-[14px] font-semibold text-[#081F63] mb-1">Weekly Calorie Trend</h4>
-                      <p className="text-[13px] font-medium text-slate-400">Fluctuations in dietary intakes vs daily targets.</p>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-[#081F63] mb-0.5">Weekly Calorie Trend</h4>
+                      <p className="text-[11px] font-semibold text-slate-400">Fluctuations in dietary intakes vs daily targets.</p>
                     </div>
 
                     {/* Custom SVG Line Chart */}
@@ -4049,10 +4047,10 @@ export function TrainerDashboardInner({
                   </div>
 
                   {/* Macro Distribution Donut Chart */}
-                  <div className="lg:col-span-5 bg-white border border-slate-200 rounded-[24px] p-5 shadow-xs flex flex-col justify-between">
+                  <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-3.5 shadow-3xs flex flex-col justify-between">
                     <div>
-                      <h4 className="text-[14px] font-semibold text-[#081F63] mb-1">Macro Distribution</h4>
-                      <p className="text-[13px] font-medium text-slate-400 font-sans">Relative gram ratio of logged macros.</p>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-[#081F63] mb-0.5">Macro Distribution</h4>
+                      <p className="text-[11px] font-semibold text-slate-400 font-sans">Relative gram ratio of logged macros.</p>
                     </div>
 
                     <div className="flex items-center gap-4 mt-3">
@@ -4082,34 +4080,34 @@ export function TrainerDashboardInner({
                       </div>
 
                       {/* Stacked legends */}
-                      <div className="flex-1 space-y-1.5 font-sans">
-                        <div className="flex items-center justify-between text-2xs">
-                          <div className="flex items-center gap-1.5 font-bold">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#4F46E5]" />
-                            <span className="text-slate-600">Protein</span>
+                      <div className="flex-1 space-y-1 font-sans">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#4F46E5] shrink-0" />
+                            <span className="text-[13px] font-medium text-slate-500">Protein</span>
                           </div>
-                          <span className="font-extrabold text-[#081F63]">{proteinPctVal}% ({totalDailyProtein}g)</span>
+                          <span className="text-[14px] font-semibold text-slate-800">{proteinPctVal}% ({totalDailyProtein}g)</span>
                         </div>
-                        <div className="flex items-center justify-between text-2xs">
-                          <div className="flex items-center gap-1.5 font-bold">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#18D4C5]" />
-                            <span className="text-slate-600">Carbs</span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#18D4C5] shrink-0" />
+                            <span className="text-[13px] font-medium text-slate-500">Carbs</span>
                           </div>
-                          <span className="font-extrabold text-[#081F63]">{carbsPctVal}% ({totalDailyCarbs}g)</span>
+                          <span className="text-[14px] font-semibold text-slate-800">{carbsPctVal}% ({totalDailyCarbs}g)</span>
                         </div>
-                        <div className="flex items-center justify-between text-2xs">
-                          <div className="flex items-center gap-1.5 font-bold">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
-                            <span className="text-slate-600">Fat</span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0" />
+                            <span className="text-[13px] font-medium text-slate-500">Fat</span>
                           </div>
-                          <span className="font-extrabold text-[#081F63]">{fatPctVal}% ({totalDailyFat}g)</span>
+                          <span className="text-[14px] font-semibold text-slate-800">{fatPctVal}% ({totalDailyFat}g)</span>
                         </div>
-                        <div className="flex items-center justify-between text-2xs">
-                          <div className="flex items-center gap-1.5 font-bold">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#0F172A]" />
-                            <span className="text-slate-600">Fiber</span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#0F172A] shrink-0" />
+                            <span className="text-[13px] font-medium text-slate-500">Fiber</span>
                           </div>
-                          <span className="font-extrabold text-[#081F63]">{fiberPctVal}% ({totalDailyFiber}g)</span>
+                          <span className="text-[14px] font-semibold text-slate-800">{fiberPctVal}% ({totalDailyFiber}g)</span>
                         </div>
                       </div>
 
@@ -4122,11 +4120,11 @@ export function TrainerDashboardInner({
 
                 {/* SECTION 4 & SECTION 5 – NUTRITION LOGS ACTIVITY FEED & EXPANDABLE DETAILS */}
                 <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-[18px] font-bold text-[#081F63]">
+                  <div className="flex justify-between items-center mb-2.5">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-[#081F63]">
                       Nutrition Activity Feed
                     </h3>
-                    <span className="text-[13px] font-medium text-slate-400">{activeMealsList.length} Meals Logged</span>
+                    <span className="text-[11px] font-bold text-slate-400">{activeMealsList.length} Meals Logged</span>
                   </div>
 
                   <div className="space-y-2">
@@ -4139,7 +4137,7 @@ export function TrainerDashboardInner({
                       return (
                         <div 
                           key={meal.id || idx} 
-                          className="bg-white border border-slate-200 rounded-[20px] shadow-3xs overflow-hidden transition-all duration-200"
+                          className="bg-white border border-slate-200 rounded-xl shadow-3xs overflow-hidden transition-all duration-200"
                         >
                           {/* Feed row - clean horizontal layout, vertical footprint reduced by at least 40% */}
                           <button 
@@ -4239,13 +4237,13 @@ export function TrainerDashboardInner({
                                   </div>
 
                                   {/* Input comments form */}
-                                  <div className="flex gap-2.5 items-center">
+                                  <div className="space-y-2 w-full max-w-full overflow-hidden">
                                     <input 
                                       type="text" 
                                       id={`input_comment_${meal.id}`}
-                                      placeholder="Provide active coach feedback/diet adjustments..."
+                                      placeholder="Provide active coach feedback..."
                                       defaultValue={savedComment}
-                                      className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm text-[#081F63] font-medium placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#18D4C5] h-10 select-text"
+                                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-[#081F63] font-medium placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#18D4C5] h-9 select-text"
                                     />
                                     <button 
                                       onClick={() => {
@@ -4254,9 +4252,9 @@ export function TrainerDashboardInner({
                                           handlePostMealComment(meal.id, el.value);
                                         }
                                       }}
-                                      className="bg-[#081F63] hover:bg-[#081F63]/90 text-white font-bold text-xs px-5 rounded-xl uppercase tracking-wider transition h-10 select-none cursor-pointer flex items-center justify-center shadow-xs"
+                                      className="w-full bg-[#081F63] hover:bg-[#081F63]/90 text-white font-black text-xs rounded-lg uppercase tracking-wider transition h-9 select-none cursor-pointer flex items-center justify-center shadow-3xs px-4 text-center font-sans"
                                     >
-                                      Post Feedback
+                                      Post
                                     </button>
                                   </div>
 
@@ -4300,102 +4298,99 @@ export function TrainerDashboardInner({
                  {/* BENTO INTEL ROW – SECTION 6 */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 select-none">
                   
-                  {/* SECTION 6 – AI NUTRITION INTELLIGENCE */}
-                  <div className="lg:col-span-12 bg-white border border-slate-200 rounded-[24px] p-5 shadow-xs flex flex-col justify-between">
+                  {/* SECTION 6 – COACHAI ANALYSIS */}
+                  <div className="lg:col-span-12 bg-gradient-to-br from-[#061A4D] to-[#122F88] text-white border border-slate-900/40 rounded-xl p-4 shadow-3xs flex flex-col justify-between select-none">
                     <div>
-                      <h4 className="text-[14px] font-semibold text-[#081F63] flex items-center gap-1.5 mb-1.5">
-                        <Sparkles className="w-4 h-4 text-[#18D4C5] fill-[#18D4C5]" />
-                        <span>AI Nutrition Summary</span>
+                      <h4 className="text-xs font-black text-white flex items-center gap-1.5 mb-1.5 uppercase tracking-wider">
+                        <Sparkles className="w-3.5 h-3.5 text-[#18D4C5] fill-[#18D4C5]" />
+                        <span>CoachAI Analysis</span>
                       </h4>
-                      <p className="text-[13px] font-medium text-slate-400 mb-4">Immediate cognitive patterns checked.</p>
+                      <p className="text-[11px] text-indigo-150 mb-3.5 font-semibold">Immediate cognitive patterns checked.</p>
                       
-                      <div className="space-y-3">
-                        <div className="flex gap-2.5 items-start">
-                          <span className="text-emerald-500 bg-emerald-50 p-1 rounded-lg shrink-0 mt-0.5 text-xs">✓</span>
-                          <span className="text-sm font-medium text-slate-700">Protein intake adequate</span>
+                      <div className="space-y-2.5 text-[11px] font-bold">
+                        <div className="flex gap-2.5 items-center">
+                          <span className="text-emerald-300 bg-emerald-500/20 w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px]">✓</span>
+                          <span className="text-slate-100">Protein intake adequate</span>
                         </div>
-                        <div className="flex gap-2.5 items-start">
-                          <span className="text-emerald-500 bg-emerald-50 p-1 rounded-lg shrink-0 mt-0.5 text-xs">✓</span>
-                          <span className="text-sm font-medium text-slate-700">Meal timing consistent</span>
+                        <div className="flex gap-2.5 items-center">
+                          <span className="text-emerald-300 bg-emerald-500/20 w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px]">✓</span>
+                          <span className="text-slate-100">Meal timing consistent</span>
                         </div>
-                        <div className="flex gap-2.5 items-start">
-                          <span className="text-rose-500 bg-rose-50 p-1 rounded-lg shrink-0 mt-0.5 text-xs">⚠</span>
-                          <span className="text-sm font-medium text-slate-700">
+                        <div className="flex gap-2.5 items-center">
+                          <span className="text-rose-300 bg-rose-500/20 w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px]">!</span>
+                          <span className="text-slate-100">
                             {totalDailyCal > 1800 
                               ? `Calories exceeded by ${totalDailyCal - 1800} kcal` 
                               : `Calorie loads within targets`
                             }
                           </span>
                         </div>
-                        <div className="flex gap-2.5 items-start">
-                          <span className="text-rose-500 bg-rose-50 p-1 rounded-lg shrink-0 mt-0.5 text-xs">⚠</span>
-                          <span className="text-sm font-medium text-slate-700">Lunch contributed highest carb intake</span>
+                        <div className="flex gap-2.5 items-center">
+                          <span className="text-rose-300 bg-rose-500/20 w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px]">!</span>
+                          <span className="text-slate-100">Lunch contributed highest carb intake</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="border-t border-slate-50 pt-3.5 mt-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                      SYSTEM UPDATE: JUN 2026
+                    <div className="border-t border-white/10 pt-2.5 mt-4 text-[9px] font-black text-indigo-200 uppercase tracking-widest leading-none">
+                      COACHTRACK ENGINE • JUN 2026
                     </div>
                   </div>
 
                 </div>
 
-                {/* SECTION 9 – QUICK INSIGHT CARDS */}
-                <div>
-                  <h3 className="text-[18px] font-bold text-[#081F63] mb-3 select-none">
-                    Dietary Quick Insights
-                  </h3>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 select-none">
-                    
-                    {/* INSIGHT 1 */}
-                    <div className="bg-white border border-slate-200 rounded-[20px] p-4 text-left shadow-3xs flex flex-col justify-between">
-                      <span className="text-[11px] text-slate-400 font-bold block uppercase tracking-wider mb-2">🔥 Highest Calorie Day</span>
-                      <div>
-                        <span className="text-[14px] font-semibold text-[#081F63] block">Wednesday</span>
-                        <span className="text-2xs text-[#18D4C5] font-bold uppercase tracking-wider block mt-0.5">1,950 kcal consumed</span>
-                      </div>
-                    </div>
+                 {/* SECTION 9 – QUICK INSIGHT CARDS */}
+                 <div>
+                   <h3 className="text-xs font-black text-[#081F63] uppercase tracking-wide mb-2.5 select-none">
+                     Dietary Quick Insights
+                   </h3>
+                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 select-none">
+                     
+                     {/* INSIGHT 1 */}
+                     <div className="bg-white border border-slate-200/80 rounded-xl p-2.5 text-left shadow-3xs h-[72px] flex flex-col justify-center">
+                       <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider leading-none mb-1.5">🔥 Highest Calorie</span>
+                       <div>
+                         <span className="text-xs font-extrabold text-[#081F63] block leading-tight">Wednesday</span>
+                         <span className="text-[10px] text-[#14B8A6] font-black uppercase tracking-tight block mt-0.5 leading-none">1,950 kcal</span>
+                       </div>
+                     </div>
 
-                    {/* INSIGHT 2 */}
-                    <div className="bg-white border border-slate-200 rounded-[20px] p-4 text-left shadow-3xs flex flex-col justify-between">
-                      <span className="text-[11px] text-slate-400 font-bold block uppercase tracking-wider mb-2">🥗 Healthiest Meal</span>
-                      <div>
-                        <span className="text-[14px] font-semibold text-[#081F63] block truncate">Recovery Shake</span>
-                        <span className="text-2xs text-[#18D4C5] font-bold uppercase tracking-wider block mt-0.5">Optimal Protein Index</span>
-                      </div>
-                    </div>
+                     {/* INSIGHT 2 */}
+                     <div className="bg-white border border-slate-200/80 rounded-xl p-2.5 text-left shadow-3xs h-[72px] flex flex-col justify-center">
+                       <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider leading-none mb-1.5">🥗 Healthiest Meal</span>
+                       <div>
+                         <span className="text-xs font-extrabold text-[#081F63] block truncate leading-tight">Recovery Shake</span>
+                         <span className="text-[10px] text-[#14B8A6] font-black uppercase tracking-tight block mt-0.5 leading-none">Opt. Protein</span>
+                       </div>
+                     </div>
 
-                    {/* INSIGHT 3 */}
-                    <div className="bg-white border border-slate-200 rounded-[20px] p-4 text-left shadow-3xs flex flex-col justify-between">
-                      <span className="text-[11px] text-slate-400 font-bold block uppercase tracking-wider mb-2">💪 Protein Champ Day</span>
-                      <div>
-                        <span className="text-[14px] font-semibold text-[#081F63] block">Friday</span>
-                        <span className="text-2xs text-[#18D4C5] font-bold uppercase tracking-wider block mt-0.5">145g Protein Intake</span>
-                      </div>
-                    </div>
+                     {/* INSIGHT 3 */}
+                     <div className="bg-white border border-slate-200/80 rounded-xl p-2.5 text-left shadow-3xs h-[72px] flex flex-col justify-center">
+                       <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider leading-none mb-1.5">💪 Protein Champ</span>
+                       <div>
+                         <span className="text-xs font-extrabold text-[#081F63] block leading-tight">Friday</span>
+                         <span className="text-[10px] text-[#14B8A6] font-black uppercase tracking-tight block mt-0.5 leading-none">145g Intake</span>
+                       </div>
+                     </div>
 
-                    {/* INSIGHT 4 */}
-                    <div className="bg-white border border-slate-200 rounded-[20px] p-4 text-left shadow-3xs flex flex-col justify-between">
-                      <span className="text-[11px] text-slate-400 font-bold block uppercase tracking-wider mb-2">📈 Best Nutrition Score</span>
-                      <div>
-                        <span className="text-[14px] font-semibold text-[#081F63] block">Tuesday</span>
-                        <span className="text-2xs text-[#18D4C5] font-bold uppercase tracking-wider block mt-0.5">88 / 100 Rec. score</span>
-                      </div>
-                    </div>
+                     {/* INSIGHT 4 */}
+                     <div className="bg-white border border-slate-200/80 rounded-xl p-2.5 text-left shadow-3xs h-[72px] flex flex-col justify-center">
+                       <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider leading-none mb-1.5">📈 Best Nutrition</span>
+                       <div>
+                         <span className="text-xs font-extrabold text-[#081F63] block leading-tight">Tuesday</span>
+                         <span className="text-[10px] text-[#14B8A6] font-black uppercase tracking-tight block mt-0.5 leading-none">88 / 100 Score</span>
+                       </div>
+                     </div>
 
-                  </div>
-                </div>
+                   </div>
+                 </div>
 
                 {/* SECTION 10 – DOWNLOAD COMPLIANT REPORT */}
-                <button 
+                <DownloadButton 
                   id="btn-dl-nutrition-premium-report"
                   onClick={handleDownloadNutritionCSV}
-                  className="w-full flex items-center justify-center gap-2 bg-transparent hover:bg-[#081F63]/5 text-[#081F63] border-2 border-[#081F63] font-bold text-sm py-4 px-4 rounded-[16px] uppercase tracking-wider transition-all cursor-pointer font-sans select-none shadow-xs active:scale-[0.98]"
-                >
-                  <Download className="w-4 h-4 text-[#081F63]" />
-                  <span>⬇ Download Nutrition Report</span>
-                </button>
+                  label="DOWNLOAD NUTRITION REPORT"
+                />
 
               </motion.div>
             );
@@ -4411,33 +4406,33 @@ export function TrainerDashboardInner({
             >
               
               {/* Compact Profile Medical Cards */}
-              <div className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] text-left space-y-4 font-sans select-none">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+              <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs text-left space-y-3 font-sans select-none">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
                   🏥 Certified Health Assessment Details
                 </p>
 
-                <div className="grid grid-cols-2 gap-3 font-sans">
-                  <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/50">
+                <div className="grid grid-cols-2 gap-2.5 font-sans">
+                  <div className="border border-slate-100 rounded-xl p-2.5 bg-slate-50/50">
                     <span className="text-[9px] text-slate-400 font-extrabold tracking-wide uppercase font-sans">Medical Status</span>
                     <span className="text-xs font-black text-emerald-600 block mt-0.5">Cleared for Training</span>
                   </div>
-                  <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/50">
+                  <div className="border border-slate-100 rounded-xl p-2.5 bg-slate-50/50">
                     <span className="text-[9px] text-slate-400 font-extrabold tracking-wide uppercase font-sans">Known Conditions</span>
-                    <span className="text-xs font-black text-slate-800 block mt-0.5">Mild lower back discomfort</span>
+                    <span className="text-xs font-black text-slate-800 block mt-0.5">Mild discomfort</span>
                   </div>
-                  <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/50">
+                  <div className="border border-slate-100 rounded-xl p-2.5 bg-slate-50/50">
                     <span className="text-[9px] text-slate-400 font-extrabold tracking-wide uppercase font-sans">Injury Notes</span>
-                    <span className="text-xs font-black text-slate-800 block mt-0.5">Previous knee strain</span>
+                    <span className="text-xs font-black text-slate-800 block mt-0.5">Knee strain history</span>
                   </div>
-                  <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/50">
-                    <span className="text-[9px] text-slate-400 font-extrabold tracking-wide uppercase font-sans">Exercise Restrictions</span>
-                    <span className="text-xs font-black text-rose-600 block mt-0.5">Avoid heavy barbell squats</span>
+                  <div className="border border-slate-100 rounded-xl p-2.5 bg-slate-50/50">
+                    <span className="text-[9px] text-slate-400 font-extrabold tracking-wide uppercase font-sans">Restrictions</span>
+                    <span className="text-xs font-black text-rose-600 block mt-0.5">Avoid heavy squats</span>
                   </div>
-                  <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/50">
+                  <div className="border border-slate-100 rounded-xl p-2.5 bg-slate-50/50">
                     <span className="text-[9px] text-slate-400 font-extrabold tracking-wide uppercase font-sans">Allergies</span>
                     <span className="text-xs font-black text-slate-800 block mt-0.5">None reported</span>
                   </div>
-                  <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/50">
+                  <div className="border border-slate-100 rounded-xl p-2.5 bg-slate-50/50">
                     <span className="text-[9px] text-slate-400 font-extrabold tracking-wide uppercase font-sans">Emergency Contact</span>
                     <span className="text-xs font-extrabold text-slate-800 block mt-0.5">Saved Contact ✓</span>
                   </div>
@@ -4445,15 +4440,15 @@ export function TrainerDashboardInner({
               </div>
 
               {/* Interactive notes section for medical review */}
-              <div className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.02)] text-left">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 font-sans select-none">
+              <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs text-left">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1 font-sans select-none">
                   ✍️ Medical Observation Notes
                 </span>
                 
                 <textarea 
                   id={`text_med_obs_${selectedTrainee.id}`}
-                  rows={4}
-                  className="w-full bg-slate-50 border border-slate-205 border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-sans shadow-3xs focus:outline-teal-500 leading-relaxed mb-4"
+                  rows={3}
+                  className="w-full bg-slate-50 border border-slate-205 border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 font-sans shadow-3xs focus:outline-teal-500 leading-relaxed mb-3"
                   placeholder="Record heart rates, custom posture observations, medical warning details..."
                   defaultValue={medicalObsNotes[selectedTrainee.id] || ''}
                 />
@@ -4469,21 +4464,18 @@ export function TrainerDashboardInner({
                       triggerToast('Medical notes saved! ✓', 'success');
                     }
                   }}
-                  className="w-full bg-[#061A4D] hover:bg-slate-900 text-white font-extrabold text-xs py-3 px-4 rounded-xl uppercase tracking-wider transition-all cursor-pointer font-sans select-none"
+                  className="w-full bg-[#061A4D] hover:bg-slate-900 text-white font-extrabold text-xs py-2.5 px-4 rounded-xl uppercase tracking-wider transition-all cursor-pointer font-sans select-none"
                 >
                   Save Medical Notes
                 </button>
               </div>
 
               {/* Download CSV button */}
-              <button 
+              <DownloadButton 
                 id="btn-dl-medical"
                 onClick={handleDownloadMedicalCSV}
-                className="w-full flex items-center justify-center gap-2 bg-[#14B8A6]/10 hover:bg-[#14B8A6]/20 text-[#061A4D] border border-[#14B8A6]/30 font-extrabold text-xs py-3 px-4 rounded-xl uppercase tracking-wider transition-all cursor-pointer font-sans select-none flex"
-              >
-                <Download className="w-4 h-4 text-[#14B8A6]" />
-                <span>Download Medical History CSV</span>
-              </button>
+                label="DOWNLOAD MEDICAL HISTORY CSV"
+              />
             </motion.div>
           )}
 
@@ -4581,50 +4573,50 @@ export function TrainerDashboardInner({
         {/* Custom Invoice Generator Modal Form */}
         {showInvoiceForm && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-[24px] w-[calc(100%-32px)] max-w-[420px] mx-auto p-6 shadow-[0_12px_40px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[90vh] box-border break-words animate-zoom-in flex flex-col">
+            <div className="bg-white rounded-[18px] w-[90%] max-w-[360px] mx-auto p-5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[85vh] box-border break-words animate-zoom-in flex flex-col">
               <button 
                 type="button"
                 onClick={() => setShowInvoiceForm(false)}
-                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1.5 cursor-pointer font-bold transition z-10"
+                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1 cursor-pointer font-bold transition z-10"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
 
-              <div className="mb-5 pr-12">
-                <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded-md tracking-wider mb-2 uppercase select-none">BILLING HUB</span>
-                <h3 className="text-[32px] font-bold text-[#041F63] leading-tight mb-1">
+              <div className="mb-3 pr-8">
+                <span className="inline-block px-1.5 py-0.2 text-[8.5px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded tracking-wider mb-1 uppercase select-none">BILLING HUB</span>
+                <h3 className="text-[20px] font-extrabold text-[#041F63] leading-tight mb-0.5">
                   Issue Custom Invoice
                 </h3>
-                <p className="text-[13px] font-normal text-slate-500">
+                <p className="text-[11px] text-slate-500">
                   Generate and dispatch professional invoices.
                 </p>
               </div>
 
               {invoiceCreatedSuccess ? (
-                <div className="text-center py-4 space-y-4">
-                  <span className="text-4xl block">📋</span>
-                  <h3 className="font-bold text-[#041F63] text-[22px] leading-tight">Invoice Generated Successfully!</h3>
-                  <p className="text-[13px] text-slate-500 font-sans">Client billing registers have been updated.</p>
-                  <div className="pt-4">
+                <div className="text-center py-2 space-y-3">
+                  <span className="text-3xl block">📋</span>
+                  <h3 className="font-bold text-[#041F63] text-[18px] leading-tight">Invoice Generated!</h3>
+                  <p className="text-[11px] text-slate-500 font-sans">Client billing registers have been updated.</p>
+                  <div className="pt-2">
                     <button
                       type="button"
                       onClick={() => {
                         setShowInvoiceForm(false);
                       }}
-                      className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-14 rounded-[14px] text-[16px] flex items-center justify-center transition cursor-pointer"
+                      className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
                     >
                       Dismiss
                     </button>
                   </div>
                 </div>
               ) : (
-                <form onSubmit={handleInvoiceCreateSubmit} className="space-y-5">
+                <form onSubmit={handleInvoiceCreateSubmit} className="space-y-3.5">
                   {/* Billing Target Option */}
-                  <div className="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl space-y-4 text-left">
-                    <label className="block text-[14px] font-semibold text-[#041F63] font-sans">
+                  <div className="bg-slate-50/50 border border-slate-100 p-3 rounded-[12px] space-y-2 text-left">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                       Billing Target Group
                     </label>
-                    <div className="flex flex-col sm:flex-row gap-3 text-sm font-semibold">
+                    <div className="flex flex-col gap-1.5 text-[12px] font-semibold">
                       <label className="flex items-center gap-2 cursor-pointer font-bold font-sans text-slate-700 select-none">
                         <input
                           type="radio"
@@ -4632,7 +4624,7 @@ export function TrainerDashboardInner({
                           value="individual"
                           checked={invoiceBillingTarget === 'individual'}
                           onChange={() => setInvoiceBillingTarget('individual')}
-                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-4 w-4 bg-white border-slate-200 cursor-pointer"
+                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-3.5 w-3.5 bg-white border-slate-200 cursor-pointer"
                         />
                         Single Client
                       </label>
@@ -4648,7 +4640,7 @@ export function TrainerDashboardInner({
                                 setInvoiceSelectedTraineeIds([selectedTraineeId]);
                             }
                           }}
-                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-4 w-4 bg-white border-slate-200 cursor-pointer"
+                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-3.5 w-3.5 bg-white border-slate-200 cursor-pointer"
                         />
                         Multiple Clients
                       </label>
@@ -4659,7 +4651,7 @@ export function TrainerDashboardInner({
                           value="all"
                           checked={invoiceBillingTarget === 'all'}
                           onChange={() => setInvoiceBillingTarget('all')}
-                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-4 w-4 bg-white border-slate-200 cursor-pointer"
+                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-3.5 w-3.5 bg-white border-slate-200 cursor-pointer"
                         />
                         All Clients ({trainees.length})
                       </label>
@@ -4667,11 +4659,11 @@ export function TrainerDashboardInner({
 
                     {/* Client lists to select from */}
                     {invoiceBillingTarget === 'selected' && (
-                      <div className="pt-3 border-t border-slate-100 mt-2">
-                        <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">
+                      <div className="pt-2 border-t border-slate-100 mt-1">
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                           Select Multiple Clients
                         </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1 scrollbar-thin">
+                        <div className="grid grid-cols-1 gap-2 max-h-36 overflow-y-auto p-0.5 scrollbar-thin">
                           {trainees.map((t) => {
                             const isChecked = invoiceSelectedTraineeIds.includes(t.id);
                             return (
@@ -4684,9 +4676,9 @@ export function TrainerDashboardInner({
                                     setInvoiceSelectedTraineeIds([...invoiceSelectedTraineeIds, t.id]);
                                   }
                                 }}
-                                className={`flex items-center gap-2.5 p-3 rounded-[16px] border cursor-pointer transition select-none ${
+                                className={`flex items-center gap-2 p-2 rounded-[10px] border cursor-pointer transition select-none ${
                                   isChecked
-                                    ? 'border-[#4F46E5] bg-[#F5F7FF] shadow-[0px_4px_12px_rgba(79,70,229,0.15)] animate-none'
+                                    ? 'border-[#4F46E5] bg-[#F5F7FF]'
                                     : 'border-[#D7DFEA] hover:bg-slate-50 bg-white'
                                 }`}
                               >
@@ -4695,17 +4687,17 @@ export function TrainerDashboardInner({
                                     type="checkbox"
                                     checked={isChecked}
                                     readOnly
-                                    className="rounded border-slate-300 text-[#4F46E5] focus:ring-[#4F46E5] h-4 w-4 pointer-events-none"
+                                    className="rounded border-slate-300 text-[#4F46E5] focus:ring-[#4F46E5] h-3.5 w-3.5 pointer-events-none"
                                   />
                                 </div>
                                 <img
                                   src={t.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150'}
                                   alt={t.name}
                                   referrerPolicy="no-referrer"
-                                  className="w-7 h-7 rounded-full object-cover shrink-0"
+                                  className="w-6 h-6 rounded-full object-cover shrink-0"
                                 />
                                 <div className="truncate text-left">
-                                  <div className="text-[14px] font-semibold text-slate-800 truncate">{t.name}</div>
+                                  <div className="text-[12px] font-semibold text-slate-800 truncate">{t.name}</div>
                                 </div>
                               </div>
                             );
@@ -4715,20 +4707,20 @@ export function TrainerDashboardInner({
                     )}
 
                     {invoiceBillingTarget === 'individual' && (
-                      <div className="pt-3 border-t border-slate-100 mt-2">
-                        <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">
+                      <div className="pt-2 border-t border-slate-100 mt-1">
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                           Select Client Card
                         </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1 scrollbar-thin">
+                        <div className="grid grid-cols-1 gap-2 max-h-36 overflow-y-auto p-0.5 scrollbar-thin">
                           {trainees.map(t => {
                             const isSelected = selectedTraineeId === t.id;
                             return (
                               <div
                                 key={t.id}
                                 onClick={() => setSelectedTraineeId(t.id)}
-                                className={`flex items-center gap-2.5 p-3 rounded-[16px] border cursor-pointer transition select-none ${
+                                className={`flex items-center gap-2 p-2 rounded-[10px] border cursor-pointer transition select-none ${
                                   isSelected
-                                    ? 'border-[#4F46E5] bg-[#F5F7FF] shadow-[0px_4px_12px_rgba(79,70,229,0.15)] animate-none'
+                                    ? 'border-[#4F46E5] bg-[#F5F7FF]'
                                     : 'border-[#D7DFEA] hover:bg-slate-50 bg-white'
                                 }`}
                               >
@@ -4736,11 +4728,11 @@ export function TrainerDashboardInner({
                                   src={t.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150'}
                                   alt={t.name}
                                   referrerPolicy="no-referrer"
-                                  className="w-8 h-8 rounded-full object-cover shrink-0"
+                                  className="w-6 h-6 rounded-full object-cover shrink-0"
                                 />
-                                <div className="truncate text-left">
-                                  <div className="text-[14px] font-semibold text-slate-800 truncate">{t.name}</div>
-                                  <div className="text-[12px] text-slate-500 truncate">{t.goals || 'Active Trainee'}</div>
+                                <div className="truncate text-left flex-1 min-w-0">
+                                  <div className="text-[12px] font-semibold text-slate-800 truncate">{t.name}</div>
+                                  <div className="text-[10px] text-slate-400 truncate">{t.goals || 'Active Trainee'}</div>
                                 </div>
                               </div>
                             );
@@ -4751,9 +4743,9 @@ export function TrainerDashboardInner({
                   </div>
 
                   {/* Invoice details */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-2.5">
                     <div>
-                      <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                         Invoice Title
                       </label>
                       <input 
@@ -4761,18 +4753,18 @@ export function TrainerDashboardInner({
                         value={invoiceTitle}
                         onChange={(e) => setInvoiceTitle(e.target.value)}
                         placeholder="Coaching Fee"
-                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[14px] px-4 py-3 text-[16px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
+                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                         Invoice Type
                       </label>
                       <select
                         value={invoiceType}
                         onChange={(e) => setInvoiceType(e.target.value)}
-                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[14px] px-4 py-3 text-[16px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
+                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                         required
                       >
                         <option value="Single Class">Single Class</option>
@@ -4782,35 +4774,35 @@ export function TrainerDashboardInner({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-2.5">
                     <div>
-                      <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                         Amount (RM)
                       </label>
                       <input 
                         type="number" 
                         value={invoiceAmount}
                         onChange={(e) => setInvoiceAmount(Number(e.target.value))}
-                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[14px] px-4 py-3 text-[16px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
+                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                         Due Date
                       </label>
                       <input 
                         type="date" 
                         value={invoiceDueDate}
                         onChange={(e) => setInvoiceDueDate(e.target.value)}
-                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[14px] px-4 py-3 text-[16px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
+                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                       Service Description
                     </label>
                     <input 
@@ -4818,34 +4810,34 @@ export function TrainerDashboardInner({
                       value={invoiceDescription}
                       onChange={(e) => setInvoiceDescription(e.target.value)}
                       placeholder="Monthly Pack (8x Slots)"
-                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[14px] px-4 py-3 text-[16px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
+                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                       Notes (Optional Remarks)
                     </label>
                     <textarea 
                       value={invoiceNotes}
                       onChange={(e) => setInvoiceNotes(e.target.value)}
                       placeholder="Please checkout via FPX or CoachTrack card..."
-                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[14px] px-4 py-3 text-[16px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none h-20 resize-none transition"
+                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none h-12 resize-none transition"
                     />
                   </div>
 
-                  <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
+                  <div className="flex flex-col gap-2 pt-3 border-t border-slate-100">
                     <button
                       type="submit"
-                      className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-14 rounded-[14px] text-[16px] flex items-center justify-center transition cursor-pointer"
+                      className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
                     >
                       ISSUE INVOICE
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowInvoiceForm(false)}
-                      className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-14 rounded-[14px] text-[16px] flex items-center justify-center transition cursor-pointer"
+                      className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -4859,158 +4851,149 @@ export function TrainerDashboardInner({
         {/* Add Client Onboarding Modal */}
         {showAddClientForm && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-[24px] w-[calc(100%-32px)] max-w-[420px] mx-auto p-6 shadow-[0_12px_40px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[90vh] box-border break-words animate-zoom-in flex flex-col">
+            <div className="bg-white rounded-[18px] w-[90%] max-w-[360px] mx-auto p-5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[85vh] box-border break-words animate-zoom-in flex flex-col">
               <button 
                 type="button"
                 onClick={() => {
                   setShowAddClientForm(false);
                   setInviteError('');
                 }}
-                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1.5 cursor-pointer font-bold transition z-10"
+                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1 cursor-pointer font-bold transition z-10"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
 
-              <div className="mb-5 pr-12">
-                <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded-md tracking-wider mb-2 uppercase select-none">CLIENT ONBOARDING</span>
-                <h3 className="text-[32px] font-bold text-[#041F63] leading-tight mb-1">
+              <div className="mb-3 pr-8">
+                <span className="inline-block px-1.5 py-0.2 text-[8.5px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded tracking-wider mb-1 uppercase select-none">CLIENT ONBOARDING</span>
+                <h3 className="text-[20px] font-extrabold text-[#041F63] leading-tight mb-0.5">
                   Invite New Client
                 </h3>
-                <p className="text-[13px] font-normal text-slate-500">
+                <p className="text-[11px] text-slate-500">
                   Send invitation and assign coaching package.
                 </p>
               </div>
 
-              <form onSubmit={handleAddClientInviteSubmit} className="space-y-5">
+              <form onSubmit={handleAddClientInviteSubmit} className="space-y-3.5">
                 {inviteError && (
-                  <div className="bg-rose-50 border border-rose-100 text-rose-800 rounded-xl p-3.5 text-xs font-semibold">
+                  <div className="bg-rose-50 border border-rose-100 text-rose-800 rounded-xl p-2.5 text-[11px] font-semibold">
                     ⚠️ {inviteError}
                   </div>
                 )}
                 
                 {inviteSuccess && (
-                  <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-3.5 text-xs font-bold text-center">
-                    🎉 Invitation generated successfully! Trainee notified.
+                  <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-2.5 text-[11px] font-bold text-center">
+                    🎉 Invitation generated successfully!
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">
+                  <label className="block text-[11px] font-bold text-[#041F63] font-sans mb-1 uppercase tracking-wider">
                     Client Email
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#041F63]">
-                      <Mail className="w-5 h-5" />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#041F63]">
+                      <Mail className="w-4 h-4" />
                     </div>
                     <input
                       type="email"
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
                       placeholder="eLearning, health, gym email..."
-                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[14px] pl-11 pr-4 py-3.5 text-[16px] font-medium focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition text-slate-800"
+                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] pl-9 pr-3 py-1.5 text-[13px] font-medium focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition text-slate-800"
                       required
                     />
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1.5 font-sans">
-                    Only existing CoachTrack MY accounts can be onboarded.
+                  <p className="text-[10px] text-slate-400 mt-1 font-sans">
+                    Only existing accounts can be onboarded.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">
+                  <label className="block text-[11px] font-bold text-[#041F63] font-sans mb-1 uppercase tracking-wider">
                     Choose Coaching Package
                   </label>
-                  <div className="space-y-3">
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                     {/* Package 1 */}
                     <div 
                       onClick={() => setInvitePkgOption('Single Class')}
-                      className={`relative border p-4 rounded-[16px] cursor-pointer transition select-none ${
+                      className={`relative border p-2.5 rounded-[12px] cursor-pointer transition select-none ${
                         invitePkgOption === 'Single Class' 
-                          ? 'border-[#4F46E5] bg-[#F5F7FF] shadow-[0px_4px_12px_rgba(79,70,229,0.15)] animate-none' 
+                          ? 'border-[#4F46E5] bg-[#F5F7FF]' 
                           : 'border-[#D7DFEA] hover:border-slate-350 hover:bg-slate-50 bg-white'
                       }`}
                     >
-                      <div className="flex justify-between items-start mb-2">
+                      <div className="flex justify-between items-start mb-1">
                         <div>
-                          <h4 className="font-bold text-slate-900 text-[14px]">Single Session</h4>
-                          <p className="text-[11px] text-slate-500">Perfect for introductory lessons</p>
+                          <h4 className="font-bold text-slate-900 text-[12px]">Single Session</h4>
+                          <p className="text-[10px] text-slate-500">Introductory lessons</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-[18px] font-bold text-[#041F63]">RM80</span>
+                          <span className="text-[14px] font-bold text-[#041F63]">RM80</span>
                         </div>
                       </div>
-                      <div className="space-y-1 text-[11px] text-slate-500 pl-1">
-                        <div>✓ One coaching session</div>
-                        <div>✓ Workout guidance</div>
-                        <div>✓ Session notes</div>
+                      <div className="space-y-0.5 text-[10px] text-slate-500 pl-1">
+                        <div>✓ One coaching session & Workout guidance</div>
                       </div>
                     </div>
 
                     {/* Package 2 */}
                     <div 
                       onClick={() => setInvitePkgOption('4-Class Package')}
-                      className={`relative border p-4 rounded-[16px] cursor-pointer transition select-none ${
+                      className={`relative border p-2.5 rounded-[12px] cursor-pointer transition select-none ${
                         invitePkgOption === '4-Class Package' 
-                          ? 'border-[#4F46E5] bg-[#F5F7FF] shadow-[0px_4px_12px_rgba(79,70,229,0.15)] animate-none' 
+                          ? 'border-[#4F46E5] bg-[#F5F7FF]' 
                           : 'border-[#D7DFEA] hover:border-slate-350 hover:bg-slate-50 bg-white'
                       }`}
                     >
-                      <div className="absolute top-3.5 right-4.5 bg-[#17D4C3] text-white text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-md">
-                        MOST POPULAR
+                      <div className="absolute top-2 right-2 bg-[#17D4C3] text-white text-[8px] font-bold tracking-wider uppercase px-1 py-0.1 rounded">
+                        POPULAR
                       </div>
-                      <div className="flex justify-between items-start mb-2">
+                      <div className="flex justify-between items-start mb-1">
                         <div>
-                          <h4 className="font-bold text-slate-900 text-[14px]">4 Classes Per Month</h4>
-                          <p className="text-[11px] text-slate-500">Ideal for weekly progression</p>
+                          <h4 className="font-bold text-slate-900 text-[12px]">4 Classes / Month</h4>
+                          <p className="text-[10px] text-slate-500">Weekly progression</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-[18px] font-bold text-[#041F63]">RM310</span>
+                          <span className="text-[14px] font-bold text-[#041F63]">RM310</span>
                         </div>
                       </div>
-                      <div className="space-y-1 text-[11px] text-slate-500 pl-1">
-                        <div>✓ Weekly coaching</div>
-                        <div>✓ Progress tracking</div>
-                        <div>✓ Nutrition review</div>
-                        <div>✓ Priority support</div>
+                      <div className="space-y-0.5 text-[10px] text-slate-500 pl-1">
+                        <div>✓ Weekly coaching & Progress tracking</div>
                       </div>
                     </div>
 
                     {/* Package 3 */}
                     <div 
                       onClick={() => setInvitePkgOption('8-Class Package')}
-                      className={`relative border p-4 rounded-[16px] cursor-pointer transition select-none ${
+                      className={`relative border p-2.5 rounded-[12px] cursor-pointer transition select-none ${
                         invitePkgOption === '8-Class Package' 
-                          ? 'border-[#4F46E5] bg-[#F5F7FF] shadow-[0px_4px_12px_rgba(79,70,229,0.15)] animate-none' 
+                          ? 'border-[#4F46E5] bg-[#F5F7FF]' 
                           : 'border-[#D7DFEA] hover:border-slate-350 hover:bg-slate-50 bg-white'
                       }`}
                     >
-                      <div className="flex justify-between items-start mb-2">
+                      <div className="flex justify-between items-start mb-1">
                         <div>
-                          <h4 className="font-bold text-slate-900 text-[14px]">8 Classes Per Month</h4>
-                          <p className="text-[11px] text-slate-500">Maximum training frequency</p>
+                          <h4 className="font-bold text-slate-900 text-[12px]">8 Classes / Month</h4>
+                          <p className="text-[10px] text-slate-500">Maximum frequency</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-[18px] font-bold text-[#041F63]">RM600</span>
+                          <span className="text-[14px] font-bold text-[#041F63]">RM600</span>
                         </div>
                       </div>
-                      <div className="space-y-1 text-[11px] text-slate-500 pl-1">
-                        <div>✓ Twice weekly coaching</div>
-                        <div>✓ Progress tracking</div>
-                        <div>✓ Nutrition review</div>
-                        <div>✓ Priority support</div>
-                        <div>✓ Video form review</div>
+                      <div className="space-y-0.5 text-[10px] text-slate-500 pl-1">
+                        <div>✓ Twice weekly coaching & full reviews</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
+                <div className="flex flex-col gap-2 pt-3 border-t border-slate-100">
                   <button
                     type="submit"
                     disabled={inviteLoading}
-                    className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-14 rounded-[14px] text-[16px] flex items-center justify-center transition cursor-pointer"
+                    className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
                   >
-                    {inviteLoading ? 'SENDING INVITATION...' : 'SEND INVITATION'}
+                    {inviteLoading ? 'SENDING...' : 'SEND INVITATION'}
                   </button>
                   <button
                     type="button"
@@ -5018,7 +5001,7 @@ export function TrainerDashboardInner({
                       setShowAddClientForm(false);
                       setInviteError('');
                     }}
-                    className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-14 rounded-[14px] text-[16px] flex items-center justify-center transition cursor-pointer"
+                    className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -5031,7 +5014,7 @@ export function TrainerDashboardInner({
         {/* Session Options Action Sheet Modal (Interactive Coaching Dashboard) */}
         {showSessionActionSheet && selectedSessionForAction && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-[24px] w-[calc(100%-32px)] max-w-[420px] mx-auto p-6 shadow-[0_12px_40px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[90vh] space-y-4 box-border break-words animate-zoom-in flex flex-col">
+            <div className="bg-white rounded-[18px] w-[90%] max-w-[360px] mx-auto p-5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[85vh] space-y-3.5 box-border break-words animate-zoom-in flex flex-col">
               
               {/* Close */}
               <button 
@@ -5040,52 +5023,52 @@ export function TrainerDashboardInner({
                   setIsReschedulingSession(false);
                   setShowLogWorkoutForm(false);
                 }}
-                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1.5 cursor-pointer font-bold transition z-10"
+                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1 cursor-pointer font-bold transition z-10"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
 
               {/* Title Header */}
-              <div className="mb-2 pr-12">
-                <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded-md tracking-wider mb-2 uppercase select-none">SESSION MANAGEMENT</span>
-                <h3 className="text-[32px] font-bold text-[#041F63] leading-tight mb-1">
+              <div className="mb-1 pr-8">
+                <span className="inline-block px-1.5 py-0.2 text-[8.5px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded tracking-wider mb-1 uppercase select-none">SESSION MANAGEMENT</span>
+                <h3 className="text-[20px] font-extrabold text-[#041F63] leading-tight mb-0.5">
                   Manage Session
                 </h3>
-                <p className="text-[13px] font-normal text-slate-500">
+                <p className="text-[11px] text-slate-500">
                   Adjust coaching date and available time.
                 </p>
               </div>
 
               {/* Active Trainee Details */}
-              <div className="bg-slate-50 p-4 rounded-[16px] border border-slate-100 text-[14px] text-slate-700 font-medium space-y-2 select-none">
+              <div className="bg-slate-50 p-3 rounded-[12px] border border-slate-100 text-[12px] text-slate-700 font-medium space-y-1 select-none">
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-normal">Trainee Name:</span> 
                   <span className="font-bold text-[#041F63]">{selectedSessionForAction.traineeName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-normal">Currently Booked:</span> 
-                  <span className="font-bold text-[#041F63]">{selectedSessionForAction.date} at {selectedSessionForAction.timeSlot || selectedSessionForAction.time_slot || '10:00 AM'}</span>
+                  <span className="font-bold text-[#041F63] truncate ml-2 max-w-[160px]">{selectedSessionForAction.date} at {selectedSessionForAction.timeSlot || selectedSessionForAction.time_slot || '10:00 AM'}</span>
                 </div>
               </div>
 
               {!isReschedulingSession && (
-                <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="grid grid-cols-2 gap-3.5 pt-1">
                   <button
                     onClick={() => {
                       setSessionToLog(selectedSessionForAction);
                       setShowSessionActionSheet(false);
                     }}
-                    className="h-20 bg-[#17D4C3] hover:bg-[#17D4C3]/90 text-white font-bold rounded-[14px] flex flex-col items-center justify-center gap-1 cursor-pointer shadow-md transition text-[15px]"
+                    className="h-14 bg-[#17D4C3] hover:bg-[#17D4C3]/90 text-white font-bold rounded-[12px] flex flex-col items-center justify-center gap-0.5 cursor-pointer shadow-md transition text-[13px]"
                   >
-                    <span className="text-lg">✅</span>
+                    <span className="text-md">✅</span>
                     <span>Complete</span>
                   </button>
 
                   <button
                     onClick={() => setIsReschedulingSession(true)}
-                    className="h-20 bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold rounded-[14px] flex flex-col items-center justify-center gap-1 cursor-pointer shadow-md transition text-[15px]"
+                    className="h-14 bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold rounded-[12px] flex flex-col items-center justify-center gap-0.5 cursor-pointer shadow-md transition text-[13px]"
                   >
-                    <span className="text-lg">📅</span>
+                    <span className="text-md">📅</span>
                     <span>Reschedule</span>
                   </button>
                 </div>
@@ -5093,11 +5076,11 @@ export function TrainerDashboardInner({
 
               {/* Reschedule View */}
               {isReschedulingSession && (
-                <div className="space-y-4 pt-3 border-t border-slate-100 text-left">
-                  <h4 className="font-bold text-[#041F63] text-[18px]">Reschedule Session Slot</h4>
-                  <div className="space-y-4">
+                <div className="space-y-3 pt-2.5 border-t border-slate-100 text-left">
+                  <h4 className="font-bold text-[#041F63] text-[14px]">Reschedule Session Slot</h4>
+                  <div className="space-y-3">
                     <div>
-                      <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">New Date</label>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">New Date</label>
                       <input 
                         type="date" 
                         value={rescheduleNewDate}
@@ -5109,12 +5092,12 @@ export function TrainerDashboardInner({
                             setRescheduleNewDate(val);
                           }
                         }}
-                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[14px] px-4 py-3 text-[16px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition" 
+                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition" 
                       />
                     </div>
                     <div>
-                      <label className="block text-[14px] font-semibold text-[#041F63] font-sans mb-2">New Time Slot</label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">New Time Slot</label>
+                      <div className="grid grid-cols-3 gap-1.5">
                         {['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM'].map(time => {
                           const isBooked = checkSlotIsBooked(rescheduleNewDate, time, selectedSessionForAction?.id);
                           const isSelected = rescheduleNewTimeSlot === time;
@@ -5125,10 +5108,10 @@ export function TrainerDashboardInner({
                                 key={time}
                                 type="button"
                                 disabled
-                                className="border border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed py-3 text-center text-[12px] text-slate-400 font-medium rounded-[16px] flex flex-col items-center justify-center h-12"
+                                className="border border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed py-1.5 text-center text-[10px] text-slate-400 font-medium rounded-[10px] flex flex-col items-center justify-center h-10"
                               >
                                 <span>{time}</span>
-                                <span className="text-[7px] font-bold uppercase text-rose-500 tracking-wider">Booked</span>
+                                <span className="text-[6.5px] font-bold uppercase text-rose-500 tracking-wider">Booked</span>
                               </button>
                             );
                           }
@@ -5140,9 +5123,9 @@ export function TrainerDashboardInner({
                               onClick={() => {
                                 setRescheduleNewTimeSlot(time);
                               }}
-                              className={`border py-3 text-center font-bold text-[13px] rounded-[16px] transition flex flex-col items-center justify-center cursor-pointer select-none h-12 ${
+                              className={`border py-1.5 text-center font-bold text-[11px] rounded-[10px] transition flex flex-col items-center justify-center cursor-pointer select-none h-10 ${
                                 isSelected
-                                  ? 'border-[#4F46E5] bg-[#F5F7FF] shadow-[0px_4px_12px_rgba(79,70,229,0.15)] ring-2 ring-[#4F46E5] text-[#4F46E5]'
+                                  ? 'border-[#4F46E5] bg-[#F5F7FF] shadow-xs text-[#4F46E5]'
                                   : 'border-[#D7DFEA] hover:bg-slate-50 bg-white text-slate-700'
                               }`}
                             >
@@ -5153,7 +5136,7 @@ export function TrainerDashboardInner({
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-3 pt-3">
+                    <div className="flex flex-col gap-2 pt-2">
                       <button 
                         onClick={async () => {
                           const bookingId = selectedSessionForAction.id;
@@ -5179,13 +5162,13 @@ export function TrainerDashboardInner({
                             alert("Failed to reschedule.");
                           }
                         }}
-                        className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-14 rounded-[14px] text-[16px] flex items-center justify-center transition cursor-pointer"
+                        className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
                       >
                         CONFIRM RESCHEDULE
                       </button>
                       <button
                         onClick={() => setIsReschedulingSession(false)}
-                        className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-14 rounded-[14px] text-[16px] flex items-center justify-center transition cursor-pointer"
+                        className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
                       >
                         Back
                       </button>
@@ -5201,54 +5184,54 @@ export function TrainerDashboardInner({
         {/* Schedule Session Modal */}
         {showScheduleModal && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-[24px] w-[calc(100%-32px)] max-w-[420px] mx-auto p-6 shadow-[0_12px_40px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[90vh] flex flex-col box-border break-words animate-zoom-in">
+            <div className="bg-white rounded-[18px] w-[90%] max-w-[360px] mx-auto p-5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[85vh] flex flex-col box-border break-words animate-zoom-in">
               <button 
                 type="button"
                 onClick={() => setShowScheduleModal(false)}
-                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1.5 cursor-pointer font-bold transition z-10"
+                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1 cursor-pointer font-bold transition z-10"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
               
-              <div className="mb-5 pr-12">
-                <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded-md tracking-wider mb-2 uppercase select-none">SESSION HUB DESK</span>
-                <h3 className="text-[32px] font-bold text-[#041F63] leading-tight mb-1">
+              <div className="mb-3 pr-8">
+                <span className="inline-block px-1.5 py-0.2 text-[8.5px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded tracking-wider mb-1 uppercase select-none">SESSION HUB DESK</span>
+                <h3 className="text-[20px] font-extrabold text-[#041F63] leading-tight mb-0.5">
                   Schedule New Session
                 </h3>
-                <p className="text-[13px] font-normal text-slate-500">
+                <p className="text-[11px] text-slate-500">
                   Select trainee, date and available coaching slot.
                 </p>
               </div>
 
               {scheduleSuccess ? (
-                <div className="text-center py-4 space-y-4">
-                  <span className="text-4xl block">📅</span>
-                  <h3 className="font-bold text-[#041F63] text-[22px] leading-tight">Session Slotted Successfully!</h3>
-                  <p className="text-[13px] text-slate-500 font-sans">The client notification checklists have been synchronised.</p>
-                  <div className="pt-4">
+                <div className="text-center py-2 space-y-3">
+                  <span className="text-3xl block">📅</span>
+                  <h3 className="font-extrabold text-[#041F63] text-[18px] leading-tight">Session Slotted Successfully!</h3>
+                  <p className="text-[11px] text-slate-500 font-sans">The client notification checklists have been synchronised.</p>
+                  <div className="pt-2">
                     <button
                       type="button"
                       onClick={() => {
                         setScheduleSuccess(false);
                         setShowScheduleModal(false);
                       }}
-                      className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-14 rounded-[14px] text-[16px] flex items-center justify-center transition cursor-pointer"
+                      className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
                     >
                       Close Window
                     </button>
                   </div>
                 </div>
               ) : (
-                <form onSubmit={handleScheduleSubmit} className="space-y-5">
+                <form onSubmit={handleScheduleSubmit} className="space-y-3.5">
                   
                   {/* SECTION 1 — SELECT TRAINEE */}
-                  <div className="space-y-2">
-                    <label className="block text-[14px] font-semibold text-[#041F63] font-sans">
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-bold text-[#041F63] font-sans uppercase tracking-wider">
                       Select Trainee
                     </label>
-                    <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1 scrollbar-thin">
+                    <div className="grid grid-cols-2 gap-2 max-h-28 overflow-y-auto p-1 scrollbar-thin">
                       {!trainees || trainees.length === 0 ? (
-                        <div className="col-span-2 text-center py-4 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-slate-400 text-xs font-sans">
+                        <div className="col-span-2 text-center py-2 bg-slate-50 border border-dashed border-slate-200 rounded-lg text-slate-400 text-[10px] font-sans">
                           No active trainees available.
                         </div>
                       ) : (
@@ -5259,14 +5242,14 @@ export function TrainerDashboardInner({
                             <div
                               key={t.id || Math.random().toString()}
                               onClick={() => setScheduleTraineeId(t.id)}
-                              className={`p-3 rounded-[16px] border transition-all cursor-pointer select-none text-left ${
+                              className={`p-2 rounded-[10px] border transition cursor-pointer select-none text-left ${
                                 isSelected
-                                  ? 'border-[#041F63] bg-[#041F63]/5 ring-2 ring-[#041F63]/20'
+                                  ? 'border-[#041F63] bg-[#041F63]/5'
                                   : 'border-slate-200 hover:border-slate-350 bg-white hover:bg-slate-50'
                               }`}
                             >
-                              <span className="block text-[14px] font-semibold text-slate-900 truncate">{t.name || 'Client'}</span>
-                              <span className="block text-[13px] font-normal text-slate-500 truncate mt-0.5">{t.goals || 'Personal Coaching'}</span>
+                              <span className="block text-[12px] font-bold text-slate-900 truncate">{t.name || 'Client'}</span>
+                              <span className="block text-[10px] text-slate-500 truncate mt-0.5">{t.goals || 'Personal Coaching'}</span>
                             </div>
                           );
                         })
@@ -5275,8 +5258,8 @@ export function TrainerDashboardInner({
                   </div>
 
                   {/* SECTION 2 — SELECT DATE */}
-                  <div className="space-y-2">
-                    <label className="block text-[14px] font-semibold text-[#041F63] font-sans">
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-bold text-[#041F63] font-sans uppercase tracking-wider">
                       Select Date
                     </label>
                     {(() => {
@@ -5298,7 +5281,7 @@ export function TrainerDashboardInner({
                         });
                       }
                       return (
-                        <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-thin">
+                        <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-thin">
                           {daysList.map(item => {
                             const dayKeys = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                             const checkKey = dayKeys[item.jsDate.getDay()];
@@ -5316,18 +5299,18 @@ export function TrainerDashboardInner({
                                 onClick={() => {
                                   if (!isDisabled) setScheduleDate(item.dateStr);
                                 }}
-                                className={`px-4 py-3 rounded-[16px] border transition-all shrink-0 flex flex-col items-center justify-center min-w-[70px] ${
+                                className={`px-2.5 py-1.5 rounded-[10px] border transition shrink-0 flex flex-col items-center justify-center min-w-[50px] ${
                                   isDisabled
-                                    ? 'bg-slate-50 border-slate-100 text-slate-355 cursor-not-allowed opacity-55'
+                                    ? 'bg-slate-50 border-slate-105 text-slate-300 cursor-not-allowed opacity-50'
                                     : isSelected
-                                      ? 'border-[#17D4C3] bg-[#041F63] text-white font-semibold shadow-md cursor-pointer'
-                                      : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-705 bg-white cursor-pointer'
+                                      ? 'border-[#17D4C3] bg-[#041F63] text-white font-bold'
+                                      : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 bg-white cursor-pointer'
                                 }`}
                               >
-                                <span className={`text-[11px] uppercase font-bold tracking-wider ${isSelected ? 'text-[#17D4C3]' : 'text-slate-400'}`}>
+                                <span className={`text-[9px] uppercase font-bold tracking-wider ${isSelected ? 'text-[#17D4C3]' : 'text-slate-400'}`}>
                                   {item.dayName}
                                 </span>
-                                <span className={`text-[18px] font-bold leading-tight mt-1.5 ${isSelected ? 'text-white' : 'text-[#041F63]'}`}>
+                                <span className={`text-[14px] font-bold leading-tight mt-0.5 ${isSelected ? 'text-white' : 'text-[#041F63]'}`}>
                                   {item.dayNum}
                                 </span>
                               </button>
@@ -5335,8 +5318,8 @@ export function TrainerDashboardInner({
                           })}
                           
                           {/* Styled Custom Date Input */}
-                          <div className="relative min-w-[130px] flex flex-col justify-center items-center px-3.5 py-2.5 rounded-[16px] border border-slate-200 hover:bg-slate-50 bg-white shrink-0">
-                            <span className="text-[10px] uppercase font-semibold text-slate-400">Or Custom Date</span>
+                          <div className="relative min-w-[100px] flex flex-col justify-center items-center px-2 py-1 rounded-[10px] border border-slate-200 hover:bg-slate-50 bg-white shrink-0">
+                            <span className="text-[8px] uppercase font-bold text-slate-400">Or Custom</span>
                             <input
                               type="date"
                               value={scheduleDate}
@@ -5353,7 +5336,7 @@ export function TrainerDashboardInner({
                                   }
                                 }
                               }}
-                              className="w-full bg-transparent text-[12px] font-bold text-center text-slate-800 outline-none mt-1 cursor-pointer"
+                              className="w-full bg-transparent text-[11px] font-bold text-center text-slate-800 outline-none mt-0.5 cursor-pointer"
                             />
                           </div>
                         </div>
@@ -5362,11 +5345,11 @@ export function TrainerDashboardInner({
                   </div>
 
                   {/* SECTION 3 — AVAILABLE COACHING SLOTS */}
-                  <div>
-                    <label className="block text-[9px] uppercase font-bold text-slate-400 mb-2 font-sans">
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-bold text-[#041F63] font-sans uppercase tracking-wider">
                       Available Coaching Slots
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-1.5">
                       {['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM'].map(time => {
                         const isBooked = checkSlotIsBooked(scheduleDate, time);
                         const isUnavailable = time === '12:00 PM'; // Coach Disabled Slot
@@ -5381,25 +5364,25 @@ export function TrainerDashboardInner({
                             onClick={() => {
                               if (isClickable) setScheduleTimeSlot(time);
                             }}
-                            className={`py-2 px-1 text-center rounded-xl border text-xs font-bold flex flex-col items-center justify-center min-h-[48px] transition-all ${
+                            className={`py-1.5 px-1 text-center rounded-[10px] border text-[11px] font-bold flex flex-col items-center justify-center min-h-[40px] transition-all ${
                               isBooked
-                                ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                                ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-50'
                                 : isUnavailable
-                                  ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                                  ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-50'
                                   : isSelected
-                                    ? 'border-[#061C4A] bg-[#061C4A]/10 ring-2 ring-[#061C4A]/20 text-[#061C4A] font-extrabold cursor-pointer'
+                                    ? 'border-[#061C4A] bg-[#061C4A]/10 text-[#061C4A] font-extrabold cursor-pointer'
                                     : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-800 bg-white cursor-pointer'
                             }`}
                           >
-                            <span className="text-[11px]">{time}</span>
+                            <span>{time}</span>
                             {isBooked && (
-                              <span className="text-[8px] font-black uppercase text-rose-500 tracking-wider mt-0.5">
+                              <span className="text-[6.5px] font-bold uppercase text-rose-500 tracking-wider">
                                 BOOKED
                               </span>
                             )}
                             {isUnavailable && (
-                              <span className="text-[8px] font-black uppercase text-amber-600 tracking-wider mt-0.5">
-                                UNAVAILABLE
+                              <span className="text-[6.5px] font-bold uppercase text-amber-600 tracking-wider">
+                                DISABLED
                               </span>
                             )}
                           </button>
@@ -5409,18 +5392,18 @@ export function TrainerDashboardInner({
                   </div>
 
                   {/* SECTION 4 — SESSION SUMMARY */}
-                  <div className="bg-[#F8FAFC] border border-slate-100 rounded-xl p-3.5 space-y-2 font-sans text-xs">
-                    <span className="block text-[9px] font-bold uppercase text-[#7C8BA1] tracking-wider">Session Summary</span>
-                    <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-slate-650">
+                  <div className="bg-[#F8FAFC] border border-slate-100 rounded-xl p-2.5 space-y-1 font-sans text-[11px]">
+                    <span className="block text-[8px] font-bold uppercase text-[#7C8BA1] tracking-wider">Session Summary</span>
+                    <div className="grid grid-cols-2 gap-y-1 gap-x-3 text-slate-600">
                       <div>
-                        <span className="text-slate-400 text-[10px] block">Selected Trainee:</span>
-                        <strong className="block text-[#061C4A] truncate font-bold text-xs">
+                        <span className="text-slate-400 text-[9px] block">Selected Trainee:</span>
+                        <strong className="block text-[#061C4A] truncate font-bold text-[11px]">
                           {trainees?.find(t => t && t.id === scheduleTraineeId)?.name || trainees?.[0]?.name || 'Needs Selection'}
                         </strong>
                       </div>
                       <div>
-                        <span className="text-[#7C8BA1] text-[10px] block">Selected Date:</span>
-                        <strong className="block text-[#061C4A] font-bold text-xs">
+                        <span className="text-[#7C8BA1] text-[9px] block">Selected Date:</span>
+                        <strong className="block text-[#061C4A] font-bold text-[11px]">
                           {(() => {
                             if (!scheduleDate) return 'Needs Selection';
                             try {
@@ -5433,30 +5416,30 @@ export function TrainerDashboardInner({
                         </strong>
                       </div>
                       <div>
-                        <span className="text-[#7C8BA1] text-[10px] block">Selected Time:</span>
-                        <strong className="block text-[#061C4A] font-bold text-xs">{scheduleTimeSlot || 'Needs Selection'}</strong>
+                        <span className="text-[#7C8BA1] text-[9px] block">Selected Time:</span>
+                        <strong className="block text-[#061C4A] font-bold text-[11px]">{scheduleTimeSlot || 'Needs Selection'}</strong>
                       </div>
                       <div>
-                        <span className="text-[#7C8BA1] text-[10px] block">Session Type:</span>
-                        <strong className="block text-[#061C4A] font-bold text-xs">Personal Coaching</strong>
+                        <span className="text-[#7C8BA1] text-[9px] block">Session Type:</span>
+                        <strong className="block text-[#061C4A] font-bold text-[11px]">Personal Coaching</strong>
                       </div>
                     </div>
                   </div>
 
                   {/* BOTTOM ACTION BAR */}
-                  <div className="flex gap-3 pt-3 border-t border-slate-100 font-sans sticky bottom-0 bg-white">
+                  <div className="flex gap-2.5 pt-2.5 border-t border-slate-100 font-sans sticky bottom-0 bg-white">
                     <button
                       type="button"
                       onClick={() => setShowScheduleModal(false)}
-                      className="flex-1 py-2.5 bg-white border border-[#edf2f7] hover:bg-slate-50 text-slate-600 font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer text-center transition"
+                      className="flex-1 h-[44px] bg-white border border-[#edf2f7] hover:bg-slate-50 text-slate-600 font-bold rounded-[10px] text-[13px] cursor-pointer text-center transition"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 py-2.5 bg-[#061A4D] hover:bg-[#061A4D]/95 text-white font-bold rounded-xl text-xs uppercase tracking-wider cursor-pointer text-center transition shadow-sm"
+                      className="flex-1 h-[44px] bg-[#061A4D] hover:bg-[#061A4D]/95 text-white font-bold rounded-[10px] text-[13px] cursor-pointer text-center transition shadow-sm"
                     >
-                      Schedule Session
+                      Schedule
                     </button>
                   </div>
 
@@ -5765,43 +5748,43 @@ export function TrainerDashboardInner({
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-6 animate-fade-in text-left pb-6"
+              className="space-y-4 animate-fade-in text-left pb-4"
             >
               <PageHeader 
                 title="Dashboard" 
                 subtitle="Manage today’s coaching activity" 
-                className="-mx-4 sm:-mx-6 lg:-mx-8"
+                className="-mx-4 sm:-mx-6 lg:-mx-8 !pt-3 !pb-1"
               />
 
               {/* 1. Premium Welcome Greeting Box (First element) */}
-              <div id="dashboard-hero-greeting" className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white p-6 rounded-[24px] shadow-sm relative overflow-hidden">
-                <div className="absolute right-0 bottom-0 w-24 h-24 bg-white/5 rounded-full -mr-6 -mb-6 pointer-events-none"></div>
-                <div className="absolute left-1/3 top-0 w-32 h-32 bg-white/5 rounded-full -ml-16 -mt-16 pointer-events-none font-sans"></div>
+              <div id="dashboard-hero-greeting" className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white p-4 py-3.5 rounded-xl shadow-xs relative overflow-hidden">
+                <div className="absolute right-0 bottom-0 w-20 h-20 bg-white/5 rounded-full -mr-5 -mb-5 pointer-events-none"></div>
+                <div className="absolute left-1/3 top-0 w-24 h-24 bg-white/5 rounded-full -ml-12 -mt-12 pointer-events-none font-sans"></div>
                 
-                <h1 className="text-2xl font-black font-display tracking-tight text-white mb-1">
+                <h1 className="text-lg font-black font-display tracking-tight text-white mb-0.5">
                   Good Morning {trainerName} 👋
                 </h1>
-                <p className="text-xs text-indigo-100 font-medium">
+                <p className="text-[11px] text-indigo-100 font-medium">
                   ⚡ {todaySessionsCount} Sessions Today • Keep up the coaching rhythm
                 </p>
               </div>
 
               {/* 2. QUICK ACTIONS ROW - SQUARE ICON CARDS */}
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 font-sans select-none">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5 font-sans select-none">
                   ⚡ Trainer Quick Actions
                 </p>
-                <div className="grid grid-cols-3 gap-3.5">
+                <div className="grid grid-cols-3 gap-2.5">
                   <button
                     onClick={() => {
                       setInviteEmail('');
                       setInvitePkgOption('Monthly Pass');
                       setShowAddClientForm(true);
                     }}
-                    className="aspect-square flex flex-col justify-center items-center text-center p-3 bg-[#E6F7F5] border border-[#C1E7E0] hover:border-teal-450 rounded-[24px] shadow-2xs active:scale-95 hover:shadow-sm cursor-pointer transition w-full"
+                    className="flex flex-col justify-center items-center text-center p-2.5 bg-[#E6F7F5] border border-[#C1E7E0] hover:border-teal-450 rounded-xl shadow-3xs active:scale-95 hover:shadow-2xs cursor-pointer transition w-full h-[76px]"
                   >
-                    <span className="text-3xl mb-2 font-extrabold text-teal-650 shrink-0 font-sans">+</span>
-                    <span className="text-xs font-black text-[#001F3F] uppercase tracking-wider font-sans leading-tight">Add<br/>New Client</span>
+                    <span className="text-xl mb-0.5 font-extrabold text-teal-650 shrink-0 font-sans leading-none">+</span>
+                    <span className="text-[10px] font-black text-[#001F3F] uppercase tracking-wider font-sans leading-tight">Add<br/>Client</span>
                   </button>
 
                   <button
@@ -5817,10 +5800,10 @@ export function TrainerDashboardInner({
                       setInvoiceSelectedTraineeIds([]);
                       setShowInvoiceForm(true);
                     }}
-                    className="aspect-square flex flex-col justify-center items-center text-center p-3 bg-[#EEF1FF] border border-[#D3D8FD] hover:border-indigo-400 rounded-[24px] shadow-2xs active:scale-95 hover:shadow-sm cursor-pointer transition w-full"
+                    className="flex flex-col justify-center items-center text-center p-2.5 bg-[#EEF1FF] border border-[#D3D8FD] hover:border-indigo-400 rounded-xl shadow-3xs active:scale-95 hover:shadow-2xs cursor-pointer transition w-full h-[76px]"
                   >
-                    <span className="text-2xl mb-2 shrink-0 font-sans">📄</span>
-                    <span className="text-xs font-black text-indigo-950 uppercase tracking-wider font-sans leading-tight">Issue<br/>Invoice</span>
+                    <span className="text-lg mb-1 shrink-0 font-sans leading-none">📄</span>
+                    <span className="text-[10px] font-black text-indigo-950 uppercase tracking-wider font-sans leading-tight">Issue<br/>Invoice</span>
                   </button>
 
                   <button
@@ -5832,52 +5815,52 @@ export function TrainerDashboardInner({
                       setScheduleNotes('Personal training tracking alignment review');
                       setShowScheduleModal(true);
                     }}
-                    className="aspect-square flex flex-col justify-center items-center text-center p-3 bg-[#05162D] border border-slate-900 hover:border-indigo-500 rounded-[24px] shadow-2xs active:scale-95 hover:shadow-md cursor-pointer text-white transition w-full"
+                    className="flex flex-col justify-center items-center text-center p-2.5 bg-[#05162D] border border-slate-900 hover:border-indigo-500 rounded-xl shadow-3xs active:scale-95 hover:shadow-2xs cursor-pointer text-white transition w-full h-[76px]"
                   >
-                    <span className="text-2xl mb-2 shrink-0 text-amber-400 font-sans">📅</span>
-                    <span className="text-xs font-black text-white uppercase tracking-wider font-sans leading-tight">Schedule<br/>Session</span>
+                    <span className="text-lg mb-1 shrink-0 text-amber-400 font-sans leading-none">📅</span>
+                    <span className="text-[10px] font-black text-white uppercase tracking-wider font-sans leading-tight">Schedule<br/>Session</span>
                   </button>
                 </div>
               </div>
 
               {/* 3. KPI STATUS CARDS (2x2 COMPACT GRID) */}
               <div>
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 font-sans">
+                <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 font-sans">
                   Statistics
                 </h3>
-                <div className="grid grid-cols-2 gap-3.5">
-                  <div className="bg-white border border-slate-200/60 rounded-[24px] p-4.5 shadow-xs text-left">
-                    <span className="text-3xl font-black text-slate-900 font-mono block tracking-tight leading-none">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="bg-white border border-slate-200/50 rounded-xl p-2.5 shadow-3xs text-left flex flex-col justify-between h-[52px]">
+                    <span className="text-lg font-black text-slate-900 font-mono leading-none">
                       {trainees.length || 3}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mt-2 text-slate-500 font-sans">
+                    <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider font-sans leading-none">
                       Clients
                     </span>
                   </div>
 
-                  <div className="bg-white border border-slate-200/60 rounded-[24px] p-4.5 shadow-xs text-left">
-                    <span className="text-xl font-black text-slate-900 font-mono block tracking-tight leading-none mt-1">
+                  <div className="bg-white border border-slate-200/50 rounded-xl p-2.5 shadow-3xs text-left flex flex-col justify-between h-[52px]">
+                    <span className="text-[15px] font-black text-slate-900 font-mono leading-none">
                       RM {Math.round(paidSumRevenue || 910).toLocaleString()}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mt-3.5 text-slate-500 font-sans">
+                    <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider font-sans leading-none">
                       Revenue
                     </span>
                   </div>
 
-                  <div className="bg-white border border-slate-200/60 rounded-[24px] p-4.5 shadow-xs text-left">
-                    <span className="text-xl font-black text-rose-600 font-mono block tracking-tight leading-none mt-1">
+                  <div className="bg-white border border-slate-200/50 rounded-xl p-2.5 shadow-3xs text-left flex flex-col justify-between h-[52px]">
+                    <span className="text-[15px] font-black text-rose-600 font-mono leading-none">
                       RM {Math.round((pendingSumRevenue + overdueSumRevenue) || 80).toLocaleString()}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mt-3.5 text-slate-500 font-sans">
+                    <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider font-sans leading-none">
                       Pending
                     </span>
                   </div>
 
-                  <div className="bg-white border border-slate-200/60 rounded-[24px] p-4.5 shadow-xs text-left">
-                    <span className="text-3xl font-black text-indigo-600 font-mono block tracking-tight leading-none font-sans">
+                  <div className="bg-white border border-slate-200/50 rounded-xl p-2.5 shadow-3xs text-left flex flex-col justify-between h-[52px]">
+                    <span className="text-lg font-black text-indigo-600 font-mono leading-none">
                       {todaySessionsCount}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mt-2 text-slate-500 font-sans">
+                    <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider font-sans leading-none">
                       Sessions
                     </span>
                   </div>
@@ -5886,16 +5869,16 @@ export function TrainerDashboardInner({
 
               {/* 4. TODAY'S SCHEDULE - VISUAL CENTERPIECE */}
               <div>
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-sans">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-sans">
                     Today's Schedule
                   </h3>
-                  <span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold px-2.5 py-0.5 rounded-full uppercase font-sans">
+                  <span className="text-[8px] bg-emerald-50 text-emerald-700 font-extrabold px-2 py-0.5 rounded-full uppercase font-sans">
                     Live Status
                   </span>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-2.5">
                   {todayBookings.map((b: any) => {
                     const time = b.timeSlot || b.time_slot || '10:00 AM';
                     const title = b.title || b.discipline || 'HIIT Core Strength';
@@ -5914,47 +5897,46 @@ export function TrainerDashboardInner({
                           setRescheduleNewTimeSlot(time);
                           setShowSessionActionSheet(true);
                         }}
-                        className="bg-white border border-slate-200/70 hover:border-indigo-400 rounded-[24px] overflow-hidden shadow-xs hover:shadow-sm transition duration-150 cursor-pointer text-left flex flex-col font-sans"
+                        className="bg-white border border-slate-200/70 hover:border-indigo-400 rounded-xl overflow-hidden shadow-3xs hover:shadow-2xs transition duration-150 cursor-pointer text-left flex flex-col font-sans"
                       >
-                        <div className="p-4.5 flex items-center gap-4.5">
-                          <div className="shrink-0 bg-indigo-50 border border-indigo-100 px-3.5 py-1.5 rounded-xl text-center min-w-[54px]">
+                        <div className="p-2.5 flex items-center gap-2.5">
+                          {/* Time badge: 12px text for time */}
+                          <div className="shrink-0 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded-lg text-center min-w-[50px] flex flex-col justify-center">
                             <span className="text-xs font-black text-indigo-900 font-mono block leading-none">{time.split(' ')[0]}</span>
-                            <span className="text-[8px] font-black text-indigo-700 tracking-wider font-mono block mt-1 uppercase leading-none">{time.split(' ')[1]}</span>
+                            <span className="text-[9px] font-black text-indigo-700 tracking-wider font-mono block mt-0.5 uppercase leading-none">{time.split(' ')[1]}</span>
                           </div>
 
-                          <div className="flex-1 min-w-0 flex items-center gap-3">
+                          <div className="flex-1 min-w-0 flex items-center gap-2.5">
+                            {/* Reduced avatar to 36px */}
                             <img 
                               src={photo} 
-                              className="w-10 h-10 rounded-full object-cover border border-slate-100 shrink-0" 
+                              className="w-9 h-9 rounded-full object-cover border border-slate-100 shrink-0" 
                               alt={traineeName} 
                             />
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 mb-1.5">
-                                <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${
+                            <div className="min-w-0 flex-1">
+                              {/* First line: Client name (always one line, truncated if too long) */}
+                              <div className="flex items-center justify-between gap-1.5">
+                                <h4 className="text-xs font-black text-slate-950 leading-tight truncate">{traineeName}</h4>
+                                <span className={`text-[7px] font-bold uppercase tracking-wider px-1 py-0.2 rounded leading-none shrink-0 ${
                                   status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
                                   status === 'Cancelled' ? 'bg-rose-50 text-rose-700 border border-rose-100' :
                                   'bg-amber-50 text-amber-700 border border-amber-100'
                                 }`}>
                                   {status === 'Approved' ? 'Upcoming' : status}
                                 </span>
-                                <span className="text-[8px] text-slate-400 font-bold bg-slate-50 px-2 py-0.5 rounded border border-slate-100 uppercase">
-                                  ⚡ {type}
-                                </span>
                               </div>
                               
-                              <h4 className="text-sm font-extrabold text-slate-900 leading-tight truncate">{title}</h4>
-                              <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
-                                <span>🙎 {traineeName}</span>
-                                <span className="text-slate-300">•</span>
-                                <span>📍 {loc}</span>
+                              {/* Second line: Location (always one line, format: SS15 Studio • Selangor) */}
+                              <p className="text-[10px] text-slate-500 mt-1 font-medium leading-none truncate">
+                                📍 {loc.includes('•') ? loc : `${loc} • Selangor`}
                               </p>
                             </div>
                           </div>
                         </div>
 
-                        <div className="bg-slate-50/50 py-2.5 px-4.5 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400">
-                          <span>📅 {b.date}</span>
-                          <span className="font-extrabold text-indigo-600 flex items-center gap-1 hover:underline">
+                        <div className="bg-slate-50/40 py-1 px-2.5 border-t border-slate-100 flex justify-between items-center text-[8.5px] text-slate-400">
+                          <span className="truncate max-w-[180px]">📅 {b.date} • <span className="font-semibold text-slate-500">{title}</span></span>
+                          <span className="font-extrabold text-indigo-600 flex items-center gap-0.5 hover:underline shrink-0">
                             <span>Actions</span>
                             <span>➡</span>
                           </span>
@@ -6139,7 +6121,7 @@ export function TrainerDashboardInner({
                         <div className="bg-gradient-to-br from-indigo-950 to-slate-900 text-white rounded-2xl p-3.5 relative overflow-hidden border border-indigo-900 shadow-xs flex items-start gap-2 text-left">
                           <Sparkles className="w-4 h-4 text-teal-400 shrink-0 mt-0.5 animate-pulse" />
                           <div className="min-w-0">
-                            <span className="text-[8px] font-black uppercase text-teal-400 tracking-widest block font-mono">Gemini AI Coach Insight</span>
+                            <span className="text-[8px] font-black uppercase text-teal-400 tracking-widest block font-mono">CoachAI Analysis</span>
                             <p className="text-[10px] text-slate-350 leading-relaxed font-sans mt-0.5">{aiFeedSpec}</p>
                           </div>
                         </div>
@@ -6247,31 +6229,24 @@ export function TrainerDashboardInner({
                 {trainerInvitations.filter(inv => inv.status === 'Pending').map((inv) => (
                   <div 
                     key={inv.id}
-                    className="bg-slate-50 border-2 border-dashed border-amber-200 hover:border-amber-400 rounded-2xl p-5 shadow-sm text-left flex flex-col justify-between transition-all"
+                    className="bg-slate-50 border border-dashed border-amber-200 hover:border-amber-400 rounded-xl p-3 shadow-3xs text-left transition-all"
                   >
-                    <div>
-                      {/* Trainee Card upper */}
-                      <div className="flex items-center gap-3 border-b border-slate-200 pb-3 mb-3.5">
-                        <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-700 shrink-0 font-bold font-sans border border-amber-100">
-                          ✉️
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="font-extrabold text-slate-800 text-sm truncate">{inv.traineeEmail}</h4>
-                          <span className="text-[10px] text-amber-800 font-bold bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200/50 uppercase tracking-wide font-sans">
-                            Pend
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-extrabold text-slate-800 text-xs truncate leading-none mb-1">{inv.traineeEmail}</h4>
+                        <p className="text-[10px] text-slate-500 font-sans leading-none">
+                          <span className="font-semibold text-slate-600">Offered Package:</span> {inv.packageName}
+                        </p>
+                        <div className="mt-1.5 flex items-center gap-1.5">
+                          <span className="text-[8px] text-amber-800 font-extrabold bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200/50 uppercase tracking-tight font-sans">
+                            Pending
                           </span>
+                          <span className="text-[8px] text-slate-400 font-mono">{inv.date}</span>
                         </div>
                       </div>
-
-                      {/* Info specs */}
-                      <div className="space-y-1.5 text-2xs mb-4 text-slate-600 font-sans">
-                        <p><strong className="text-slate-700">Offered Package:</strong> {inv.packageName}</p>
-                        <p className="text-[10px] text-slate-400 font-mono mt-2 uppercase tracking-wide">Issued: {inv.date}</p>
+                      <div className="bg-amber-50/70 text-amber-900 border border-amber-100/50 px-2 py-1 rounded-lg text-[9px] font-bold leading-tight text-center shrink-0 max-w-[130px]">
+                        Awaiting onboarding acceptance
                       </div>
-                    </div>
-
-                    <div className="bg-amber-50/50 rounded-xl p-2.5 border border-amber-100/50 text-center text-[10px] text-amber-900 font-semibold leading-relaxed font-sans font-medium">
-                      Awaiting onboarding acceptance inside client dashboard.
                     </div>
                   </div>
                 ))}
@@ -6544,7 +6519,7 @@ export function TrainerDashboardInner({
                           traineeDetailTab === 'ai' ? 'bg-[#001F3F] text-white shadow-sm' : 'text-indigo-650 font-black hover:bg-indigo-50'
                         }`}
                       >
-                        <Sparkles className="w-3.5 h-3.5 animate-pulse text-teal-500" /> AI Coach Optimizer
+                        <Sparkles className="w-3.5 h-3.5 animate-pulse text-teal-500" /> CoachAI Analysis
                       </button>
                     </div>
 
@@ -7046,16 +7021,16 @@ export function TrainerDashboardInner({
                         </div>
                       )}
 
-                      {/* TAB 5: AI COACH OPTIMIZER */}
+                      {/* TAB 5: COACHAI ANALYSIS */}
                       {traineeDetailTab === 'ai' && (
                         <div className="space-y-6">
                           <div className="bg-gradient-to-br from-indigo-950 to-slate-900 text-white rounded-2xl p-5 border border-slate-950 relative overflow-hidden text-left shadow-lg">
                             <span className="absolute right-1 bottom-1 text-5xl opacity-10 pointer-events-none text-slate-500">✨</span>
-                            <span className="bg-teal-400 text-slate-950 text-[9px] font-extrabold px-2 py-0.5 rounded-full inline-block mb-2">
-                              POWERED BY GEMINI 3.5 FLASH
+                            <span className="bg-teal-400 text-slate-955 text-[9px] font-extrabold px-2 py-0.5 rounded-full inline-block mb-2 font-mono">
+                              CoachAI Analysis
                             </span>
                             <h4 className="font-display font-bold text-sm text-white mb-1">
-                              Custom AI Workout Optimizer
+                              CoachAI Analysis
                             </h4>
                             <p className="text-[11px] text-slate-300 leading-relaxed mb-4">
                               Instantly analyze height, weight, body fat and target goals to generate a 3-day structured routine calibrated for the hot Malaysian humidity.
@@ -7068,10 +7043,10 @@ export function TrainerDashboardInner({
                                 setAiEditMode(false);
                               }}
                               disabled={loadingAi}
-                              className="bg-teal-400 hover:bg-teal-500 text-slate-955 text-2xs font-extrabold px-4 py-2.5 rounded-lg flex items-center gap-1.5 transition disabled:opacity-50 text-slate-955 cursor-pointer"
+                              className="bg-teal-400 hover:bg-teal-500 text-slate-955 text-2xs font-extrabold px-4 py-2.5 rounded-lg flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
                             >
                               <Sparkles className="w-4 h-4 text-slate-955 animate-spin" />
-                              <span>{loadingAi ? 'Consolidating client profile metrics...' : 'Deploy Gemini Coach Optimization'}</span>
+                              <span>{loadingAi ? 'Consolidating client profile metrics...' : 'Deploy CoachAI Analysis'}</span>
                             </button>
                           </div>
 
@@ -7204,7 +7179,7 @@ export function TrainerDashboardInner({
                                       await dbService.createChatMessage({
                                         senderId: 'u_sarah',
                                         receiverId: selectedTrainee.userId,
-                                        message: `✨ [Gemini AI Coach Optimizer] Here is your personalized prescription:\n\n${aiRecommendation.workoutName}\nFocus: ${aiRecommendation.focus}\nTips:\n- ${aiRecommendation.tips?.join('\n- ')}`
+                                        message: `✨ [CoachAI Analysis] Here is your personalized prescription:\n\n${aiRecommendation.workoutName}\nFocus: ${aiRecommendation.focus}\nTips:\n- ${aiRecommendation.tips?.join('\n- ')}`
                                       });
                                       
                                       // Focus thread
@@ -7361,66 +7336,66 @@ export function TrainerDashboardInner({
               <>
 
                 {/* 2. Revenue Summary KPI Cards */}
-                <div className="grid grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-2 gap-3">
                   {/* Monthly Revenue */}
-                  <div className="bg-[#EEF1FF] border border-[#5B4CFB]/15 p-4 rounded-[22px] shadow-3xs flex flex-col justify-between h-[104px] text-left">
+                  <div className="bg-[#EEF1FF] border border-[#5B4CFB]/10 p-3 rounded-xl shadow-3xs flex flex-col justify-between h-[92px] text-left">
                     <div className="flex justify-between items-start">
-                      <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider leading-none">Monthly Revenue</span>
-                      <div className="w-6 h-6 rounded-lg bg-white/75 flex items-center justify-center text-[#5B4CFB]">
-                        <TrendingUp className="w-3.5 h-3.5" />
+                      <span className="text-[9.5px] text-slate-500 font-extrabold uppercase tracking-wider leading-none">Monthly Revenue</span>
+                      <div className="w-5.5 h-5.5 rounded bg-white/70 flex items-center justify-center text-[#5B4CFB] shrink-0">
+                        <TrendingUp className="w-3 h-3" />
                       </div>
                     </div>
                     <div className="mt-auto">
-                      <strong className="text-lg font-black font-display text-[#061C4A] block leading-none">{currentMonthData.monthlyRevenue}</strong>
-                      <span className="text-[10px] font-bold text-emerald-600 mt-1 flex items-center gap-0.5 leading-none">
+                      <strong className="text-[15px] font-black font-display text-[#061C4A] block leading-none">{currentMonthData.monthlyRevenue}</strong>
+                      <span className="text-[9px] font-extrabold text-emerald-600 mt-1 flex items-center gap-0.5 leading-none">
                         <span>{currentMonthData.monthlyRevenueSub}</span>
                       </span>
                     </div>
                   </div>
 
                   {/* Total Collected */}
-                  <div className="bg-[#DFF7F2] border border-[#5B4CFB]/5 p-4 rounded-[22px] shadow-3xs flex flex-col justify-between h-[104px] text-left">
+                  <div className="bg-[#DFF7F2] border border-teal-500/10 p-3 rounded-xl shadow-3xs flex flex-col justify-between h-[92px] text-left">
                     <div className="flex justify-between items-start">
-                      <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider leading-none">Total Collected</span>
-                      <div className="w-6 h-6 rounded-lg bg-white/75 flex items-center justify-center text-teal-600">
-                        <DollarSign className="w-3.5 h-3.5" />
+                      <span className="text-[9.5px] text-slate-500 font-extrabold uppercase tracking-wider leading-none">Total Collected</span>
+                      <div className="w-5.5 h-5.5 rounded bg-white/70 flex items-center justify-center text-teal-600 shrink-0">
+                        <DollarSign className="w-3 h-3" />
                       </div>
                     </div>
                     <div className="mt-auto">
-                      <strong className="text-lg font-black font-display text-[#061C4A] block leading-none">{currentMonthData.totalCollected}</strong>
-                      <span className={`text-[10px] font-bold ${currentMonthData.totalCollectedUp ? 'text-emerald-600' : 'text-rose-600'} mt-1 flex items-center gap-0.5 leading-none`}>
+                      <strong className="text-[15px] font-black font-display text-[#061C4A] block leading-none">{currentMonthData.totalCollected}</strong>
+                      <span className={`text-[9px] font-extrabold ${currentMonthData.totalCollectedUp ? 'text-emerald-600' : 'text-rose-600'} mt-1 flex items-center gap-0.5 leading-none`}>
                         <span>{currentMonthData.totalCollectedSub}</span>
                       </span>
                     </div>
                   </div>
 
                   {/* Pending Payments */}
-                  <div className="bg-amber-50 border border-amber-250/20 p-4 rounded-[22px] shadow-3xs flex flex-col justify-between h-[104px] text-left">
+                  <div className="bg-amber-50 border border-amber-500/10 p-3 rounded-xl shadow-3xs flex flex-col justify-between h-[92px] text-left">
                     <div className="flex justify-between items-start">
-                      <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider leading-none">Pending Payments</span>
-                      <div className="w-6 h-6 rounded-lg bg-white/75 flex items-center justify-center text-amber-600 font-bold">
-                        <Clock className="w-3.5 h-3.5" />
+                      <span className="text-[9.5px] text-slate-500 font-extrabold uppercase tracking-wider leading-none">Pending Payments</span>
+                      <div className="w-5.5 h-5.5 rounded bg-white/70 flex items-center justify-center text-amber-600 shrink-0">
+                        <Clock className="w-3 h-3" />
                       </div>
                     </div>
                     <div className="mt-auto">
-                      <strong className="text-lg font-black font-display text-[#061C4A] block leading-none">{currentMonthData.pendingPayments}</strong>
-                      <span className="text-[10px] font-bold text-amber-700 mt-1 block leading-none">
+                      <strong className="text-[15px] font-black font-display text-[#061C4A] block leading-none">{currentMonthData.pendingPayments}</strong>
+                      <span className="text-[9px] font-extrabold text-amber-700 mt-1 block leading-none">
                         {currentMonthData.pendingPaymentsSub}
                       </span>
                     </div>
                   </div>
 
                   {/* Completed Payments */}
-                  <div className="bg-slate-50 border border-slate-250/10 p-4 rounded-[22px] shadow-3xs flex flex-col justify-between h-[104px] text-left">
+                  <div className="bg-sky-50/70 border border-sky-500/10 p-3 rounded-xl shadow-3xs flex flex-col justify-between h-[92px] text-left">
                     <div className="flex justify-between items-start">
-                      <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider leading-none">Completed Payments</span>
-                      <div className="w-6 h-6 rounded-lg bg-white/75 flex items-center justify-center text-indigo-500">
-                        <Check className="w-3.5 h-3.5" />
+                      <span className="text-[9.5px] text-slate-500 font-extrabold uppercase tracking-wider leading-none">Completed Payments</span>
+                      <div className="w-5.5 h-5.5 rounded bg-white/70 flex items-center justify-center text-sky-600 shrink-0">
+                        <Check className="w-3 h-3" />
                       </div>
                     </div>
                     <div className="mt-auto">
-                      <strong className="text-lg font-black font-display text-[#061C4A] block leading-none">{currentMonthData.completedPayments}</strong>
-                      <span className="text-[10px] font-bold text-slate-500 mt-1 block leading-none">
+                      <strong className="text-[15px] font-black font-display text-[#061C4A] block leading-none">{currentMonthData.completedPayments}</strong>
+                      <span className="text-[9px] font-extrabold text-sky-700 mt-1 block leading-none">
                         {currentMonthData.completedPaymentsSub}
                       </span>
                     </div>
@@ -7428,7 +7403,7 @@ export function TrainerDashboardInner({
                 </div>
 
                 {/* 3. Revenue Trend Chart card */}
-                <div className="bg-white border border-slate-200 p-5 rounded-[24px] shadow-2xs text-left relative overflow-hidden">
+                <div className="bg-white border border-slate-200 p-3.5 rounded-xl shadow-2xs text-left relative overflow-hidden">
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h4 className="font-display font-medium text-[#061C4A] text-sm leading-tight">Revenue Trend</h4>
@@ -7436,9 +7411,6 @@ export function TrainerDashboardInner({
                         Monthly coaching revenue generated from active client packages.
                       </p>
                     </div>
-                    <span className="text-[9px] font-extrabold bg-[#5B4CFB]/10 text-[#5B4CFB] px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">
-                      First Half 2026
-                    </span>
                   </div>
 
                   {/* Detailed Graph View with Interactive tooltip */}
@@ -7446,15 +7418,15 @@ export function TrainerDashboardInner({
                     
                     {/* Hover detail area inside chart */}
                     <div className="flex justify-between items-center text-left shrink-0 z-10">
-                      <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#061C4A]">
+                      <span className="text-[9.5px] font-extrabold uppercase tracking-widest text-[#061C4A]">
                         {hoveredTrendIndex !== null 
                           ? "Month: " + [ 'January', 'February', 'March', 'April', 'May', 'June' ][hoveredTrendIndex]
-                          : "Hover peak to inspect details"
+                          : ""
                         }
                       </span>
-                      <span className="text-2xs font-black text-[#5B4CFB] bg-white border border-[#5B4CFB]/10 px-2 py-0.5 rounded-[6px]">
+                      <span className="text-[10px] font-bold text-[#5B4CFB] bg-white border border-[#5B4CFB]/15 px-2 py-0.5 rounded-md whitespace-nowrap">
                         {hoveredTrendIndex !== null 
-                          ? "RM " + [520, 680, 760, 820, 910, 990][hoveredTrendIndex]
+                          ? [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun' ][hoveredTrendIndex] + ": RM " + [520, 680, 760, 820, 910, 990][hoveredTrendIndex]
                           : selectedMonth.slice(0, 3) + ": " + currentMonthData.monthlyRevenue
                         }
                       </span>
@@ -7630,47 +7602,51 @@ export function TrainerDashboardInner({
                 </div>
 
                 {/* 5. CoachAI Analysis Section */}
-                <div className="bg-slate-50 border border-slate-200 rounded-[24px] p-5 shadow-2xs text-left relative overflow-hidden">
-                  
+                <div className="bg-gradient-to-r from-[#061A4D] via-[#092B6E] to-[#0A3D8F] text-white border border-slate-900/40 rounded-[24px] p-5 shadow-2xs text-left relative overflow-hidden">
+                  <div className="absolute right-0 bottom-0 w-24 h-24 bg-white/5 rounded-full -mr-6 -mb-6 pointer-events-none"></div>
+                  <div className="absolute left-1/3 top-0 w-32 h-32 bg-white/5 rounded-full -ml-16 -mt-16 pointer-events-none font-sans"></div>
+
                   {/* Mascot Header */}
-                  <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center gap-3 mb-4 relative z-10">
                     <div className="relative shrink-0">
                       {/* Animated Mascot bubble avatar */}
-                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#5B4CFB] to-slate-900 flex items-center justify-center shadow-md relative">
+                      <div className="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center shadow-md relative border border-white/10">
                         <span className="text-xl">🤖</span>
-                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-50 animate-pulse"></span>
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#061A4D] animate-pulse"></span>
                       </div>
                     </div>
 
                     <div className="text-left">
                       {/* AI Mascot Branding */}
                       <div className="flex items-center gap-1.5 leading-none">
-                        <span className="font-display font-medium text-sm text-[#061C4A]">CoachAI Analysis</span>
-                        <span className="text-[8px] bg-teal-500 text-white font-extrabold uppercase px-1.5 py-0.5 rounded-full tracking-wider scale-90">LIVE</span>
+                        <span className="font-display font-medium text-sm text-white">CoachAI Analysis</span>
+                        <span className="text-[8px] bg-[#18D4C5] text-slate-950 font-extrabold uppercase px-1.5 py-0.5 rounded-full tracking-wider scale-90">LIVE</span>
                       </div>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wide mt-1.5 font-bold">
+                      <p className="text-[10px] text-indigo-150 uppercase tracking-wide mt-1.5 font-bold">
                         AI insights to help grow your coaching business.
                       </p>
                     </div>
                   </div>
 
                   {/* KPI slots available */}
-                  <div className="bg-white border border-slate-150 rounded-[18px] p-4.5 mb-4 flex items-center justify-between shadow-3xs text-left">
+                  <div className="bg-white/10 backdrop-blur-xs border border-white/15 rounded-[18px] p-4.5 mb-4 flex items-center justify-between shadow-3xs text-left relative z-10">
                     <div>
-                      <span className="text-[9px] text-slate-405 block uppercase font-extrabold tracking-wider">Free Slots This Week</span>
-                      <strong className="text-[#061C4A] text-base font-black font-display leading-none block mt-1">4 Slots Available</strong>
-                      <p className="text-[11px] text-slate-600 mt-2 leading-tight italic">
+                      <span className="text-[9px] text-indigo-200 block uppercase font-extrabold tracking-wider">Free Slots This Week</span>
+                      <strong className="text-white text-base font-black font-display leading-none block mt-1">4 Slots Available</strong>
+                      <p className="text-[11px] text-indigo-100 mt-2 leading-tight italic">
                         "You still have 4 coaching slots available this week."
                       </p>
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center text-xs font-black font-sans shrink-0">
-                      4/10
+                    {/* Growth score circle */}
+                    <div className="w-11 h-11 rounded-full bg-emerald-500 text-white flex flex-col items-center justify-center text-[10px] font-black font-mono shrink-0 shadow-sm border border-emerald-400">
+                      <span className="leading-none">4/10</span>
+                      <span className="text-[6px] tracking-tight font-sans mt-0.5 uppercase opacity-90">SLOTS</span>
                     </div>
                   </div>
 
                   {/* Smart Growth suggestions */}
-                  <div className="space-y-2 font-sans">
-                    <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-500 font-sans block text-left mb-1">
+                  <div className="space-y-2 font-sans relative z-10">
+                    <span className="text-[9px] uppercase tracking-wider font-extrabold text-indigo-200 font-sans block text-left mb-1">
                       💡 Smart Growth Tips
                     </span>
                     
@@ -7682,7 +7658,7 @@ export function TrainerDashboardInner({
                     ].map((tip, idx) => (
                       <div 
                         key={idx} 
-                        className="flex items-center gap-3 bg-white border border-slate-100 rounded-[14px] p-3 text-xs text-slate-700 font-medium shadow-3xs"
+                        className="flex items-center gap-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-[14px] p-2.5 text-[11px] text-white font-medium shadow-3xs transition"
                       >
                         <span className="text-sm shrink-0 leading-none">{tip.icon}</span>
                         <span className="leading-tight">{tip.text}</span>
@@ -7696,19 +7672,16 @@ export function TrainerDashboardInner({
 
             {/* 6. Invoice Screen View */}
             {paymentScreen === 'invoices' && (
-              <div className="space-y-5">
+              <div className="space-y-4">
                 {/* Screen Header Toolbar */}
-                <div className="flex items-center justify-between pb-1 border-b border-slate-100 bg-transparent">
+                <div className="flex items-center justify-start pb-1 border-b border-slate-100 bg-transparent">
                   <button 
                     onClick={() => setPaymentScreen('main')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/80 hover:bg-slate-50 text-slate-700 text-2xs font-extrabold uppercase rounded-full tracking-wider transition cursor-pointer"
+                    className="flex items-center gap-1 px-2 py-1 bg-white border border-slate-205 border-slate-200 hover:bg-slate-50 text-slate-700 text-[10px] font-bold uppercase rounded-md tracking-wider transition cursor-pointer whitespace-nowrap"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
+                    <ArrowLeft className="w-3 h-3 text-slate-500" />
                     <span>Back to Payments</span>
                   </button>
-                  <span className="text-2xs font-bold text-slate-400 bg-slate-100 px-3 py-1 id-pill rounded-full uppercase tracking-wider">
-                    Invoicing
-                  </span>
                 </div>
 
                 <div className="text-left">
@@ -7822,19 +7795,16 @@ export function TrainerDashboardInner({
 
             {/* 7. Payment History Screen View */}
             {paymentScreen === 'history' && (
-              <div className="space-y-5">
+              <div className="space-y-4">
                 {/* Screen Header Toolbar */}
-                <div className="flex items-center justify-between pb-1 border-b border-slate-100 bg-transparent">
+                <div className="flex items-center justify-start pb-1 border-b border-slate-100 bg-transparent">
                   <button 
                     onClick={() => setPaymentScreen('main')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/80 hover:bg-slate-50 text-slate-700 text-2xs font-extrabold uppercase rounded-full tracking-wider transition cursor-pointer"
+                    className="flex items-center gap-1 px-2 py-1 bg-white border border-slate-205 border-slate-200 hover:bg-slate-50 text-slate-700 text-[10px] font-bold uppercase rounded-md tracking-wider transition cursor-pointer whitespace-nowrap"
                   >
                     <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
                     <span>Back to Payments</span>
                   </button>
-                  <span className="text-2xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-wider">
-                    Settle Ledger
-                  </span>
                 </div>
 
                 <div className="text-left">
@@ -8023,46 +7993,46 @@ export function TrainerDashboardInner({
                           setRescheduleNewTimeSlot(time);
                           setShowSessionActionSheet(true);
                         }}
-                        className="bg-white border border-slate-200 hover:border-indigo-400 rounded-2xl overflow-hidden shadow-2xs hover:shadow-xs transition duration-150 cursor-pointer text-left flex flex-col font-sans"
+                        className="bg-white border border-slate-200/70 hover:border-indigo-400 rounded-xl overflow-hidden shadow-3xs hover:shadow-2xs transition duration-150 cursor-pointer text-left flex flex-col font-sans"
                       >
-                        <div className="p-4 flex items-center gap-4">
-                          <div className="shrink-0 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-xl text-center min-w-[50px]">
+                        <div className="p-2.5 flex items-center gap-2.5">
+                          {/* Time badge: compact 12px text */}
+                          <div className="shrink-0 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded-lg text-center min-w-[50px] flex flex-col justify-center">
                             <span className="text-xs font-black text-indigo-900 font-mono block leading-none">{time.split(' ')[0]}</span>
-                            <span className="text-[8px] font-black text-indigo-700 tracking-wider font-mono block mt-1 uppercase leading-none">{time.split(' ')[1]}</span>
+                            <span className="text-[9px] font-black text-indigo-700 tracking-wider font-mono block mt-0.5 uppercase leading-none">{time.split(' ')[1]}</span>
                           </div>
 
-                          <div className="flex-1 min-w-0 flex items-center gap-3 font-sans">
+                          <div className="flex-1 min-w-0 flex items-center gap-2.5 text-sans">
+                            {/* Reduced avatar size to 36px */}
                             <img 
                               src={photo} 
-                              className="w-10 h-10 rounded-full object-cover border border-slate-100 shrink-0 bg-slate-50" 
+                              className="w-9 h-9 rounded-full object-cover border border-slate-100 shrink-0 bg-slate-50" 
                               alt={traineeName} 
                             />
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <span className={`text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                            <div className="min-w-0 flex-1">
+                              {/* First line: client name (one line) and status tag */}
+                              <div className="flex items-center justify-between gap-1.5">
+                                <h4 className="text-xs font-black text-slate-950 leading-tight truncate">{traineeName}</h4>
+                                <span className={`text-[7px] font-bold uppercase tracking-wider px-1 py-0.2 rounded leading-none shrink-0 ${
                                   s.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
                                   s.status === 'Cancelled' ? 'bg-rose-50 text-rose-700 border border-rose-100' :
                                   'bg-indigo-50 text-indigo-700 border border-indigo-100'
                                 }`}>
                                   {s.status}
                                 </span>
-                                <span className="text-[8px] text-slate-400 font-bold bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 uppercase font-mono">
-                                  ⚡ {s.type || s.packageType || 'Strength'}
-                                </span>
                               </div>
-                              <h4 className="text-xs font-black text-slate-900 leading-tight truncate">{s.title || 'Personal Training Slot'}</h4>
-                              <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1 font-sans">
-                                <span>🙎 {traineeName}</span>
-                                <span className="text-slate-300">•</span>
-                                <span>📍 {s.location || 'SS15 Studio • Selangor'}</span>
+                              
+                              {/* Second line: location */}
+                              <p className="text-[10px] text-slate-500 mt-1 font-medium leading-none truncate">
+                                📍 {s.location || 'SS15 Studio • Selangor'}
                               </p>
                             </div>
                           </div>
                         </div>
 
-                        <div className="bg-slate-50/50 py-2 px-4 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400">
-                          <span>📅 {s.date}</span>
-                          <span className="font-extrabold text-indigo-650 flex items-center gap-0.5 hover:underline text-[9px] uppercase tracking-wider font-sans">
+                        <div className="bg-slate-50/40 py-1 px-2.5 border-t border-slate-100 flex justify-between items-center text-[8.5px] text-slate-400">
+                          <span className="truncate max-w-[180px]">📅 {s.date} • <span className="font-semibold text-slate-500">{s.title || 'Personal Training'}</span></span>
+                          <span className="font-extrabold text-indigo-650 flex items-center gap-0.5 hover:underline text-[8.5px] uppercase tracking-wider font-sans shrink-0">
                             <span>Adjust</span>
                             <span>➡</span>
                           </span>
@@ -8434,102 +8404,102 @@ export function TrainerDashboardInner({
               {/* Chat Messenger (65% width) */}
               <div className="flex-1 md:w-[65%] bg-white flex flex-col min-h-0 overflow-hidden text-slate-800">
                 {/* Trainer Chat Header */}
-                <div className="p-4 bg-slate-900 text-white border-b border-slate-200 flex justify-between items-center shrink-0">
-                  <div className="text-left flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center font-bold text-slate-900 text-sm shrink-0">
+                <div className="py-2.5 px-3 bg-slate-900 text-white border-b border-slate-200 flex justify-between items-center shrink-0">
+                  <div className="text-left flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center font-bold text-slate-900 text-xs shrink-0">
                       👥
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-display font-black text-white text-sm sm:text-base leading-none">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <h4 className="font-display font-black text-white text-xs sm:text-sm leading-none">
                           {activeChatTrainee?.name || 'Ahmad Ibrahim'} (Client)
                         </h4>
-                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1 self-center">
-                          <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" /> Active Client
+                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full flex items-center gap-1 self-center">
+                          <span className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" /> Active
                         </span>
                       </div>
-                      <p className="text-[10px] text-teal-400 font-bold tracking-wider uppercase mt-1">
+                      <p className="text-[8px] sm:text-[9px] text-teal-400 font-bold tracking-wider uppercase mt-0.5">
                         ACTIVE CLIENT THREAD
                       </p>
                     </div>
                   </div>
 
                   {/* Header Action Tools */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={() => {
                         fetchChatMessages(activeChatTrainee?.userId);
                         triggerToast('Instantly refreshed client synchronized records timeline!');
                       }}
                       title="Sync history"
-                      className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 transition shrink-0 cursor-pointer"
+                      className="p-1 rounded-lg hover:bg-white/10 text-slate-300 transition shrink-0 cursor-pointer"
                     >
-                      <RefreshCw className="w-4 h-4 text-slate-300" />
+                      <RefreshCw className="w-3.5 h-3.5 text-slate-300" />
                     </button>
                     <button
                       onClick={() => setChatOpen(false)}
                       title="Close message workspace"
-                      className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 transition shrink-0 cursor-pointer"
+                      className="p-1 rounded-lg hover:bg-white/10 text-slate-300 transition shrink-0 cursor-pointer"
                     >
-                      <X className="w-4 h-4 text-slate-300" />
+                      <X className="w-3.5 h-3.5 text-slate-300" />
                     </button>
                   </div>
                 </div>
 
                 {/* Context Selector zone above Message Inputs */}
-                <div className="bg-slate-50 border-b border-slate-200 p-2.5 px-4 flex flex-wrap items-center gap-2 text-[10px] sm:text-xs text-left shrink-0 select-none">
-                  <span className="text-slate-400 font-bold block text-2xs uppercase">Tag Context:</span>
+                <div className="bg-slate-50 border-b border-slate-200 p-1.5 sm:p-2.5 px-3 sm:px-4 flex flex-wrap items-center gap-1.5 text-[9px] sm:text-xs text-left shrink-0 select-none">
+                  <span className="text-slate-400 font-bold block text-[8px] sm:text-2xs uppercase">Tag Context:</span>
                   <button
                     type="button"
                     onClick={() => { setReplyTagType('Workout Log'); setReplyTagTitle('Active Routine'); }}
-                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 font-semibold text-slate-700 shrink-0 cursor-pointer text-[9px] sm:text-[11px] shadow-3xs"
                   >
                     🏋️ Workout Log
                   </button>
                   <button
                     type="button"
                     onClick={() => { setReplyTagType('Nutrition Tracker'); setReplyTagTitle('Diet Logs'); }}
-                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 font-semibold text-slate-700 shrink-0 cursor-pointer text-[9px] sm:text-[11px] shadow-3xs"
                   >
                     🍱 Nutrition Tracker
                   </button>
                   <button
                     type="button"
                     onClick={() => { setReplyTagType('Progress Photo'); setReplyTagTitle('Week 8 Comparison'); }}
-                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 font-semibold text-slate-700 shrink-0 cursor-pointer text-[9px] sm:text-[11px] shadow-3xs"
                   >
                     📸 Progress Photo
                   </button>
                   <button
                     type="button"
                     onClick={() => { setReplyTagType('Body Metrics Update'); setReplyTagTitle('Scale Weight'); }}
-                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 font-semibold text-slate-700 shrink-0 cursor-pointer text-[9px] sm:text-[11px] shadow-3xs"
                   >
                     📊 Metrics Update
                   </button>
                   <button
                     type="button"
                     onClick={() => { setReplyTagType('Payment Status'); setReplyTagTitle('Monthly Subscription'); }}
-                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 font-semibold text-slate-700 shrink-0 cursor-pointer text-[9px] sm:text-[11px] shadow-3xs"
                   >
                     💳 Payment Status
                   </button>
                   <button
                     type="button"
                     onClick={() => { setReplyTagType('Upcoming Session'); setReplyTagTitle('Private Workout'); }}
-                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-2 py-0.5 font-semibold text-slate-705 text-slate-700 shrink-0 cursor-pointer shadow-3xs"
+                    className="bg-white hover:bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 font-semibold text-slate-700 shrink-0 cursor-pointer text-[9px] sm:text-[11px] shadow-3xs"
                   >
                     📅 Session Booking
                   </button>
                 </div>
 
                 {/* Message list bubble container */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/70 scrollbar-thin">
+                <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-slate-50/70 scrollbar-thin">
                   {chatMessages.length === 0 ? (
-                    <div className="text-center py-20 text-slate-400 text-xs space-y-2 flex flex-col items-center justify-center">
-                      <MessageSquare className="w-10 h-10 text-slate-300 mx-auto opacity-75" />
-                      <p className="font-bold text-slate-500">No matching messages found in thread.</p>
-                      <p className="text-[11px] text-slate-400">Send motivational tips or comment on progress below.</p>
+                    <div className="text-center py-10 sm:py-20 text-slate-400 text-xs space-y-1.5 flex flex-col items-center justify-center">
+                      <MessageSquare className="w-8 h-8 text-slate-300 mx-auto opacity-75" />
+                      <p className="font-bold text-slate-500 text-xs">No matching messages found in thread.</p>
+                      <p className="text-[10px] sm:text-[11px] text-slate-400">Send motivational tips or comment on progress below.</p>
                     </div>
                   ) : (
                     chatMessages.map(m => {
@@ -8581,11 +8551,11 @@ export function TrainerDashboardInner({
                 </div>
 
                 {/* Smart Trainer Actions Toolbar (Prefills message + sets context tag) */}
-                <div className="bg-slate-50 border-t border-slate-150 p-3 flex flex-col text-left shrink-0 select-none">
-                  <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-800 mb-1.5 flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-teal-600 font-bold" /> Smart Coach Actions (1-Click Presets)
+                <div className="bg-slate-50 border-t border-slate-150 p-2 sm:p-3 flex flex-col text-left shrink-0 select-none">
+                  <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-extrabold text-slate-800 mb-1 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-teal-600 font-bold animate-pulse" /> Smart Coach Actions (1-Click Presets)
                   </span>
-                  <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar text-[11px] font-semibold text-slate-600">
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar text-[10px] sm:text-[11px] font-semibold text-slate-600">
                     <button
                       type="button"
                       onClick={() => {
@@ -8593,7 +8563,7 @@ export function TrainerDashboardInner({
                         setReplyTagTitle('Personalized Motivation');
                         setChatInputText("🔥 Phenomenal performance logged this week! You are unlocking an entirely new standard. Let's keep this momentum unbroken!");
                       }}
-                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2 py-1 h-7 sm:h-8 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs text-[10px] sm:text-[11px]"
                     >
                       🚀 Send Motivation
                     </button>
@@ -8604,7 +8574,7 @@ export function TrainerDashboardInner({
                         setReplyTagTitle('Alignment Correction');
                         setChatInputText("🏋️ Posture Correction: Avoid hyper-extending upper lumbar spine at lockout. Keep core loaded thoracic extended.");
                       }}
-                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2 py-1 h-7 sm:h-8 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs text-[10px] sm:text-[11px]"
                     >
                       🏋️ Posture Correction
                     </button>
@@ -8615,7 +8585,7 @@ export function TrainerDashboardInner({
                         setReplyTagTitle('Macronutrient Advice');
                         setChatInputText("🍱 Meal feedback: Exceptional protein volume! Try swapping out saturated oils to shave margin lipid count.");
                       }}
-                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2 py-1 h-7 sm:h-8 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs text-[10px] sm:text-[11px]"
                     >
                       🍱 Comment Meal Log
                     </button>
@@ -8626,7 +8596,7 @@ export function TrainerDashboardInner({
                         setReplyTagTitle('Aesthetic Checkin');
                         setChatInputText("📸 Photo review: Splendid lateral expansion! Postural vertical alignment shows marvelous progress!");
                       }}
-                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2 py-1 h-7 sm:h-8 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs text-[10px] sm:text-[11px]"
                     >
                       📸 Photo Feedback
                     </button>
@@ -8637,7 +8607,7 @@ export function TrainerDashboardInner({
                         setReplyTagTitle('Follow Up Missed');
                         setChatInputText("🚨 Missed Workout: Let's keep our cellular momentum rolling! Access our low-intensity mobilizer stretching frame today.");
                       }}
-                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2 py-1 h-7 sm:h-8 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs text-[10px] sm:text-[11px]"
                     >
                       🚨 Missed Workout
                     </button>
@@ -8648,7 +8618,7 @@ export function TrainerDashboardInner({
                         setReplyTagTitle('Invoice Stream');
                         setChatInputText("💰 Invoice reminder: To avoid disruptions, please drop by your Billing Cabinet tab to reconcile remaining balances.");
                       }}
-                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                      className="bg-white hover:bg-slate-100 border border-slate-200 px-2 py-1 h-7 sm:h-8 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs text-[10px] sm:text-[11px]"
                     >
                       💰 Send Payment Reminder
                     </button>
@@ -8659,7 +8629,7 @@ export function TrainerDashboardInner({
                         setReplyTagTitle('Evaluation booking');
                         setChatInputText("📅 Calendar booking: Let's synchronize virtual progress evaluation schedules! Let me know your best days.");
                       }}
-                      className="bg-white hover:bg-slate-105 border border-slate-200 px-2.5 py-1 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs"
+                      className="bg-white hover:bg-slate-105 border border-slate-200 px-2 py-1 h-7 sm:h-8 rounded-lg transition shrink-0 whitespace-nowrap cursor-pointer hover:border-slate-300 shadow-3xs text-[10px] sm:text-[11px]"
                     >
                       📅 Schedule Session
                     </button>
@@ -8667,10 +8637,10 @@ export function TrainerDashboardInner({
                 </div>
 
                 {/* Form input bottom messaging row */}
-                <form onSubmit={handleSendFloatingMessage} className="bg-white border-t border-slate-200 p-3.5 flex flex-col gap-2 shrink-0">
+                <form onSubmit={handleSendFloatingMessage} className="bg-white border-t border-slate-200 p-2.5 sm:p-3.5 flex flex-col gap-1.5 shrink-0">
                   {replyTagType && (
-                    <div className="bg-teal-50 border border-teal-100 text-teal-800 px-3 py-1 rounded-lg flex justify-between items-center text-[10px] select-none shrink-0">
-                      <span className="font-bold uppercase tracking-wider text-[9px]">
+                    <div className="bg-teal-50 border border-teal-100 text-teal-800 px-2 py-0.5 rounded-lg flex justify-between items-center text-[9px] sm:text-[10px] select-none shrink-0">
+                      <span className="font-bold uppercase tracking-wider text-[8px] sm:text-[9px]">
                         📌 Active Tag: Replying to {replyTagType} &ldquo;{replyTagTitle}&rdquo;
                       </span>
                       <button
@@ -8679,7 +8649,7 @@ export function TrainerDashboardInner({
                           setReplyTagType(null);
                           setReplyTagTitle('');
                         }}
-                        className="font-black hover:text-teal-900 text-xs shrink-0 cursor-pointer"
+                        className="font-black hover:text-teal-900 text-[10px] shrink-0 cursor-pointer"
                       >
                         ✕ Clear
                       </button>
@@ -8692,13 +8662,13 @@ export function TrainerDashboardInner({
                       placeholder={`Send a private direct prompt to Client ${activeChatTrainee?.name || 'Ahmad'}...`}
                       value={chatInputText}
                       onChange={(e) => setChatInputText(e.target.value)}
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:outline-teal-500 font-sans"
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-2 text-[11px] sm:text-xs text-slate-800 outline-none focus:outline-teal-500 font-sans"
                     />
                     <button
                       type="submit"
-                      className="bg-slate-900 hover:bg-slate-800 text-teal-400 px-4 rounded-xl transition duration-75 font-black uppercase text-3xs tracking-wider flex items-center justify-center gap-1 shrink-0 cursor-pointer"
+                      className="bg-slate-900 hover:bg-slate-800 text-teal-400 px-3 sm:px-4 rounded-lg sm:rounded-xl transition duration-75 font-black uppercase text-[10px] sm:text-3xs tracking-wider flex items-center justify-center gap-1 shrink-0 cursor-pointer"
                     >
-                      <Send className="w-3.5 h-3.5" /> Send
+                      <Send className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Send
                     </button>
                   </div>
                 </form>
@@ -8709,140 +8679,6 @@ export function TrainerDashboardInner({
           </motion.div>
         </>
       )}
-        </AnimatePresence>
-        <AnimatePresence>
-          {showNotificationsDrawer && (
-            <>
-              {/* Backdrop Overlay */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowNotificationsDrawer(false)}
-                className="absolute inset-0 z-[110] bg-slate-900/40 backdrop-blur-xs cursor-pointer"
-              />
-
-              {/* Bottom Sheet Container */}
-              <motion.div
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-                className="absolute bottom-0 left-0 right-0 z-[120] bg-white rounded-t-[20px] shadow-[0_-8px_40px_rgba(0,0,0,0.18)] flex flex-col h-[65%] max-h-[65%] border-t border-slate-100 overflow-hidden box-border text-slate-800"
-              >
-                {/* Native Drag handles */}
-                <div 
-                  className="w-12 h-1 bg-slate-300 rounded-full mx-auto mt-2.5 mb-1.5 shrink-0 cursor-pointer"
-                  onClick={() => setShowNotificationsDrawer(false)}
-                />
-
-                {/* Main Content Area - scrolling internally */}
-                <div className="flex-1 overflow-y-auto flex flex-col text-left font-sans">
-              {/* 1. Page Header */}
-              <div className="flex justify-between items-center px-4.5 py-4 border-b border-slate-100 shrink-0 bg-white">
-                <button 
-                  onClick={() => setShowNotificationsDrawer(false)}
-                  className="flex items-center gap-1.5 text-[#0F172A] hover:text-slate-600 font-extrabold text-xs tracking-wider cursor-pointer font-sans"
-                >
-                  <ArrowLeft className="w-4 h-4 text-[#0F172A]" />
-                  <span>Back</span>
-                </button>
-                <button className="p-1.5 rounded-lg text-[#64748B] hover:bg-slate-50 cursor-pointer transition">
-                  <Settings className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Page standard header */}
-              <PageHeader 
-                title="Notifications" 
-                subtitle="Stay updated with client activities" 
-              />
-
-              {/* 2. Alert Card */}
-              <div className="px-4.5 pt-4">
-                <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-indigo-100 rounded-[18px] p-3.5 flex items-start gap-2.5 shadow-2xs">
-                  <span className="text-base shrink-0">✨</span>
-                  <div className="min-w-0">
-                    <h5 className="font-sans font-extrabold text-[10px] uppercase text-[#6366F1] tracking-wider leading-none">Reminder</h5>
-                    <p className="text-[11px] text-[#64748B] mt-1 font-sans font-medium leading-relaxed">You have client updates waiting for review.</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 3. Notification Groups & Rows */}
-              <div className="flex-1 px-4.5 py-4 space-y-5 select-none bg-white">
-                {(() => {
-                  const groups = ['Today', 'Yesterday'];
-                  return groups.map((group) => {
-                    const groupNotifs = notifList.filter(n => n.group === group);
-                    if (groupNotifs.length === 0) return null;
-                    const hasUnreadInGroup = groupNotifs.some(n => n.isUnread);
-
-                    return (
-                      <div key={group} className="space-y-3">
-                        {/* Group Header with "Mark all read" */}
-                        <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                          <span className="text-[10px] font-black uppercase text-[#0F172A] tracking-widest">{group}</span>
-                          {hasUnreadInGroup && (
-                            <button
-                              onClick={() => {
-                                setNotifList(prev => prev.map(n => n.group === group ? { ...n, isUnread: false } : n));
-                                triggerToast(`Marked all ${group.toLowerCase()} notifications as read`, "success");
-                              }}
-                              className="text-[9px] font-extrabold text-[#6366F1] hover:text-indigo-800 cursor-pointer hover:underline transition font-sans"
-                            >
-                              Mark all read
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Group rows */}
-                        <div className="space-y-2.5">
-                          {groupNotifs.map((notif) => (
-                            <div
-                              key={notif.id}
-                              onClick={() => {
-                                setNotifList(prev => prev.map(n => n.id === notif.id ? { ...n, isUnread: false } : n));
-                              }}
-                              className={`bg-white border text-left p-3 rounded-[18px] flex items-center justify-between gap-3 shadow-2xs transition duration-150 cursor-pointer hover:bg-slate-50/50 ${
-                                notif.isUnread ? 'border-violet-100 bg-violet-50/10 font-medium' : 'border-slate-100 bg-white'
-                              }`}
-                            >
-                              {/* Left part */}
-                              <div className="flex items-center gap-3 min-w-0">
-                                {/* Small colored circular icon on the left */}
-                                <div className={`w-8 h-8 rounded-full border font-sans flex items-center justify-center shrink-0 ${notif.bgColor || 'bg-slate-50 text-slate-655 border-slate-100'}`}>
-                                  <span className="text-sm leading-none shrink-0 select-none">{notif.emoji}</span>
-                                </div>
-                                <div className="min-w-0 font-sans">
-                                  <h4 className="text-xs font-bold text-[#0F172A] leading-tight truncate">
-                                    {notif.title}
-                                  </h4>
-                                  <p className="text-[10px] text-[#64748B] leading-normal font-sans mt-0.5 truncate">
-                                    {notif.subtitle}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Right part: Time and Unread dot */}
-                              <div className="flex flex-col items-end gap-1.5 shrink-0 select-none">
-                                <span className="text-[9px] text-[#64748B] font-mono leading-none">{notif.time}</span>
-                                {notif.isUnread && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1] shrink-0 animate-pulse"></span>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  });
-                })()}
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
         </AnimatePresence>
 
     </div>

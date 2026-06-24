@@ -104,7 +104,7 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white border border-slate-100 rounded-3xl space-y-3">
+        <div className="flex flex-col items-center justify-center py-12 bg-white border border-slate-100 rounded-xl space-y-2">
           <RefreshCw className="w-6 h-6 text-teal-600 animate-spin" />
           <p className="text-xs text-slate-400 font-bold font-sans">Retrieving verified history logs...</p>
         </div>
@@ -115,7 +115,7 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
         <div className="space-y-5">
           
           {/* Header Summary Card */}
-          <div className="bg-slate-900 text-white rounded-3xl p-5 shadow-md border border-slate-800 space-y-4 relative overflow-hidden">
+          <div className="bg-slate-900 text-white rounded-xl p-3.5 shadow-3xs border border-slate-800 space-y-3 relative overflow-hidden">
             <div className="absolute right-0 top-0 w-24 h-24 bg-[#18D4C5]/10 rounded-full blur-2xl" />
             <div className="flex justify-between items-center">
               <div>
@@ -127,15 +127,15 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <div className="bg-slate-850 p-3 rounded-2xl border border-slate-800">
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="bg-slate-850 p-2.5 rounded-xl border border-slate-800">
                 <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Total Burned This Week</span>
-                <span className="text-lg font-black text-white block mt-0.5 font-mono">1,580 <span className="text-[10px] font-medium text-[#18D4C5]">kcal</span></span>
+                <span className="text-base font-black text-white block mt-0.5 font-mono">1,580 <span className="text-[9px] font-medium text-[#18D4C5]">kcal</span></span>
               </div>
-              <div className="bg-slate-850 p-3 rounded-2xl border border-slate-800">
+              <div className="bg-slate-850 p-2.5 rounded-xl border border-slate-800">
                 <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Workout Status</span>
-                <span className="text-xs font-black text-[#18D4C5] flex items-center gap-1 mt-1">
-                  <CheckCircle className="w-3.5 h-3.5" />
+                <span className="text-2xs font-black text-[#18D4C5] flex items-center gap-1 mt-1">
+                  <CheckCircle className="w-3 h-3" />
                   100% Consistent
                 </span>
               </div>
@@ -143,7 +143,7 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
           </div>
 
           {/* Weekly Calories Graph */}
-          <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-xs text-left font-sans">
+          <div className="bg-white border border-slate-100 rounded-xl p-3.5 shadow-3xs text-left font-sans">
             <div className="flex justify-between items-center mb-4">
               <div>
                 <span className="text-[10px] font-black uppercase text-[#081F63] tracking-wider">Calories Burned</span>
@@ -521,7 +521,7 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                 </div>
 
                 {/* MAIN NUTRITION SCORE CARD */}
-                <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-xs select-none">
+                <div className="bg-white border border-slate-100 rounded-xl p-3.5 shadow-3xs select-none">
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
                     
                     {/* Ring score on left */}
@@ -596,7 +596,7 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                 </div>
 
                 {/* WEEKLY CALORIE TREND GRAPH */}
-                <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+                <div className="bg-white border border-slate-100 rounded-xl p-3.5 shadow-3xs flex flex-col justify-between">
                   <div>
                     <h4 className="text-xs font-bold uppercase tracking-wider text-[#081F63] mb-1">Weekly Calorie Trend</h4>
                     <p className="text-[11px] text-slate-400 font-sans leading-normal">Fluctuations in dietary intakes vs daily targets.</p>
@@ -716,7 +716,7 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                 </div>
 
                 {/* MACRO DISTRIBUTION */}
-                <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+                <div className="bg-white border border-slate-100 rounded-xl p-3.5 shadow-3xs flex flex-col justify-between">
                   <div>
                     <h4 className="text-xs font-bold uppercase tracking-wider text-[#081F63] mb-1">Macro Distribution</h4>
                     <p className="text-[11px] text-slate-400 font-sans">Relative gram ratio of logged macros.</p>
@@ -797,7 +797,7 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                       return (
                         <div 
                           key={meal.id} 
-                          className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-2xs transition-all duration-200"
+                          className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-2xs transition-all duration-200"
                         >
                           {/* Feed row */}
                           <button 
@@ -930,42 +930,42 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                   </div>
                 </div>
 
-                {/* AI NUTRITION SUMMARY CARD */}
-                <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+                {/* COACHAI ANALYSIS CARD */}
+                <div className="bg-gradient-to-br from-[#061A4D] to-[#122F88] text-white border border-slate-900/40 rounded-xl p-4 shadow-3xs flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xs font-black uppercase tracking-wider text-[#081F63] flex items-center gap-1.5 mb-1.5">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5 mb-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-[#18D4C5]" />
-                      <span>AI Nutrition Summary</span>
+                      <span>CoachAI Analysis</span>
                     </h4>
-                    <p className="text-[11px] text-slate-400 mb-3.5 font-medium leading-normal">Immediate compliance and cognitive pattern audits.</p>
+                    <p className="text-[11px] text-indigo-150 mb-3.5 font-semibold leading-normal">Immediate compliance and pattern audits.</p>
                     
-                    <div className="space-y-2.5">
-                      <div className="flex gap-2.5 items-start">
-                        <span className="text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-lg shrink-0 mt-0.5 text-3xs font-black">✓</span>
-                        <span className="text-xs font-medium text-slate-700">Protein intake adequate</span>
+                    <div className="space-y-2 text-[11px] font-bold">
+                      <div className="flex gap-2.5 items-center">
+                        <span className="text-emerald-300 bg-emerald-500/20 w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px]">✓</span>
+                        <span className="text-slate-100">Protein intake adequate</span>
                       </div>
-                      <div className="flex gap-2.5 items-start">
-                        <span className="text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-lg shrink-0 mt-0.5 text-3xs font-black">✓</span>
-                        <span className="text-xs font-medium text-slate-700">Meal timing consistent</span>
+                      <div className="flex gap-2.5 items-center">
+                        <span className="text-emerald-300 bg-emerald-500/20 w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px]">✓</span>
+                        <span className="text-slate-100">Meal timing consistent</span>
                       </div>
-                      <div className="flex gap-2.5 items-start">
-                        <span className="text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded-lg shrink-0 mt-0.5 text-3xs font-black">⚠</span>
-                        <span className="text-xs font-medium text-slate-700">
+                      <div className="flex gap-2.5 items-center">
+                        <span className="text-rose-300 bg-rose-500/20 w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px]">!</span>
+                        <span className="text-slate-100">
                           {totalDailyCal > 1800 
                             ? `Calories exceeded by ${totalDailyCal - 1800} kcal` 
                             : `Calorie loads within targets`
                           }
                         </span>
                       </div>
-                      <div className="flex gap-2.5 items-start">
-                        <span className="text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded-lg shrink-0 mt-0.5 text-3xs font-black">⚠</span>
-                        <span className="text-xs font-medium text-slate-700">Lunch contributed highest carb intake</span>
+                      <div className="flex gap-2.5 items-center">
+                        <span className="text-rose-300 bg-rose-500/20 w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px]">!</span>
+                        <span className="text-slate-100">Lunch contributed highest carb intake</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="border-t border-slate-50 pt-2.5 mt-3 text-[9px] font-black text-slate-400 uppercase tracking-widest block text-left">
-                    COACHTRACK INTELLIGENCE ENGINE • 2026
+                  <div className="border-t border-white/10 pt-2.5 mt-4 text-[9px] font-black text-indigo-200 uppercase tracking-widest block text-left">
+                    COACHTRACK ENGINE • JUN 2026
                   </div>
                 </div>
 
@@ -974,41 +974,41 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                   <h4 className="text-xs font-black text-[#081F63] uppercase tracking-wider block select-none">
                     Dietary Quick Insights
                   </h4>
-                  <div className="grid grid-cols-2 gap-3 select-none">
+                  <div className="grid grid-cols-2 gap-2.5 select-none">
                     
                     {/* Insight 1 */}
-                    <div className="bg-white border border-slate-100 rounded-2xl p-3.5 text-left shadow-2xs flex flex-col justify-between">
-                      <span className="text-[9px] text-slate-400 font-extrabold block uppercase tracking-wider mb-2">🔥 Highest Calorie Day</span>
+                    <div className="bg-white border border-slate-100 rounded-xl p-2.5 text-left shadow-2xs h-[72px] flex flex-col justify-center">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider leading-none mb-1.5">🔥 Highest Calorie</span>
                       <div>
-                        <span className="text-xs font-bold text-[#081F63] block">Wednesday</span>
-                        <span className="text-3xs text-[#18D4C5] font-black uppercase tracking-wider block mt-0.5">1,950 kcal consumed</span>
+                        <span className="text-xs font-extrabold text-[#081F63] block leading-tight">Wednesday</span>
+                        <span className="text-[10px] text-[#14B8A6] font-black uppercase tracking-tight block mt-0.5 leading-none">1,950 kcal</span>
                       </div>
                     </div>
 
                     {/* Insight 2 */}
-                    <div className="bg-white border border-slate-100 rounded-2xl p-3.5 text-left shadow-2xs flex flex-col justify-between">
-                      <span className="text-[9px] text-slate-400 font-extrabold block uppercase tracking-wider mb-2">🥗 Healthiest Meal</span>
+                    <div className="bg-white border border-slate-100 rounded-xl p-2.5 text-left shadow-2xs h-[72px] flex flex-col justify-center">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider leading-none mb-1.5">🥗 Healthiest Meal</span>
                       <div>
-                        <span className="text-xs font-bold text-[#081F63] block truncate">Recovery Shake</span>
-                        <span className="text-3xs text-[#18D4C5] font-black uppercase tracking-wider block mt-0.5">Optimal Protein Index</span>
+                        <span className="text-xs font-extrabold text-[#081F63] block truncate leading-tight">Recovery Shake</span>
+                        <span className="text-[10px] text-[#14B8A6] font-black uppercase tracking-tight block mt-0.5 leading-none">Opt. Protein</span>
                       </div>
                     </div>
 
                     {/* Insight 3 */}
-                    <div className="bg-white border border-slate-100 rounded-2xl p-3.5 text-left shadow-2xs flex flex-col justify-between">
-                      <span className="text-[9px] text-slate-400 font-extrabold block uppercase tracking-wider mb-2">💪 Protein Champ Day</span>
+                    <div className="bg-white border border-slate-100 rounded-xl p-2.5 text-left shadow-2xs h-[72px] flex flex-col justify-center">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider leading-none mb-1.5">💪 Protein Champ</span>
                       <div>
-                        <span className="text-xs font-bold text-[#081F63] block">Friday</span>
-                        <span className="text-3xs text-[#18D4C5] font-black uppercase tracking-wider block mt-0.5">145g Protein Intake</span>
+                        <span className="text-xs font-extrabold text-[#081F63] block leading-tight">Friday</span>
+                        <span className="text-[10px] text-[#14B8A6] font-black uppercase tracking-tight block mt-0.5 leading-none">145g Intake</span>
                       </div>
                     </div>
 
                     {/* Insight 4 */}
-                    <div className="bg-white border border-slate-100 rounded-2xl p-3.5 text-left shadow-2xs flex flex-col justify-between">
-                      <span className="text-[9px] text-slate-400 font-extrabold block uppercase tracking-wider mb-2">📈 Best Nutrition Score</span>
+                    <div className="bg-white border border-slate-100 rounded-xl p-2.5 text-left shadow-2xs h-[72px] flex flex-col justify-center">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider leading-none mb-1.5">📈 Best Nutrition</span>
                       <div>
-                        <span className="text-xs font-bold text-[#081F63] block font-sans">Tuesday</span>
-                        <span className="text-3xs text-[#18D4C5] font-black uppercase tracking-wider block mt-0.5">88 / 100 Rec. score</span>
+                        <span className="text-xs font-extrabold text-[#081F63] block leading-tight">Tuesday</span>
+                        <span className="text-[10px] text-[#14B8A6] font-black uppercase tracking-tight block mt-0.5 leading-none">88 / 100 Score</span>
                       </div>
                     </div>
 

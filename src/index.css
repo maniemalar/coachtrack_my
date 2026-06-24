@@ -10,8 +10,98 @@
   box-sizing: border-box;
 }
 
-body, html {
+body, html, #root {
+  width: 100%;
+  max-width: 100%;
   overflow-x: hidden;
   margin: 0;
   padding: 0;
 }
+
+/* Global design system font clamp variables and classes */
+:root {
+  --text-clamp-title: 24px;
+  --text-clamp-section: 18px;
+  --text-clamp-card: 16px;
+  --text-clamp-body: 14px;
+  --text-clamp-label: 12px;
+}
+
+/* Unified Typography Scale */
+.page-title {
+  font-size: 24px !important;
+  font-weight: 800 !important;
+}
+
+.section-title {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+}
+
+.card-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+.primary-value {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+}
+
+.body-text {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.small-label {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.tiny-helper {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+.text-clamp-title {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.text-clamp-section {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.text-clamp-card {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.text-clamp-body {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.text-clamp-label {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bottom-nav-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  height: 58px;
+  z-index: 999;
+  background: white;
+  border-top: 1px solid #E5EAF2;
+}
+
+.main-content-padded {
+  padding-bottom: 90px;
+}
+

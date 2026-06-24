@@ -386,89 +386,89 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
             <div className="space-y-6 animate-fade-in text-left">
               
               {/* Coach Performance KPI Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div id="kpi-card-rating" className="bg-white p-4.5 rounded-[24px] border border-slate-200/80 shadow-3xs hover:shadow-2xs transition duration-300">
-                  <div className="text-lg font-black text-amber-500 flex items-center gap-1 select-none">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                <div id="kpi-card-rating" className="bg-white p-3 sm:p-4.5 rounded-[16px] sm:rounded-[24px] border border-slate-200/80 shadow-3xs hover:shadow-2xs transition duration-300">
+                  <div className="text-sm sm:text-base md:text-lg font-black text-amber-500 flex items-center gap-1 select-none">
                     ⭐ <span className="text-slate-900">4.8 / 5.0</span>
                   </div>
-                  <span className="block text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mt-2">
+                  <span className="block text-[9px] sm:text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mt-1.5 sm:mt-2">
                     Coach Rating
                   </span>
                 </div>
 
-                <div id="kpi-card-clients" className="bg-white p-4.5 rounded-[24px] border border-slate-200/80 shadow-3xs hover:shadow-2xs transition duration-300">
-                  <div className="text-lg font-black text-slate-900 flex items-center gap-1.5 select-none">
+                <div id="kpi-card-clients" className="bg-white p-3 sm:p-4.5 rounded-[16px] sm:rounded-[24px] border border-slate-200/80 shadow-3xs hover:shadow-2xs transition duration-300">
+                  <div className="text-sm sm:text-base md:text-lg font-black text-slate-900 flex items-center gap-1.5 select-none">
                     👥 <span className="text-slate-900">8</span>
                   </div>
-                  <span className="block text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mt-2">
+                  <span className="block text-[9px] sm:text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mt-1.5 sm:mt-2">
                     Active Clients
                   </span>
                 </div>
 
-                <div id="kpi-card-goals" className="bg-white p-4.5 rounded-[24px] border border-slate-200/80 shadow-3xs hover:shadow-2xs transition duration-300">
-                  <div className="text-lg font-black text-[#13D4C8] flex items-center gap-1 text-[#081F5C] select-none">
+                <div id="kpi-card-goals" className="bg-white p-3 sm:p-4.5 rounded-[16px] sm:rounded-[24px] border border-slate-200/80 shadow-3xs hover:shadow-2xs transition duration-300">
+                  <div className="text-sm sm:text-base md:text-lg font-black text-[#13D4C8] flex items-center gap-1 text-[#081F5C] select-none">
                     🎯 <span className="text-slate-900">88%</span>
                   </div>
-                  <span className="block text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mt-2">
+                  <span className="block text-[9px] sm:text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mt-1.5 sm:mt-2">
                     Goal Completion Rate
                   </span>
                 </div>
 
-                <div id="kpi-card-retention" className="bg-white p-4.5 rounded-[24px] border border-slate-200/80 shadow-3xs hover:shadow-2xs transition duration-300">
-                  <div className="text-lg font-black text-[#5B5FEF] flex items-center gap-1 select-none">
+                <div id="kpi-card-retention" className="bg-white p-3 sm:p-4.5 rounded-[16px] sm:rounded-[24px] border border-slate-200/80 shadow-3xs hover:shadow-2xs transition duration-300">
+                  <div className="text-sm sm:text-base md:text-lg font-black text-[#5B5FEF] flex items-center gap-1 select-none">
                     🔄 <span className="text-slate-900">89%</span>
                   </div>
-                  <span className="block text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mt-2">
+                  <span className="block text-[9px] sm:text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mt-1.5 sm:mt-2">
                     Client Retention
                   </span>
                 </div>
               </div>
 
               {/* AI Coach Insights Card */}
-              <div id="ai-insights-premium-card" className="relative bg-[#081F5C] text-white rounded-[24px] p-5.5 border border-slate-800 shadow-lg overflow-hidden">
+              <div id="ai-insights-premium-card" className="relative bg-[#081F5C] text-white rounded-[20px] sm:rounded-[24px] p-4 sm:p-5.5 border border-slate-800 shadow-lg overflow-hidden">
                 <div className="absolute right-0 top-0 w-48 h-48 bg-[#13D4C8]/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="flex items-center gap-1.5 mb-3 text-[#13D4C8] border-b border-white/10 pb-2.5 select-none">
-                  <Sparkles className="w-4 h-4 fill-[#13D4C8]" />
-                  <span className="text-2xs font-extrabold uppercase tracking-widest block">
-                    ✨ CoachAI Business Insight
+                <div className="flex items-center gap-1.5 mb-2.5 sm:mb-3 text-[#13D4C8] border-b border-white/10 pb-2 sm:pb-2.5 select-none">
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-[#13D4C8]" />
+                  <span className="text-[10px] sm:text-2xs font-extrabold uppercase tracking-widest block">
+                    ✨ CoachAI Analysis
                   </span>
                 </div>
-                <div className="space-y-2 text-xs text-slate-100">
+                <div className="space-y-2 text-[11px] sm:text-xs text-slate-100">
                   <p className="font-semibold text-[#13D4C8]">
                     Your clients maintain a <span className="underline">92%</span> attendance rate.
                   </p>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-2xs text-slate-300">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1.5 text-[10px] sm:text-2xs text-slate-300">
                     <div className="bg-white/5 p-2 rounded-xl border border-white/5">
-                      <span className="block text-slate-450 uppercase font-bold text-3xs">Most successful package</span>
-                      <strong className="text-white font-black">8 Classes Per Month</strong>
+                      <span className="block text-slate-450 uppercase font-bold text-[9px] sm:text-3xs">Most successful package</span>
+                      <strong className="text-white font-black text-[11px] sm:text-xs">8 Classes Per Month</strong>
                     </div>
                     <div className="bg-white/5 p-2 rounded-xl border border-white/5">
-                      <span className="block text-slate-450 uppercase font-bold text-3xs">Peak booking days</span>
-                      <strong className="text-white font-black">Tuesday and Thursday</strong>
+                      <span className="block text-slate-450 uppercase font-bold text-[9px] sm:text-3xs">Peak booking days</span>
+                      <strong className="text-white font-black text-[11px] sm:text-xs">Tuesday and Thursday</strong>
                     </div>
                     <div className="bg-white/5 p-2 rounded-xl border border-white/5 col-span-1 sm:col-span-2">
-                      <span className="block text-slate-450 uppercase font-bold text-3xs">Available coaching capacity</span>
-                      <strong className="text-white font-black">3 remaining slots weekly</strong>
+                      <span className="block text-slate-450 uppercase font-bold text-[9px] sm:text-3xs">Available coaching capacity</span>
+                      <strong className="text-white font-black text-[11px] sm:text-xs">3 remaining slots weekly</strong>
                     </div>
                   </div>
 
-                  <div className="bg-[#13D4C8]/10 border border-[#13D4C8]/25 p-3 rounded-xl mt-3 text-2xs text-slate-100">
-                    <strong className="text-[#13D4C8] block text-3xs uppercase font-black mb-0.5">Recommendation</strong>
+                  <div className="bg-[#13D4C8]/10 border border-[#13D4C8]/25 p-2.5 sm:p-3 rounded-xl mt-2.5 text-[10px] sm:text-2xs text-slate-100">
+                    <strong className="text-[#13D4C8] block text-[9px] sm:text-3xs uppercase font-black mb-0.5">Recommendation</strong>
                     Promote a beginner weight-loss package to increase monthly revenue streams.
                   </div>
                 </div>
               </div>
 
               {/* Coach Biography */}
-              <div id="overview-biography-section" className="bg-white rounded-[24px] p-5.5 border border-slate-200/80 shadow-sm text-left">
-                <div className="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
-                  <h3 className="font-extrabold text-[#081F5C] text-indigo-900 text-xs tracking-wider uppercase font-sans">
+              <div id="overview-biography-section" className="bg-white rounded-[20px] sm:rounded-[24px] p-4 sm:p-5.5 border border-slate-200/80 shadow-sm text-left">
+                <div className="flex flex-row items-center justify-between gap-2 mb-2.5 sm:mb-3 border-b border-slate-100 pb-2">
+                  <h3 className="font-extrabold text-[#081F5C] text-[11px] sm:text-xs tracking-wider uppercase font-sans">
                     Professional Biography
                   </h3>
                   <button 
                     onClick={handleSaveBioAndProfile}
-                    className="bg-[#081F5C] hover:bg-slate-900 text-white hover:text-white text-3xs font-black px-3 py-1.5 rounded-xl cursor-pointer flex items-center gap-1 transition shadow-sm border border-transparent"
+                    className="bg-[#081F5C] hover:bg-slate-900 text-white hover:text-white text-[9px] sm:text-3xs font-black px-2.5 py-1.5 rounded-xl cursor-pointer flex items-center gap-1 transition shadow-sm border border-transparent shrink-0"
                   >
                     <Save className="w-3 h-3 text-[#13D4C8]" /> Save Changes
                   </button>
@@ -478,24 +478,24 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                   rows={3}
                   value={bioInput}
                   onChange={(e) => setBioInput(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-[#13D4C8] font-bold leading-relaxed"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] sm:text-xs text-slate-700 focus:outline-[#13D4C8] font-bold leading-relaxed"
                   placeholder="Describe your expertise, focus areas, and coaching experiences..."
                 />
               </div>
 
               {/* Specializations Category Chips */}
-              <div id="overview-specializations-section" className="bg-white rounded-[24px] p-5.5 border border-slate-200/80 shadow-sm text-left">
-                <h3 className="font-extrabold text-[#081F5C] text-xs tracking-wider uppercase font-sans mb-1 pb-1">
+              <div id="overview-specializations-section" className="bg-white rounded-[20px] sm:rounded-[24px] p-4 sm:p-5.5 border border-slate-200/80 shadow-sm text-left">
+                <h3 className="font-extrabold text-[#081F5C] text-[11px] sm:text-xs tracking-wider uppercase font-sans mb-1 pb-1">
                   Core Specializations
                 </h3>
-                <p className="text-[13px] font-normal text-slate-500 mb-4">Tick disciplines displayed to trainees in your public discoverable profile.</p>
+                <p className="text-[10px] sm:text-[11px] font-normal text-slate-500 mb-3 sm:mb-4">Tick disciplines displayed to trainees in your public discoverable profile.</p>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {specializations.map((spec, idx) => (
                     <button
                       key={spec.name}
                       onClick={() => toggleSpecialization(idx)}
-                      className={`px-3 py-2 rounded-xl text-[14px] font-medium transition-all duration-200 flex items-center gap-1.5 cursor-pointer select-none border ${
+                      className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-[12px] md:text-[13px] font-medium transition-all duration-200 flex items-center gap-1 sm:gap-1.5 cursor-pointer select-none border ${
                         spec.checked 
                           ? 'bg-[#13D4C8]/5 border-[#13D4C8] text-[#081F5C] font-semibold' 
                           : 'bg-slate-50 border-slate-200 text-slate-400 hover:bg-slate-100'
@@ -515,13 +515,13 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
           {activeSubTab === 'packages' && (
             <div id="packages-sub-tab" className="space-y-6 animate-fade-in text-left">
               
-              <div className="bg-white border border-slate-200/80 rounded-[24px] p-5.5 shadow-sm">
-                <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+              <div className="bg-white border border-slate-200/80 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5.5 shadow-sm">
+                <div className="flex flex-row items-center justify-between gap-2 mb-3.5 sm:mb-4 border-b border-slate-100 pb-2.5 sm:pb-3">
                   <div>
-                    <h3 className="font-sans font-black text-[#081F5C] text-sm uppercase tracking-wider">
+                    <h3 className="font-sans font-black text-[#081F5C] text-xs sm:text-sm uppercase tracking-wider">
                       Manage Coaching Packages
                     </h3>
-                    <p className="text-3xs text-slate-400 font-bold mt-0.5">Customize tier pricing models synced dynamically to invoices.</p>
+                    <p className="text-[10px] sm:text-3xs text-slate-400 font-bold mt-0.5">Customize tier pricing models synced dynamically to invoices.</p>
                   </div>
                   {!isAddingPackage && (
                     <button 
@@ -533,17 +533,17 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                         setPackageSessionInput(4);
                         setPackageClientsInput(0);
                       }}
-                      className="bg-[#081F5C] hover:bg-slate-900 text-white font-extrabold text-3xs px-3 py-2 rounded-xl cursor-pointer flex items-center gap-1 shadow-sm transition-all"
+                      className="bg-[#081F5C] hover:bg-slate-900 text-white font-extrabold text-[9px] sm:text-3xs px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl cursor-pointer flex items-center gap-1 shadow-sm transition-all shrink-0"
                     >
-                      <Plus className="w-3.5 h-3.5 text-[#13D4C8]" /> Add Package
+                      <Plus className="w-3 h-3 text-[#13D4C8]" /> Add Package
                     </button>
                   )}
                 </div>
 
                 {/* Inline Editing & Adding package Form */}
                 {(isAddingPackage || editingPackageId) && (
-                  <div className="bg-slate-50/70 border border-slate-200 p-4.5 rounded-2xl mb-5 space-y-4">
-                    <h4 className="font-extrabold text-[#081F5C] text-xs uppercase tracking-wider flex items-center justify-between">
+                  <div className="bg-slate-50/70 border border-slate-200 p-3 sm:p-4.5 rounded-2xl mb-4 sm:mb-5 space-y-3 sm:space-y-4">
+                    <h4 className="font-extrabold text-[#081F5C] text-[11px] sm:text-xs uppercase tracking-wider flex items-center justify-between">
                       <span>{editingPackageId ? '✏ Edit Package Plan' : '🆕 Add Standard Package'}</span>
                       <button 
                         onClick={() => {
@@ -552,13 +552,13 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                         }} 
                         className="text-slate-450 hover:text-slate-700"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     </h4>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
                       <div>
-                        <label className="block text-4xs font-black text-slate-400 uppercase tracking-widest mb-1">
+                        <label className="block text-[9px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                           Package Name
                         </label>
                         <input 
@@ -566,40 +566,40 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                           value={packageNameInput}
                           onChange={(e) => setPackageNameInput(e.target.value)}
                           placeholder="e.g. 12 Classes Pack"
-                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-2xs focus:ring-1 focus:ring-[#13D4C8] font-bold text-[#081F5C]"
+                          className="w-full bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-[11px] sm:text-2xs focus:ring-1 focus:ring-[#13D4C8] font-bold text-[#081F5C]"
                         />
                       </div>
                       <div>
-                        <label className="block text-4xs font-black text-slate-400 uppercase tracking-widest mb-1">
+                        <label className="block text-[9px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                           Monthly Price (RM)
                         </label>
                         <input 
                           type="number" 
                           value={packagePriceInput}
                           onChange={(e) => setPackagePriceInput(Number(e.target.value))}
-                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-2xs focus:ring-1 focus:ring-[#13D4C8] font-bold"
+                          className="w-full bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-[11px] sm:text-2xs focus:ring-1 focus:ring-[#13D4C8] font-bold text-[#081F5C]"
                         />
                       </div>
                       <div>
-                        <label className="block text-4xs font-black text-slate-400 uppercase tracking-widest mb-1">
+                        <label className="block text-[9px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                           Classes Included
                         </label>
                         <input 
                           type="number" 
                           value={packageSessionInput}
                           onChange={(e) => setPackageSessionInput(Number(e.target.value))}
-                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-2xs focus:ring-1 focus:ring-[#13D4C8] font-bold"
+                          className="w-full bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-[11px] sm:text-2xs focus:ring-1 focus:ring-[#13D4C8] font-bold text-[#081F5C]"
                         />
                       </div>
                       <div>
-                        <label className="block text-4xs font-black text-slate-400 uppercase tracking-widest mb-1">
+                        <label className="block text-[9px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                           Active Trainees
                         </label>
                         <input 
                           type="number" 
                           value={packageClientsInput}
                           onChange={(e) => setPackageClientsInput(Number(e.target.value))}
-                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-2xs focus:ring-1 focus:ring-[#13D4C8] font-bold"
+                          className="w-full bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-[11px] sm:text-2xs focus:ring-1 focus:ring-[#13D4C8] font-bold text-[#081F5C]"
                         />
                       </div>
                     </div>
@@ -610,13 +610,13 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                           setIsAddingPackage(false);
                           setEditingPackageId(null);
                         }}
-                        className="px-3 py-1.5 border border-slate-250 bg-white rounded-xl text-3xs font-extrabold hover:bg-slate-100 cursor-pointer"
+                        className="px-2.5 py-1.5 border border-slate-250 bg-white rounded-lg sm:rounded-xl text-[10px] sm:text-3xs font-extrabold hover:bg-slate-100 cursor-pointer"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={editingPackageId ? handleSaveEditedPackage : handleAddPackage}
-                        className="bg-[#081F5C] text-white font-extrabold text-3xs px-4 py-1.5 rounded-xl cursor-pointer shadow-sm"
+                        className="bg-[#081F5C] text-white font-extrabold text-[10px] sm:text-3xs px-3 py-1.5 rounded-lg sm:rounded-xl cursor-pointer shadow-sm"
                       >
                         {editingPackageId ? 'Update Plan' : 'Confirm Package'}
                       </button>
@@ -625,15 +625,15 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                 )}
 
                 {/* Grid layout of active packages as requested */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   {packages.map((pkg) => (
                     <div 
                       key={pkg.id} 
-                      className="bg-white border border-slate-200/90 rounded-[20px] p-4 flex flex-col justify-between hover:shadow-2xs hover:border-[#13D4C8]/50 transition-all duration-300"
+                      className="bg-white border border-slate-200/90 rounded-[16px] sm:rounded-[20px] p-3 sm:p-4 flex flex-col justify-between hover:shadow-2xs hover:border-[#13D4C8]/50 transition-all duration-300"
                     >
                       <div>
-                        <div className="flex justify-between items-start mb-2.5">
-                          <span className="text-[9px] font-black uppercase text-[#5B5FEF] bg-[#5B5FEF]/5 border border-[#5B5FEF]/10 px-2.5 py-0.5 rounded-full">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-[8px] sm:text-[9px] font-black uppercase text-[#5B5FEF] bg-[#5B5FEF]/5 border border-[#5B5FEF]/10 px-2 py-0.5 rounded-full">
                             {pkg.sessions} {pkg.sessions === 1 ? 'Session' : 'Classes'}
                           </span>
                           <div className="flex gap-1">
@@ -656,14 +656,14 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                           {pkg.name}
                         </h4>
                         
-                        <p className="text-[10px] text-slate-400 font-bold mt-1.5">
+                        <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold mt-1">
                           💼 {pkg.clients || 0} active {pkg.clients === 1 ? 'client uses' : 'clients use'} this tier
                         </p>
                       </div>
 
-                      <div className="border-t border-slate-100/80 pt-3.5 mt-3.5 flex justify-between items-center bg-white select-none">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Fee Cost</span>
-                        <strong className="text-sm font-black text-[#081F5C]">
+                      <div className="border-t border-slate-100/80 pt-2.5 mt-2.5 flex justify-between items-center bg-white select-none">
+                        <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-wider">Fee Cost</span>
+                        <strong className="text-xs sm:text-sm font-black text-[#081F5C]">
                           RM {pkg.price}
                         </strong>
                       </div>
@@ -673,13 +673,13 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
               </div>
 
               {/* Package Popularity Section */}
-              <div id="package-popularity-insight" className="bg-white border border-slate-200/80 rounded-[24px] p-5.5 shadow-sm text-left">
-                <h3 className="font-sans font-black text-[#081F5C] text-xs uppercase tracking-wider flex items-center gap-1.5 mb-1 pb-1">
+              <div id="package-popularity-insight" className="bg-white border border-slate-200/80 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5.5 shadow-sm text-left">
+                <h3 className="font-sans font-black text-[#081F5C] text-xs uppercase tracking-wider flex items-center gap-1.5 mb-0.5 pb-0.5">
                   <span>📈 Package Popularity & Distribution</span>
                 </h3>
-                <p className="text-3xs text-slate-400 font-bold mb-4">Client distribution across configured subscriptions.</p>
+                <p className="text-[10px] sm:text-3xs text-slate-400 font-bold mb-3">Client distribution across configured subscriptions.</p>
 
-                <div className="space-y-3 pt-1">
+                <div className="space-y-2.5 pt-1">
                   
                   {/* Dynamic Popularity List mapped representing the real state data */}
                   {packages.map((pkg) => {
@@ -687,11 +687,11 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                     const percentage = Math.max(10, Math.min(100, Math.floor(((pkg.clients || 0) / maxClients) * 100)));
                     return (
                       <div key={pkg.id} className="space-y-1">
-                        <div className="flex justify-between items-center text-3xs font-black tracking-widest text-[#081F5C] uppercase">
+                        <div className="flex justify-between items-center text-[10px] sm:text-3xs font-black tracking-widest text-[#081F5C] uppercase">
                           <span className="font-extrabold">{pkg.name}</span>
                           <span className="text-[#13D4C8]">{pkg.clients || 0} {pkg.clients === 1 ? 'Client' : 'Clients'}</span>
                         </div>
-                        <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden flex items-center relative border border-slate-200/50">
+                        <div className="w-full bg-slate-100 h-2 sm:h-3 rounded-full overflow-hidden flex items-center relative border border-slate-200/50">
                           <div 
                             style={{ width: `${percentage}%` }} 
                             className="bg-gradient-to-r from-[#081F5C] to-[#13D4C8] h-full rounded-full transition-all duration-500"
@@ -759,7 +759,7 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                     <h3 className="font-extrabold text-[#081F5C] text-xs uppercase tracking-wider mb-0.5 font-sans flex items-center gap-1">
                       <span>📈 Revenue Trend</span>
                     </h3>
-                    <p className="text-4xs text-slate-400 font-bold mb-4 uppercase">Monthly gross income (Jan - Jun)</p>
+                    <p className="text-[10px] text-slate-400 font-bold mb-4 uppercase">Monthly gross income (Jan - Jun)</p>
                   </div>
 
                   <div className="bg-slate-50/60 border border-slate-150/60 rounded-2xl p-4.5 relative w-full h-auto">
@@ -839,7 +839,7 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                     <h3 className="font-extrabold text-[#081F5C] text-xs uppercase tracking-wider mb-0.5 font-sans flex items-center gap-1">
                       <span>👥 Client Growth</span>
                     </h3>
-                    <p className="text-4xs text-slate-400 font-bold mb-4 uppercase">Active signed trainees (Jan - Jun)</p>
+                    <p className="text-[10px] text-slate-400 font-bold mb-4 uppercase">Active signed trainees (Jan - Jun)</p>
                   </div>
 
                   <div className="bg-slate-50/60 border border-slate-150/60 rounded-2xl p-4.5 relative w-full h-auto">
@@ -922,7 +922,7 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                 <div className="flex items-center gap-1.5 mb-2.5 text-[#13D4C8] border-b border-white/10 pb-2 select-none">
                   <Sparkles className="w-4 h-4 fill-[#13D4C8]" />
                   <span className="text-2xs font-extrabold uppercase tracking-widest block font-sans">
-                    🤖 CoachAI Forecast & Predictive Model
+                    🤖 CoachAI Analysis
                   </span>
                 </div>
 
@@ -941,41 +941,41 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
               </div>
 
               {/* Verified Client Testimonials - Keep only latest 3 as requested */}
-              <div id="testimonials-section" className="bg-white border border-slate-200/85 rounded-[24px] p-5 shadow-sm">
-                <div className="border-b border-slate-100 pb-2.5 mb-3.5 flex justify-between items-center select-none">
-                  <h3 className="font-sans font-black text-[#081F5C] text-xs uppercase tracking-wider">
+              <div id="testimonials-section" className="bg-white border border-slate-200/85 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 shadow-sm">
+                <div className="border-b border-slate-100 pb-2 mb-3 flex justify-between items-center select-none">
+                  <h3 className="font-sans font-black text-[#081F5C] text-[11px] sm:text-xs uppercase tracking-wider">
                     ⭐ Client Testimonials
                   </h3>
-                  <span className="text-4xs text-slate-400 font-extrabold uppercase">3 verified reviews</span>
+                  <span className="text-[9px] sm:text-[9px] text-slate-400 font-extrabold uppercase">3 verified reviews</span>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-150 text-xs text-left">
-                    <div className="flex justify-between items-center mb-1">
-                      <strong className="text-slate-800 text-2xs">Ahmad Bin Ibrahim</strong>
-                      <span className="text-[#13D4C8] text-2xs select-none">⭐⭐⭐⭐⭐</span>
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="p-2.5 sm:p-3.5 rounded-xl bg-slate-50/70 border border-slate-150 text-[11px] sm:text-xs text-left">
+                    <div className="flex justify-between items-center mb-0.5 sm:mb-1">
+                      <strong className="text-slate-800 text-[10px] sm:text-2xs">Ahmad Bin Ibrahim</strong>
+                      <span className="text-[#13D4C8] text-[9px] sm:text-2xs select-none">⭐⭐⭐⭐⭐</span>
                     </div>
-                    <p className="text-2xs text-slate-600 italic">
+                    <p className="text-[10px] sm:text-2xs text-slate-600 italic">
                       "Sarah helped improve my flexibility and reduced my lower back pain."
                     </p>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-150 text-xs text-left">
-                    <div className="flex justify-between items-center mb-1">
-                      <strong className="text-slate-800 text-2xs">Mei Ling Tan</strong>
-                      <span className="text-[#13D4C8] text-2xs select-none">⭐⭐⭐⭐⭐</span>
+                  <div className="p-2.5 sm:p-3.5 rounded-xl bg-slate-50/70 border border-slate-150 text-[11px] sm:text-xs text-left">
+                    <div className="flex justify-between items-center mb-0.5 sm:mb-1">
+                      <strong className="text-slate-800 text-[10px] sm:text-2xs">Mei Ling Tan</strong>
+                      <span className="text-[#13D4C8] text-[9px] sm:text-2xs select-none">⭐⭐⭐⭐⭐</span>
                     </div>
-                    <p className="text-2xs text-slate-600 italic">
+                    <p className="text-[10px] sm:text-2xs text-slate-600 italic">
                       "Extremely attentive and structured coaching. The post-workout rehabilitation is perfect!"
                     </p>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-150 text-xs text-left">
-                    <div className="flex justify-between items-center mb-1">
-                      <strong className="text-slate-800 text-2xs">Muhammad Faizul</strong>
-                      <span className="text-[#13D4C8] text-2xs select-none">⭐⭐⭐⭐⭐</span>
+                  <div className="p-2.5 sm:p-3.5 rounded-xl bg-slate-50/70 border border-slate-150 text-[11px] sm:text-xs text-left">
+                    <div className="flex justify-between items-center mb-0.5 sm:mb-1">
+                      <strong className="text-slate-800 text-[10px] sm:text-2xs">Muhammad Faizul</strong>
+                      <span className="text-[#13D4C8] text-[9px] sm:text-2xs select-none">⭐⭐⭐⭐⭐</span>
                     </div>
-                    <p className="text-2xs text-slate-600 italic">
+                    <p className="text-[10px] sm:text-2xs text-slate-600 italic">
                       "Very supportive with daily nutrition log audits. Meal plans are highly focused and practical."
                     </p>
                   </div>
@@ -990,13 +990,13 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
             <div id="settings-sub-tab" className="space-y-6 animate-fade-in text-left">
               
               {/* Availability Days */}
-              <div className="bg-white border border-slate-200/80 rounded-[24px] p-5.5 shadow-sm">
+              <div className="bg-white border border-slate-200/80 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5.5 shadow-sm">
                 <h3 className="font-sans font-black text-[#081F5C] text-xs uppercase tracking-wider mb-1 pb-1">
                   📅 Available Days
                 </h3>
-                <p className="text-[13px] font-normal text-slate-500 mb-4">Trainees can only book sessions during enabled days.</p>
+                <p className="text-2xs sm:text-[13px] font-normal text-slate-500 mb-3 sm:mb-4">Trainees can only book sessions during enabled days.</p>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {Object.keys(availableDays).map((day) => {
                     const isActive = availableDays[day as keyof typeof availableDays];
                     return (
@@ -1004,9 +1004,9 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                         key={day}
                         type="button"
                         onClick={() => toggleDay(day)}
-                        className={`px-4 py-2 rounded-xl text-[15px] font-medium transition-all duration-200 flex items-center justify-between gap-2 select-none border cursor-pointer min-w-[85px] ${
+                        className={`px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-[13px] font-medium transition-all duration-200 flex items-center justify-between gap-1.5 select-none border cursor-pointer min-w-[70px] sm:min-w-[85px] ${
                           isActive 
-                            ? 'bg-white border-[#17D4C3] text-[#081F5C]' 
+                            ? 'bg-white border-[#17D4C3] text-[#081F5C] font-semibold' 
                             : 'bg-slate-50 border-slate-200 text-slate-400'
                         }`}
                       >
@@ -1021,38 +1021,38 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
               </div>
 
               {/* Coaching Time Slots list */}
-              <div className="bg-white border border-slate-200/80 rounded-[24px] p-5.5 shadow-sm space-y-5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div className="bg-white border border-slate-200/80 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5.5 shadow-sm space-y-4 sm:space-y-5">
+                <div className="flex flex-row items-center justify-between gap-2 border-b border-slate-100 pb-2.5 sm:pb-3">
                   <div className="space-y-0.5 text-left">
-                    <h3 className="font-sans font-black text-[#081F5C] text-xs uppercase tracking-wider flex items-center gap-1.5 matches-theme">
+                    <h3 className="font-sans font-black text-[#081F5C] text-xs uppercase tracking-wider flex items-center gap-1 matches-theme">
                       <Clock className="w-3.5 h-3.5 text-[#13D4C8]" />
-                      <span>⏰ Coaching Time Slots</span>
+                      <span>⏰ Coaching Slots</span>
                     </h3>
                     <p className="text-[10px] text-slate-400 font-bold">Configure standard daily timeslot availability intervals.</p>
                   </div>
 
                   <button
                     onClick={() => setIsSlotModalOpen(true)}
-                    className="flex items-center justify-center gap-1.5 bg-[#081F5C] text-[#13D4C8] hover:bg-slate-900 text-[10px] font-black uppercase tracking-widest py-2 px-3 border border-transparent rounded-xl cursor-pointer transition shadow-3xs hover:text-[#13D4C8]"
+                    className="flex items-center justify-center gap-1 bg-[#081F5C] text-[#13D4C8] hover:bg-slate-900 text-[9px] sm:text-[10px] font-black uppercase tracking-widest py-1.5 px-2.5 sm:py-2 sm:px-3 border border-transparent rounded-xl cursor-pointer transition shadow-3xs shrink-0"
                   >
                     <Plus className="w-3 h-3" />
-                    <span>Add Coaching Slot</span>
+                    <span>Add Slot</span>
                   </button>
                 </div>
 
-                <div className="space-y-2 text-left">
+                <div className="space-y-1.5 text-left">
                   <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Selected Slots</h4>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {availableTimeSlots.filter(s => s.active).map((slot) => (
                       <div
                         key={slot.id}
-                        className="flex items-center gap-2 bg-[#13D4C8]/10 border border-[#13D4C8]/30 hover:border-[#081F5C] px-3.5 py-1.5 rounded-xl text-[16px] font-semibold text-[#081F5C] transition-all select-none"
+                        className="flex items-center gap-1.5 bg-[#13D4C8]/10 border border-[#13D4C8]/30 hover:border-[#081F5C] px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold text-[#081F5C] transition-all select-none"
                       >
                         <span className="text-[#13D4C8] font-bold">✓</span>
                         <span className="font-sans">{slot.label}</span>
                         <button
                           onClick={() => removeTimeSlot(slot.id, slot.label)}
-                          className="text-[#081F5C]/60 hover:text-red-500 font-bold ml-1 transition-colors focus:outline-none cursor-pointer"
+                          className="text-[#081F5C]/60 hover:text-red-500 font-bold ml-0.5 transition-colors focus:outline-none cursor-pointer"
                           title={`Remove ${slot.label}`}
                         >
                           <X className="w-2.5 h-2.5 text-[#081F5C] hover:text-red-500 shrink-0 inline" />
@@ -1060,44 +1060,44 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                       </div>
                     ))}
                     {availableTimeSlots.filter(s => s.active).length === 0 && (
-                      <p className="text-3xs text-slate-400 italic">No coaching slots currently active. Click "+ Add Coaching Slot" above to activate availability.</p>
+                      <p className="text-[10px] sm:text-3xs text-slate-400 italic">No coaching slots currently active. Click "+ Add Slot" above to activate availability.</p>
                     )}
                   </div>
                 </div>
 
                 {/* Summary Capacity metrics */}
                 <div className="pt-2.5 border-t border-slate-100/60">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {/* Summary statistics card */}
-                    <div className="p-4 rounded-[20px] bg-slate-50/70 border border-slate-150/80 text-left space-y-2.5">
+                    <div className="p-3 sm:p-4 rounded-[16px] sm:rounded-[20px] bg-slate-50/70 border border-slate-150/80 text-left space-y-2">
                       <div className="flex items-center justify-between text-[9px] uppercase tracking-widest font-black text-slate-400 select-none">
                         <span>Schedule Metrics</span>
-                        <span className="text-[#13D4C8] font-black leading-none">● Active</span>
+                        <span className="text-[#13D4C8] font-black leading-none text-[8px] sm:text-[9px]">● Active</span>
                       </div>
                       
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="text-center p-2 rounded-xl bg-white border border-slate-150 shadow-3xs">
-                          <span className="block text-base font-black text-[#081F5C] leading-none">{activeDaysCount}</span>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-1">Active Days</span>
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                        <div className="text-center p-1.5 sm:p-2 rounded-xl bg-white border border-slate-150 shadow-3xs">
+                          <span className="block text-sm sm:text-base font-black text-[#081F5C] leading-none">{activeDaysCount}</span>
+                          <span className="text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-1">Active Days</span>
                         </div>
-                        <div className="text-center p-2 rounded-xl bg-white border border-slate-150 shadow-3xs">
-                          <span className="block text-base font-black text-[#081F5C] leading-none">{activeSlotsCount}</span>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-1">Active Slots</span>
+                        <div className="text-center p-1.5 sm:p-2 rounded-xl bg-white border border-slate-150 shadow-3xs">
+                          <span className="block text-sm sm:text-base font-black text-[#081F5C] leading-none">{activeSlotsCount}</span>
+                          <span className="text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-1">Active Slots</span>
                         </div>
-                        <div className="text-center p-2 rounded-xl bg-white border border-slate-150 shadow-3xs">
-                          <span className="block text-base font-black text-[#13D4C8] leading-none">{weeklyCapacity}</span>
-                          <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider block mt-1 max-w-[80px] mx-auto text-ellipsis overflow-hidden">Capacity</span>
+                        <div className="text-center p-1.5 sm:p-2 rounded-xl bg-white border border-slate-150 shadow-3xs">
+                          <span className="block text-sm sm:text-base font-black text-[#13D4C8] leading-none">{weeklyCapacity}</span>
+                          <span className="text-[8px] sm:text-[9px] text-slate-450 font-bold uppercase tracking-wider block mt-1 max-w-[80px] mx-auto text-ellipsis overflow-hidden">Capacity</span>
                         </div>
                       </div>
                     </div>
 
                     {/* CoachAI Schedule Insight card */}
-                    <div className="p-4 rounded-[20px] bg-[#081F5C] text-white relative overflow-hidden flex flex-col justify-between border border-slate-800 text-left min-h-[90px]">
+                    <div className="p-3 sm:p-4 rounded-[16px] sm:rounded-[20px] bg-[#081F5C] text-white relative overflow-hidden flex flex-col justify-between border border-slate-800 text-left min-h-[85px] sm:min-h-[90px]">
                       <div className="absolute right-0 top-0 w-24 h-24 bg-[#13D4C8]/10 rounded-full blur-2xl pointer-events-none" />
                       
-                      <div className="flex items-center gap-1.5 text-[9px] font-black text-[#13D4C8] uppercase tracking-wider mb-1 z-10 select-none">
+                      <div className="flex items-center gap-1 text-[9px] font-black text-[#13D4C8] uppercase tracking-wider mb-1 z-10 select-none">
                         <Sparkles className="w-3 h-3 fill-[#13D4C8]" />
-                        <span>CoachAI Schedule Insight</span>
+                        <span>CoachAI Analysis</span>
                       </div>
                       <p className="text-[10px] text-slate-200 leading-normal font-medium z-10">
                         Current schedule supports approximately <strong className="text-[#13D4C8] font-black">{weeklyCapacity} sessions</strong> weekly. Based on current utilization, there is capacity for 2–3 additional clients.
@@ -1108,16 +1108,16 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
               </div>
 
               {/* Verified Status Section with Manage Documents button */}
-              <div className="bg-white border border-slate-200/80 rounded-[24px] p-5.5 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="bg-white border border-slate-200/80 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5.5 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5 text-emerald-800 text-xs font-bold leading-none">
-                    <span className="bg-emerald-100 text-emerald-900 border border-emerald-250 p-1 rounded-full text-3xs">✔</span>
-                    <strong className="text-sm font-black text-slate-800 uppercase tracking-wider">Verified Coach</strong>
+                    <span className="bg-emerald-100 text-emerald-900 border border-emerald-250 p-1 rounded-full text-[9px] sm:text-3xs">✔</span>
+                    <strong className="text-xs sm:text-sm font-black text-slate-800 uppercase tracking-wider">Verified Coach</strong>
                   </div>
-                  <p className="text-3xs text-slate-500 font-bold">
+                  <p className="text-[10px] sm:text-3xs text-slate-500 font-bold">
                     Fitness License Verified • Last Review: <span className="text-[#081F5C]">January 2026</span>
                   </p>
-                  <p className="text-3xs text-emerald-600 font-bold">
+                  <p className="text-[10px] sm:text-3xs text-emerald-600 font-bold">
                     Identity Verification: <span className="underline">Approved</span>
                   </p>
                 </div>
@@ -1125,7 +1125,7 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                 <div>
                   <button
                     onClick={() => setShowDocManager(!showDocManager)}
-                    className="bg-[#081F5C] text-[#13D4C8] hover:bg-slate-900 border border-transparent rounded-[12px] h-12 px-5 flex items-center justify-center text-[15px] font-bold tracking-[0.5px] cursor-pointer transition shadow-3xs"
+                    className="bg-[#081F5C] text-[#13D4C8] hover:bg-slate-900 border border-transparent rounded-xl px-3.5 py-2 sm:px-5 sm:py-2.5 text-2xs sm:text-xs font-bold cursor-pointer transition shadow-3xs w-full sm:w-auto text-center"
                   >
                     {showDocManager ? 'Hide Core Documents' : 'Manage Documents'}
                   </button>
@@ -1142,8 +1142,8 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                     className="overflow-hidden space-y-3.5 bg-slate-50/50 p-4 rounded-[20px] border border-slate-200/70"
                   >
                     <div className="flex items-center justify-between text-left pb-1.5 border-b border-slate-200/60 select-none">
-                      <span className="text-4xs uppercase tracking-widest font-black text-slate-400">Compliance Files</span>
-                      <span className="text-4xs font-mono font-bold text-[#5B5FEF]">Status: Approved</span>
+                      <span className="text-[10px] uppercase tracking-widest font-black text-slate-400">Compliance Files</span>
+                      <span className="text-[10px] font-mono font-bold text-[#5B5FEF]">Status: Approved</span>
                     </div>
 
                     <div className="flex items-center justify-between text-2xs bg-white p-3 rounded-xl border border-slate-150">

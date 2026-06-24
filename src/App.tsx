@@ -51,6 +51,71 @@ export default function App() {
   const [showFloatingChat, setShowFloatingChat] = useState(false);
   const [showNotificationsDrawer, setShowNotificationsDrawer] = useState(false);
   const [showTraineeNotifications, setShowTraineeNotifications] = useState(false);
+  const [previousTab, setPreviousTab] = useState<string>('trainee-dashboard');
+  
+  const [trainerNotifications, setTrainerNotifications] = useState<any[]>(() => {
+    try {
+      const stored = localStorage.getItem('coach_track_trainer_notifications');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    const seed = [
+      {
+        id: 'not_1',
+        group: 'Today',
+        title: 'Ahmad Ibrahim uploaded a meal',
+        subtitle: 'Nutrition review needed',
+        time: '10:00 AM',
+        isUnread: true,
+        emoji: '🥗',
+        bgColor: 'bg-emerald-50 text-emerald-650 border border-emerald-100',
+        tab: 'coaching-hub'
+      },
+      {
+        id: 'not_2',
+        group: 'Today',
+        title: 'Mei Ling Tan requested reschedule',
+        subtitle: 'Session time change requested',
+        time: '10:30 AM',
+        isUnread: true,
+        emoji: '📅',
+        bgColor: 'bg-amber-50 text-amber-650 border border-amber-100',
+        tab: 'session-history'
+      },
+      {
+        id: 'not_3',
+        group: 'Today',
+        title: 'Muhammad Faizul invoice pending',
+        subtitle: 'Payment reminder required',
+        time: '11:25 AM',
+        isUnread: true,
+        emoji: '💳',
+        bgColor: 'bg-purple-50 text-purple-650 border border-purple-100',
+        tab: 'revenue'
+      },
+      {
+        id: 'not_4',
+        group: 'Yesterday',
+        title: 'Session completed',
+        subtitle: 'Ahmad Ibrahim completed HIIT Core Strength',
+        time: '05:00 PM',
+        isUnread: false,
+        emoji: '✅',
+        bgColor: 'bg-indigo-50 text-indigo-650 border border-indigo-100',
+        tab: 'session-history'
+      }
+    ];
+    try {
+      localStorage.setItem('coach_track_trainer_notifications', JSON.stringify(seed));
+    } catch (e) {
+      console.error(e);
+    }
+    return seed;
+  });
+
   const [traineeNotifications, setTraineeNotifications] = useState<any[]>(() => {
     try {
       const stored = localStorage.getItem('coach_track_trainee_notifications');
@@ -344,20 +409,20 @@ export default function App() {
             <div className="w-full max-w-[430px] min-h-screen sm:min-h-[854px] sm:max-h-[854px] bg-slate-50 relative flex flex-col overflow-hidden sm:rounded-[36px] sm:shadow-2xl sm:border-[10px] sm:border-slate-800 transition-all">
               
               {/* Status Header */}
-              <div className="sticky top-0 z-50 bg-white border-b border-slate-100 px-4 py-3.5 flex items-center justify-between shadow-sm shrink-0">
-                <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => {
+              <div className="sticky top-0 z-50 bg-white border-b border-slate-100 px-3.5 py-2 flex items-center justify-between shadow-sm shrink-0">
+                <div className="flex items-center gap-1.5 cursor-pointer select-none" onClick={() => {
                   setActiveTab(currentUser.role === UserRole.TRAINER ? 'trainer-dashboard' : 'trainee-dashboard');
                 }}>
                   <img 
                     alt="CoachTrack MY Logo" 
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDETvXZjCP6SyPdhxA5LBJxWToef2-2QRTWXAAcbAR1pYCPBQvSJ3JfenXj6iDZVITmo5sPVkUUbY6CFwY_JmfWywrTQ6vMQ17bJvlNGH4dBCAJBZQAbpTyqrM4kh0PaRdmjdFW5e_ga3qBpyVr_yuIpHJ3_B6g5G116iBOCQhZkDgjAZt18i5v1T48bkwzj8qwRAN4PQidoeK2dCT4jg0emt8ViDZeIiKE--IH9uddRKJNsZ2f0AOkUxqqnvBN0WOSIFHezK-Aw6s" 
-                    className="h-9 w-9 object-contain"
+                    className="h-7.5 w-7.5 object-contain"
                   />
                   <div className="flex flex-col">
-                    <span className="font-sans font-black text-xs tracking-tight text-[#001F3F] leading-none">
+                    <span className="font-sans font-black text-[11px] tracking-tight text-[#001F3F] leading-none">
                       COACH<span className="text-[#18D4C5]">TRACK MY</span>
                     </span>
-                    <span className="text-[6.5px] font-bold text-slate-400 tracking-[1px] uppercase leading-none mt-1">
+                    <span className="text-[5.5px] font-bold text-slate-400 tracking-[1px] uppercase leading-none mt-0.5">
                       TRACK • INSPIRE • ACHIEVE
                     </span>
                   </div>
@@ -367,18 +432,17 @@ export default function App() {
                   {/* Notification icon */}
                   <button 
                     onClick={() => {
-                      if (currentUser.role === UserRole.TRAINER) {
-                        setShowNotificationsDrawer(true);
-                      } else {
-                        setShowTraineeNotifications(true);
-                      }
+                      setPreviousTab(activeTab);
+                      setActiveTab('notifications');
                     }}
                     className="p-1 px-1.5 text-slate-600 hover:text-[#001F3F] transition-all cursor-pointer relative rounded-lg hover:bg-slate-50 shrink-0"
                     title="Notifications"
                   >
                     <Bell className="w-4 h-4" />
                     {currentUser.role === UserRole.TRAINER ? (
-                      <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500 ring-1 ring-white"></span>
+                      trainerNotifications.some(n => n.isUnread) && (
+                        <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500 ring-1 ring-white"></span>
+                      )
                     ) : (
                       traineeNotifications.some(n => n.isUnread) && (
                         <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500 ring-1 ring-white"></span>
@@ -410,7 +474,7 @@ export default function App() {
               </div>
 
               {/* Main content body inside scrollable phone */}
-              <div className="flex-1 overflow-y-auto pb-24 relative bg-slate-50 w-full">
+              <div className="flex-1 overflow-y-auto main-content-padded relative bg-slate-50 w-full">
                 
                 {activeTab === 'trainee-dashboard' && (
                   <TraineeDashboard 
@@ -529,10 +593,191 @@ export default function App() {
                   )
                 )}
 
+                {activeTab === 'notifications' && (
+                  <div className="p-4 sm:p-5 flex flex-col min-h-full font-sans text-slate-800">
+                    {/* Back header navigation */}
+                    <div className="flex justify-between items-center mb-5 shrink-0">
+                      <button 
+                        onClick={() => setActiveTab(previousTab)}
+                        className="flex items-center gap-1.5 text-[#0F172A] hover:text-[#64748B] font-extrabold text-xs tracking-wider cursor-pointer font-sans transition-colors"
+                      >
+                        <ArrowLeft className="w-4 h-4 text-[#0F172A]" />
+                        <span>Back</span>
+                      </button>
+                      <button className="p-1.5 rounded-lg text-[#64748B] hover:bg-slate-50 cursor-pointer transition">
+                        <Settings className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Page standard header using clamp font scaling */}
+                    <div className="mb-5">
+                      <h2 className="text-clamp-title font-sans font-black tracking-tight text-[#001F3F]">
+                        Notifications
+                      </h2>
+                      <p className="text-clamp-body text-[#64748B] font-medium leading-relaxed mt-1">
+                        {currentUser.role === UserRole.TRAINER 
+                          ? "Stay updated with client training and sessions"
+                          : "Stay updated with training schedules & session events"
+                        }
+                      </p>
+                    </div>
+
+                    {/* Alert Banner */}
+                    <div className="mb-5">
+                      <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-indigo-100 rounded-[20px] p-4 flex items-start gap-3 shadow-2xs">
+                        <span className="text-base shrink-0">✨</span>
+                        <div className="min-w-0 flex-1">
+                          <h5 className="font-sans font-extrabold text-clamp-label uppercase text-[#6366F1] tracking-wider leading-none">Reminder</h5>
+                          <p className="text-clamp-body text-[#64748B] mt-1 font-sans font-medium leading-relaxed">
+                            {currentUser.role === UserRole.TRAINER
+                              ? "You have client updates waiting for review."
+                              : "You have new personal coach updates."
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Group lists */}
+                    <div className="flex-1 space-y-6 select-none bg-white rounded-[20px] p-4 border border-slate-100">
+                      {(() => {
+                        const notifList = currentUser.role === UserRole.TRAINER ? trainerNotifications : traineeNotifications;
+                        const setNotifList = currentUser.role === UserRole.TRAINER ? setTrainerNotifications : setTraineeNotifications;
+                        const storageKey = currentUser.role === UserRole.TRAINER ? 'coach_track_trainer_notifications' : 'coach_track_trainee_notifications';
+
+                        if (notifList.length === 0) {
+                          return (
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                              <span className="text-3xl mb-2">🔔</span>
+                              <p className="text-clamp-body text-slate-400 font-medium">No notifications yet.</p>
+                            </div>
+                          );
+                        }
+
+                        const groups = ['Today', 'Yesterday'];
+                        
+                        return (
+                          <div className="space-y-6">
+                            {/* Global Action: Mark all read */}
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                              <span className="text-clamp-label font-bold text-slate-400 uppercase tracking-widest">Action Desk</span>
+                              {notifList.some(n => n.isUnread) && (
+                                <button
+                                  onClick={() => {
+                                    setNotifList(prev => {
+                                      const updated = prev.map(n => ({ ...n, isUnread: false }));
+                                      localStorage.setItem(storageKey, JSON.stringify(updated));
+                                      return updated;
+                                    });
+                                  }}
+                                  className="text-clamp-body font-extrabold text-[#6366F1] hover:text-[#4f46e5] cursor-pointer hover:underline transition font-sans"
+                                >
+                                  Mark all read
+                                </button>
+                              )}
+                            </div>
+
+                            {groups.map((group) => {
+                              const groupNotifs = notifList.filter(n => n.group === group);
+                              if (groupNotifs.length === 0) return null;
+                              const hasUnreadInGroup = groupNotifs.some(n => n.isUnread);
+
+                              return (
+                                <div key={group} className="space-y-3">
+                                  {/* Group Header */}
+                                  <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span className="text-clamp-label font-black uppercase text-[#0F172A] tracking-widest">{group}</span>
+                                    {hasUnreadInGroup && (
+                                      <button
+                                        onClick={() => {
+                                          setNotifList(prev => {
+                                            const updated = prev.map(n => n.group === group ? { ...n, isUnread: false } : n);
+                                            localStorage.setItem(storageKey, JSON.stringify(updated));
+                                            return updated;
+                                          });
+                                        }}
+                                        className="text-[10px] font-extrabold text-[#6366F1] hover:text-[#4f46e5] cursor-pointer hover:underline transition font-sans"
+                                      >
+                                        Mark group read
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  {/* Group rows */}
+                                  <div className="space-y-3">
+                                    {groupNotifs.map((notif) => (
+                                      <div
+                                        key={notif.id}
+                                        onClick={() => {
+                                          setNotifList(prev => {
+                                            const updated = prev.map(n => n.id === notif.id ? { ...n, isUnread: false } : n);
+                                            localStorage.setItem(storageKey, JSON.stringify(updated));
+                                            return updated;
+                                          });
+                                          if (notif.tab) {
+                                            setActiveTab(notif.tab);
+                                          }
+                                        }}
+                                        className={`bg-white border text-left p-3.5 rounded-[20px] flex items-center justify-between gap-3 shadow-sm transition duration-155 cursor-pointer hover:bg-slate-50/50 ${
+                                          notif.isUnread ? 'border-[#818cf8]/40 bg-indigo-50/5 font-medium' : 'border-slate-100 bg-white'
+                                        }`}
+                                        style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
+                                      >
+                                        {/* Left part */}
+                                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                                          {/* Small circular icon */}
+                                          <div className={`w-9 h-9 rounded-full border font-sans flex items-center justify-center shrink-0 ${notif.bgColor || 'bg-slate-50 text-slate-600 border-slate-100'}`}>
+                                            <span className="text-sm leading-none shrink-0 select-none">{notif.emoji}</span>
+                                          </div>
+                                          <div className="min-w-0 font-sans flex-1">
+                                            <h4 className="text-clamp-body font-bold text-[#0F172A] leading-tight truncate">
+                                              {notif.title}
+                                            </h4>
+                                            <p className="text-clamp-label text-[#64748B] leading-normal font-sans mt-0.5 whitespace-normal break-words">
+                                              {notif.subtitle}
+                                            </p>
+                                          </div>
+                                        </div>
+
+                                        {/* Right part: Time and Unread dot / Dismiss */}
+                                        <div className="flex flex-col items-end gap-1.5 shrink-0 select-none">
+                                          <div className="flex items-center gap-1.5">
+                                            <span className="text-[10px] text-[#64748B] font-mono leading-none">{notif.time}</span>
+                                            <button 
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setNotifList(prev => {
+                                                  const updated = prev.filter(n => n.id !== notif.id);
+                                                  localStorage.setItem(storageKey, JSON.stringify(updated));
+                                                  return updated;
+                                                });
+                                              }}
+                                              className="text-slate-400 hover:text-rose-500 cursor-pointer transition p-1 rounded hover:bg-slate-100/50"
+                                            >
+                                              <Trash2 className="w-4 h-4" />
+                                            </button>
+                                          </div>
+                                          {notif.isUnread && (
+                                            <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1] shrink-0 animate-pulse"></span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
+
               </div>
 
               {/* STICKY BOTTOM TAB NAVIGATION */}
-              <div className="absolute bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-100 flex items-center justify-around px-2 z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] shrink-0">
+              <div className="bottom-nav-fixed flex items-center justify-around px-2 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] shrink-0">
                 {currentUser.role === UserRole.TRAINEE ? (
                   /* Trainee Sticky Navigation Buttons */
                   <>
@@ -591,218 +836,58 @@ export default function App() {
                   <>
                     <button
                       onClick={() => setActiveTab('trainer-dashboard')}
-                      className={`flex flex-col items-center justify-center w-16 h-full transition-colors cursor-pointer ${
+                      className={`flex flex-col items-center justify-center w-14 h-full transition-colors cursor-pointer ${
                         activeTab === 'trainer-dashboard' ? 'text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600'
                       }`}
                     >
-                      <Home className="w-5 h-5 mb-1" />
-                      <span className="text-[10px] tracking-wide">Home</span>
+                      <Home className="w-4.5 h-4.5 mb-0.5" />
+                      <span className="text-[9px] tracking-tight">Home</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('client-management')}
-                      className={`flex flex-col items-center justify-center w-16 h-full transition-colors cursor-pointer ${
+                      className={`flex flex-col items-center justify-center w-14 h-full transition-colors cursor-pointer ${
                         activeTab === 'client-management' ? 'text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600'
                       }`}
                     >
-                      <Users className="w-5 h-5 mb-1" />
-                      <span className="text-[10px] tracking-wide">Clients</span>
+                      <Users className="w-4.5 h-4.5 mb-0.5" />
+                      <span className="text-[9px] tracking-tight">Clients</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('session-history')}
-                      className={`flex flex-col items-center justify-center w-16 h-full transition-colors cursor-pointer ${
+                      className={`flex flex-col items-center justify-center w-14 h-full transition-colors cursor-pointer ${
                         activeTab === 'session-history' ? 'text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600'
                       }`}
                     >
-                      <Calendar className="w-5 h-5 mb-1" />
-                      <span className="text-[10px] tracking-wide">Schedule</span>
+                      <Calendar className="w-4.5 h-4.5 mb-0.5" />
+                      <span className="text-[9px] tracking-tight">Schedule</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('revenue')}
-                      className={`flex flex-col items-center justify-center w-16 h-full transition-colors cursor-pointer ${
+                      className={`flex flex-col items-center justify-center w-14 h-full transition-colors cursor-pointer ${
                         activeTab === 'revenue' ? 'text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600'
                       }`}
                     >
-                      <CreditCard className="w-5 h-5 mb-1" />
-                      <span className="text-[10px] tracking-wide">Payments</span>
+                      <CreditCard className="w-4.5 h-4.5 mb-0.5" />
+                      <span className="text-[9px] tracking-tight">Payments</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('coaching-hub')}
-                      className={`flex flex-col items-center justify-center w-16 h-full transition-colors cursor-pointer ${
+                      className={`flex flex-col items-center justify-center w-14 h-full transition-colors cursor-pointer ${
                         activeTab === 'coaching-hub' ? 'text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600'
                       }`}
                     >
-                      <Apple className="w-5 h-5 mb-1" />
-                      <span className="text-[10px] tracking-wide">Nutrition</span>
+                      <Apple className="w-4.5 h-4.5 mb-0.5" />
+                      <span className="text-[9px] tracking-tight">Nutrition</span>
                     </button>
                   </>
                 )}
               </div>
 
-              {/* Trainee Notification Drawer */}
-              <AnimatePresence>
-                {showTraineeNotifications && (
-                  <>
-                    {/* Backdrop Overlay */}
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      onClick={() => setShowTraineeNotifications(false)}
-                      className="absolute inset-0 z-[110] bg-slate-900/40 backdrop-blur-xs cursor-pointer"
-                    />
 
-                    {/* Bottom Sheet Container */}
-                    <motion.div
-                      initial={{ y: '100%' }}
-                      animate={{ y: 0 }}
-                      exit={{ y: '100%' }}
-                      transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-                      className="absolute bottom-0 left-0 right-0 z-[120] bg-white rounded-t-[20px] shadow-[0_-8px_40px_rgba(0,0,0,0.18)] flex flex-col h-[65%] max-h-[65%] border-t border-slate-100 overflow-hidden box-border text-slate-800"
-                    >
-                      {/* Native Drag handles */}
-                      <div 
-                        className="w-12 h-1 bg-slate-300 rounded-full mx-auto mt-2.5 mb-1.5 shrink-0 cursor-pointer"
-                        onClick={() => setShowTraineeNotifications(false)}
-                      />
-
-                      {/* Main Content Area - scrolling internally */}
-                      <div className="flex-1 overflow-y-auto flex flex-col text-left font-sans">
-                        {/* 1. Page Header */}
-                        <div className="flex justify-between items-center px-4.5 py-4 border-b border-slate-100 shrink-0 bg-white">
-                          <button 
-                            onClick={() => setShowTraineeNotifications(false)}
-                            className="flex items-center gap-1.5 text-[#0F172A] hover:text-slate-600 font-extrabold text-xs tracking-wider cursor-pointer font-sans"
-                          >
-                            <ArrowLeft className="w-4 h-4 text-[#0F172A]" />
-                            <span>Back</span>
-                          </button>
-                          <button className="p-1.5 rounded-lg text-[#64748B] hover:bg-slate-50 cursor-pointer transition">
-                            <Settings className="w-4 h-4" />
-                          </button>
-                        </div>
-
-                        {/* Page standard header */}
-                        <PageHeader 
-                          title="Notifications" 
-                          subtitle="Stay updated with study & session events" 
-                        />
-
-                        {/* 2. Alert Card */}
-                        <div className="px-4.5 pt-4">
-                          <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-indigo-100 rounded-[18px] p-3.5 flex items-start gap-2.5 shadow-2xs">
-                            <span className="text-base shrink-0">✨</span>
-                            <div className="min-w-0 flex-1">
-                              <h5 className="font-sans font-extrabold text-[10px] uppercase text-[#6366F1] tracking-wider leading-none">Reminder</h5>
-                              <p className="text-[11px] text-[#64748B] mt-1 font-sans font-medium leading-relaxed">You have new personal coach updates.</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* 3. Notification Groups & Rows */}
-                        <div className="flex-1 px-4.5 py-4 space-y-5 select-none bg-white">
-                          {(() => {
-                            const groups = ['Today', 'Yesterday'];
-                            return groups.map((group) => {
-                              const groupNotifs = traineeNotifications.filter(n => n.group === group);
-                              if (groupNotifs.length === 0) return null;
-                              const hasUnreadInGroup = groupNotifs.some(n => n.isUnread);
-
-                              return (
-                                <div key={group} className="space-y-3">
-                                  {/* Group Header with "Mark all read" */}
-                                  <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span className="text-[10px] font-black uppercase text-[#0F172A] tracking-widest">{group}</span>
-                                    {hasUnreadInGroup && (
-                                      <button
-                                        onClick={() => {
-                                          setTraineeNotifications(prev => {
-                                            const updated = prev.map(n => n.group === group ? { ...n, isUnread: false } : n);
-                                            localStorage.setItem('coach_track_trainee_notifications', JSON.stringify(updated));
-                                            return updated;
-                                          });
-                                        }}
-                                        className="text-[9px] font-extrabold text-[#6366F1] hover:text-[#4f46e5] cursor-pointer hover:underline transition font-sans"
-                                      >
-                                        Mark all read
-                                      </button>
-                                    )}
-                                  </div>
-
-                                  {/* Group rows */}
-                                  <div className="space-y-2.5">
-                                    {groupNotifs.map((notif) => (
-                                      <div
-                                        key={notif.id}
-                                        onClick={() => {
-                                          setTraineeNotifications(prev => {
-                                            const updated = prev.map(n => n.id === notif.id ? { ...n, isUnread: false } : n);
-                                            localStorage.setItem('coach_track_trainee_notifications', JSON.stringify(updated));
-                                            return updated;
-                                          });
-                                          if (notif.tab) {
-                                            setActiveTab(notif.tab);
-                                            setShowTraineeNotifications(false);
-                                          }
-                                        }}
-                                        className={`bg-white border text-left p-3 rounded-[18px] flex items-center justify-between gap-3 shadow-2xs transition duration-155 cursor-pointer hover:bg-slate-50/50 ${
-                                          notif.isUnread ? 'border-[#818cf8]/40 bg-indigo-50/10 font-medium' : 'border-slate-100 bg-white'
-                                        }`}
-                                      >
-                                        {/* Left part */}
-                                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                                          {/* Small circular icon */}
-                                          <div className={`w-8 h-8 rounded-full border font-sans flex items-center justify-center shrink-0 ${notif.bgColor || 'bg-slate-50 text-slate-600 border-slate-100'}`}>
-                                            <span className="text-sm leading-none shrink-0 select-none">{notif.emoji}</span>
-                                          </div>
-                                          <div className="min-w-0 font-sans flex-1">
-                                            <h4 className="text-xs font-bold text-[#0F172A] leading-tight truncate">
-                                              {notif.title}
-                                            </h4>
-                                            <p className="text-[10px] text-[#64748B] leading-normal font-sans mt-0.5 whitespace-normal break-words">
-                                              {notif.subtitle}
-                                            </p>
-                                          </div>
-                                        </div>
-
-                                        {/* Right part: Time and Unread dot / Dismiss */}
-                                        <div className="flex flex-col items-end gap-1.5 shrink-0 select-none">
-                                          <div className="flex items-center gap-1.5">
-                                            <span className="text-[9px] text-[#64748B] font-mono leading-none">{notif.time}</span>
-                                            <button 
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setTraineeNotifications(prev => {
-                                                  const updated = prev.filter(n => n.id !== notif.id);
-                                                  localStorage.setItem('coach_track_trainee_notifications', JSON.stringify(updated));
-                                                  return updated;
-                                                });
-                                              }}
-                                              className="text-slate-450 hover:text-rose-500 cursor-pointer transition p-0.5 rounded hover:bg-slate-100/50"
-                                            >
-                                              <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                          </div>
-                                          {notif.isUnread && (
-                                            <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1] shrink-0 animate-pulse"></span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              );
-                            });
-                          })()}
-                        </div>
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
 
             </div>
           </div>
