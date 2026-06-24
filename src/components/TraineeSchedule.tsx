@@ -405,66 +405,77 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
 
       {/* Reschedule Interactive Modal Sheet */}
       {isRescheduling && selectedSession && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-sm w-full p-5 relative shadow-2xl space-y-4 animate-slide-up sm:animate-zoom-in text-left">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl w-[90%] max-w-[340px] mx-auto p-4 shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[92vh] box-border break-words animate-zoom-in flex flex-col">
             
             <button 
               onClick={() => {
                 setIsRescheduling(false);
                 setSelectedSession(null);
               }}
-              className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 p-1.5 bg-slate-50 rounded-full cursor-pointer font-bold"
+              className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 p-1 bg-slate-50 border border-slate-100 rounded-full cursor-pointer font-bold z-10 transition"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
 
             {/* Success screen override */}
             {rescheduleSuccess ? (
-              <div className="py-6 text-center space-y-4">
-                <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center mx-auto text-teal-600 border border-teal-100 font-bold text-2xl font-mono">
+              <div className="py-4 text-center space-y-2.5">
+                <div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center mx-auto text-teal-600 border border-teal-100 font-bold text-xl font-mono">
                   ✓
                 </div>
                 <div>
-                  <h4 className="font-display font-black text-slate-900 text-lg">Proposal Dispatched!</h4>
-                  <p className="text-slate-500 text-xs mt-1 leading-relaxed">
+                  <h4 className="font-display font-black text-[#041F63] text-sm">Proposal Dispatched!</h4>
+                  <p className="text-slate-500 text-[10px] mt-1 leading-relaxed">
                     Coach Sarah Tan has been notified via chat. You can monitor the reschedule status on your schedule list.
                   </p>
+                </div>
+                <div className="pt-1.5">
+                  <button
+                    onClick={() => {
+                      setIsRescheduling(false);
+                      setSelectedSession(null);
+                    }}
+                    className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-8 rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
                 </div>
               </div>
             ) : modalStep === 'detail' ? (
               /* ================= STEP 1: SESSION DETAIL ================= */
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
-                  <span className="text-[9px] uppercase font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md tracking-wider inline-block mb-1">
+                  <span className="inline-block px-1.5 py-0.2 text-[8px] font-bold text-teal-600 bg-teal-50 rounded tracking-wider mb-0.5 uppercase select-none">
                     Booking Detail
                   </span>
-                  <h4 className="font-display font-black text-slate-900 text-xl leading-snug">
+                  <h4 className="font-display font-black text-[#041F63] text-sm leading-tight">
                     {selectedSession.title || 'HIIT Private Coaching'}
                   </h4>
                 </div>
 
-                <div className="space-y-2.5 bg-slate-50 rounded-2xl p-4 border border-slate-100 text-xs">
-                  <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                <div className="space-y-2 bg-slate-50 rounded-lg p-2.5 border border-slate-100 text-[11px]">
+                  <div className="flex justify-between items-center py-0.5 border-b border-slate-100">
                     <span className="text-slate-400 font-bold">Coach</span>
                     <span className="text-slate-800 font-extrabold">Sarah Tan</span>
                   </div>
-                  <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <div className="flex justify-between items-center py-0.5 border-b border-slate-100">
                     <span className="text-slate-400 font-bold">Current Date</span>
                     <span className="text-slate-800 font-mono font-bold">
                       {new Date(selectedSession.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <div className="flex justify-between items-center py-0.5 border-b border-slate-100">
                     <span className="text-slate-400 font-bold">Current Time</span>
                     <span className="text-slate-800 font-mono font-bold">{selectedSession.timeSlot}</span>
                   </div>
-                  <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <div className="flex justify-between items-center py-0.5 border-b border-slate-100">
                     <span className="text-slate-400 font-bold">Location</span>
                     <span className="text-slate-800 font-medium">SS15 Studio, Selangor</span>
                   </div>
-                  <div className="flex justify-between items-center py-1">
+                  <div className="flex justify-between items-center py-0.5">
                     <span className="text-slate-400 font-bold">Status</span>
-                    <span className={`font-black uppercase px-2 py-0.5 text-[10px] rounded-full ${
+                    <span className={`font-black uppercase px-1.5 py-0.2 text-[9px] rounded-full ${
                       selectedSession.status === 'Reschedule Requested'
                         ? 'bg-amber-100 text-amber-800'
                         : selectedSession.status === 'Approved' || selectedSession.status === 'Completed'
@@ -476,10 +487,10 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 pt-2">
+                <div className="flex flex-col gap-1.5 pt-1 border-t border-slate-100">
                   <button
                     onClick={() => setModalStep('selector')}
-                    className="w-full bg-[#041F63] hover:bg-[#031542] text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition text-center cursor-pointer"
+                    className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-9 rounded-lg text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                     <span>Request Reschedule</span>
@@ -489,7 +500,7 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                       setIsRescheduling(false);
                       onNavigateToTab('chats');
                     }}
-                    className="w-full bg-slate-50 hover:bg-slate-105 border border-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition text-center cursor-pointer"
+                    className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold h-9 rounded-lg text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
                   >
                     <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
                     <span>Message Coach</span>
@@ -499,7 +510,7 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                       setIsRescheduling(false);
                       setSelectedSession(null);
                     }}
-                    className="w-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 font-bold py-2 rounded-xl text-xs transition text-center cursor-pointer mt-1"
+                    className="w-full bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 font-bold h-9 rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
                   >
                     Close
                   </button>
@@ -507,20 +518,20 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
               </div>
             ) : modalStep === 'selector' ? (
               /* ================= STEP 2: SLOT SELECTOR ================= */
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
-                  <h4 className="font-display font-black text-slate-900 text-lg flex items-center gap-1.5">
-                    <RefreshCw className="w-5 h-5 text-teal-600 animate-spin" />
+                  <h4 className="font-display font-black text-[#041F63] text-sm flex items-center gap-1.5 leading-tight">
+                    <RefreshCw className="w-4 h-4 text-teal-600 animate-spin" />
                     <span>Proposal Details</span>
                   </h4>
-                  <p className="text-slate-400 text-xs mt-0.5">
-                    Select a date & slot according to Coach Sarah Tan's working calendar.
+                  <p className="text-slate-400 text-[10px]">
+                    Select a date & slot according to Coach Sarah Tan's calendar.
                   </p>
                 </div>
 
                 {/* Preferred Replacement Date */}
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-black text-[#041F63] uppercase tracking-wider">
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                     Preferred Replacement Date
                   </label>
                   <input 
@@ -534,16 +545,16 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                         setNewDate(val);
                       }
                     }}
-                    className="w-full max-w-full box-border bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-medium font-mono focus:outline-[#041F63] focus:ring-1 focus:ring-[#041F63]"
+                    className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2 h-8 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition font-mono box-border"
                   />
                 </div>
 
                 {/* Preferred Replacement Time Slot Grid */}
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-black text-[#041F63] uppercase tracking-wider">
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                     Preferred Time Slot
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1">
                     {['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM'].map((time) => {
                       const isBooked = checkSlotIsBooked(newDate, time, selectedSession.id);
                       const isSelected = newTimeSlot === time;
@@ -554,10 +565,10 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                             key={time}
                             type="button"
                             disabled
-                            className="bg-slate-100 border border-slate-200 opacity-60 text-slate-400 font-bold py-2.5 text-center text-[10px] rounded-xl cursor-not-allowed flex flex-col items-center justify-center h-12"
+                            className="border border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed py-1 text-center text-[9px] text-slate-400 font-medium rounded-lg flex flex-col items-center justify-center h-8"
                           >
                             <span>{time}</span>
-                            <span className="text-[7px] font-black uppercase text-rose-500 tracking-wider">Booked</span>
+                            <span className="text-[6px] font-bold uppercase text-rose-500 tracking-wider">Booked</span>
                           </button>
                         );
                       }
@@ -567,10 +578,10 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                           key={time}
                           type="button"
                           onClick={() => setNewTimeSlot(time)}
-                          className={`border py-2.5 text-center font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center cursor-pointer select-none h-12 ${
+                          className={`border py-1 text-center font-bold text-[10px] rounded-lg transition flex flex-col items-center justify-center cursor-pointer select-none h-8 ${
                             isSelected
-                              ? 'border-teal-400 bg-teal-50 text-teal-800 ring-2 ring-teal-400'
-                              : 'border-slate-200 hover:bg-slate-50 bg-white text-slate-700'
+                              ? 'border-[#4F46E5] bg-[#F5F7FF] text-[#4F46E5]'
+                              : 'border-[#D7DFEA] hover:bg-slate-50 bg-white text-slate-700'
                           }`}
                         >
                           <span>{time}</span>
@@ -581,23 +592,23 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                 </div>
 
                 {/* Optional Reason textarea */}
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-black text-[#041F63] uppercase tracking-wider">
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                     Reason for Rescheduling
                   </label>
-                  <textarea 
-                    rows={2}
+                  <input 
+                    type="text"
                     value={rescheduleReason}
                     onChange={(e) => setRescheduleReason(e.target.value)}
                     placeholder="E.g., Client meeting conflict..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 font-medium focus:outline-[#041F63] focus:ring-1 focus:ring-[#041F63]"
+                    className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2 h-8 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                   />
                 </div>
 
-                <div className="flex gap-2.5 pt-2">
+                <div className="flex gap-2 pt-2 border-t border-slate-100">
                   <button
                     onClick={() => setModalStep('detail')}
-                    className="w-1/3 bg-slate-50 hover:bg-slate-101 border border-slate-200 text-slate-600 font-bold py-3 rounded-xl text-xs text-center cursor-pointer"
+                    className="w-1/3 bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-9 rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
                   >
                     Back
                   </button>
@@ -617,7 +628,7 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                       }
                       setModalStep('summary');
                     }}
-                    className="flex-1 bg-[#041F63] hover:bg-[#031542] text-white font-bold py-3 rounded-xl text-xs text-center cursor-pointer"
+                    className="flex-1 bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-9 rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
                   >
                     Next
                   </button>
@@ -625,53 +636,53 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
               </div>
             ) : (
               /* ================= STEP 3: SUMMARY CONFIRMATION ================= */
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
-                  <h4 className="font-display font-black text-slate-900 text-lg flex items-center gap-1.5">
+                  <h4 className="font-display font-black text-[#041F63] text-sm flex items-center gap-1.5 leading-tight">
                     <span>Summary of Request</span>
                   </h4>
-                  <p className="text-slate-400 text-xs mt-0.5">
-                    Please review your proposed schedule assignment details.
+                  <p className="text-slate-400 text-[10px]">
+                    Please review your proposed schedule details.
                   </p>
                 </div>
 
-                <div className="space-y-3 bg-slate-50 rounded-2xl p-4 border border-slate-100 text-xs text-slate-700">
-                  <div className="flex justify-between py-1 border-b border-slate-150/50">
+                <div className="space-y-2 bg-slate-50 rounded-lg p-2.5 border border-slate-100 text-[11px] text-slate-700">
+                  <div className="flex justify-between py-0.5 border-b border-slate-100">
                     <span className="font-bold text-slate-400">Coach</span>
                     <span className="font-extrabold text-[#041F63]">Sarah Tan</span>
                   </div>
                   
-                  <div className="py-1.5 border-b border-slate-150/50 space-y-1">
+                  <div className="py-0.5 border-b border-slate-100 space-y-0.5">
                     <span className="font-bold text-slate-400 block">Current Slot</span>
                     <span className="font-mono font-bold text-slate-500 block">
                       {new Date(selectedSession.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })} at {selectedSession.timeSlot}
                     </span>
                   </div>
 
-                  <div className="py-1.5 space-y-1 bg-teal-500/5 p-2.5 rounded-xl border border-teal-100">
-                    <span className="font-bold text-teal-700 block">Proposed Replacement Slot</span>
-                    <span className="font-mono font-extrabold text-teal-800 block text-sm">
+                  <div className="py-1 space-y-0.5 bg-teal-500/5 p-2 rounded-lg border border-teal-100">
+                    <span className="font-bold text-teal-700 block text-[10px]">Proposed Replacement Slot</span>
+                    <span className="font-mono font-extrabold text-teal-800 block text-[11px]">
                       {new Date(newDate).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })} at {newTimeSlot}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex gap-2.5 pt-2">
+                <div className="flex gap-2 pt-2 border-t border-slate-100">
                   <button
                     onClick={() => setModalStep('selector')}
-                    className="w-1/3 bg-slate-50 hover:bg-slate-101 border border-slate-200 text-slate-600 font-bold py-3 rounded-xl text-xs text-center cursor-pointer"
+                    className="w-1/3 bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-9 rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleConfirmReschedule}
                     disabled={actionLoading}
-                    className="flex-1 bg-[#041F63] hover:bg-[#031542] text-white font-extrabold py-3.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition text-center cursor-pointer"
+                    className="flex-1 bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-9 rounded-lg text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
                   >
                     {actionLoading ? (
                       <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
                     ) : (
-                      "Send Reschedule Request"
+                      "Send Request"
                     )}
                   </button>
                 </div>

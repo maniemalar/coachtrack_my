@@ -863,25 +863,25 @@ export default function BookingFlowOverlay({
                 if (selectedPackage === 'monthly') baseAmt = isSarah ? 600 : Math.round(trainer.pricePerHour * 8 * 0.8);
                 
                 return (
-                  <div className="bg-slate-50 border border-slate-150 p-2.5 rounded-lg text-xs space-y-2 text-slate-600 font-medium">
-                    <div className="flex justify-between items-center border-b pb-1.5 border-slate-200">
-                      <span className="text-[13px] text-slate-500 font-medium">Lesson Price:</span>
-                      <span className="font-black text-slate-900 text-[18px]">RM {baseAmt}</span>
+                  <div className="bg-slate-50 border border-slate-150 p-2 rounded-lg text-xs space-y-1.5 text-slate-600 font-medium">
+                    <div className="flex justify-between items-center border-b pb-1 border-slate-200">
+                      <span className="text-[11px] text-slate-500 font-bold">Lesson Price:</span>
+                      <span className="font-extrabold text-slate-900 text-[13px] font-mono">RM {baseAmt}</span>
                     </div>
-                    <div className="flex justify-between items-center border-b pb-1.5 border-slate-200">
-                      <span className="text-[13px] text-slate-500 font-medium">Coach Receives:</span>
-                      <span className="font-black text-slate-900 text-[18px]">RM {baseAmt}</span>
+                    <div className="flex justify-between items-center border-b pb-1 border-slate-200">
+                      <span className="text-[11px] text-slate-500 font-bold">Coach Receives:</span>
+                      <span className="font-extrabold text-slate-900 text-[13px] font-mono">RM {baseAmt}</span>
                     </div>
-                    <div className="flex justify-between items-center text-slate-900 font-black pt-1">
-                      <span className="text-[14px] text-slate-800 font-bold">Total Payment:</span>
-                      <span className="text-[#081F63] text-[19px] font-black">RM {baseAmt}</span>
+                    <div className="flex justify-between items-center text-slate-900 font-black pt-0.5">
+                      <span className="text-[11.5px] text-slate-800 font-extrabold uppercase tracking-tight">Total Payment:</span>
+                      <span className="text-[#041F63] text-[14px] font-black font-mono">RM {baseAmt}</span>
                     </div>
                   </div>
                 );
               })()}
 
-              <div className="space-y-1.5 text-[12px]">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Choose banking gateway</span>
+              <div className="space-y-1 text-[12px]">
+                <span className="text-[9.5px] font-black text-slate-400 uppercase tracking-wider block">Choose banking gateway</span>
                 
                 <div className="space-y-1">
                   <label className={`border rounded-lg p-1.5 px-2 flex items-center gap-2 cursor-pointer transition ${paymentOption === 'fpx_maybank' ? 'border-[#001F3F] bg-[#001F3F]/5' : 'border-slate-200 hover:bg-slate-50'}`}>
@@ -893,8 +893,8 @@ export default function BookingFlowOverlay({
                       className="w-3 h-3 accent-[#001F3F]"
                     />
                     <div className="text-left leading-tight">
-                      <strong className="text-slate-800 block text-[11.5px] font-bold">Maybank2u FPX Bank</strong>
-                      <span className="text-[8.5px] text-teal-600 uppercase font-bold font-mono block">Clears instantly</span>
+                      <strong className="text-slate-800 block text-[11px] font-bold">Maybank2u FPX Bank</strong>
+                      <span className="text-[8px] text-teal-600 uppercase font-bold font-mono block">Clears instantly</span>
                     </div>
                   </label>
 
@@ -907,8 +907,8 @@ export default function BookingFlowOverlay({
                       className="w-3 h-3 accent-[#001F3F]"
                     />
                     <div className="text-left leading-tight">
-                      <strong className="text-slate-800 block text-[11.5px] font-bold">CIMB Clicks Instant</strong>
-                      <span className="text-[8.5px] text-slate-400 block">SST Exempt Platform</span>
+                      <strong className="text-slate-800 block text-[11px] font-bold">CIMB Clicks Instant</strong>
+                      <span className="text-[8px] text-slate-400 block">SST Exempt Platform</span>
                     </div>
                   </label>
 
@@ -921,8 +921,8 @@ export default function BookingFlowOverlay({
                       className="w-3 h-3 accent-[#001F3F]"
                     />
                     <div className="text-left leading-tight">
-                      <strong className="text-slate-800 block text-[11.5px] font-bold">RHB Now Direct fpx</strong>
-                      <span className="text-[8.5px] text-slate-400 block">Full Encrypted Escrow</span>
+                      <strong className="text-slate-800 block text-[11px] font-bold">RHB Now Direct fpx</strong>
+                      <span className="text-[8px] text-slate-400 block">Full Encrypted Escrow</span>
                     </div>
                   </label>
                 </div>
@@ -940,13 +940,13 @@ export default function BookingFlowOverlay({
                 <button 
                   onClick={handleConfirmSecureBooking}
                   disabled={isProcessingPayment}
-                  className="flex-[1.2] h-[36px] bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-[8px] uppercase tracking-wider cursor-pointer text-[12px] flex items-center justify-center"
+                  className="flex-[1.2] h-[36px] bg-[#001F3F] hover:bg-slate-900 border border-indigo-950 text-white font-bold rounded-[8px] uppercase tracking-wider cursor-pointer text-[11.5px] flex items-center justify-center transition shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isProcessingPayment ? (
                     <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
                   ) : (
                     <div className="flex items-center justify-center gap-1.5">
-                      <CreditCard className="w-3.5 h-3.5" />
+                      <CreditCard className="w-3.5 h-3.5 shrink-0 text-teal-400" />
                       <span>Authorize Escrow</span>
                     </div>
                   )}

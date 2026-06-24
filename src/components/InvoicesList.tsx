@@ -154,35 +154,35 @@ export default function InvoicesList({ traineeId }: InvoicesListProps) {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {displayedPayments.map((p) => {
               const isPaid = p.status?.toLowerCase() === 'paid';
               return (
                 <div 
                   key={p.id} 
-                  className={`border rounded-3xl p-5 transition relative overflow-hidden bg-white ${
-                    isPaid ? 'border-slate-100 hover:border-emerald-100 shadow-sm' : 'border-rose-100 hover:border-rose-200 shadow-sm'
+                  className={`border rounded-xl p-3.5 transition relative overflow-hidden bg-white shadow-xs ${
+                    isPaid ? 'border-slate-100 hover:border-emerald-200' : 'border-rose-100 hover:border-rose-200'
                   }`}
                 >
                   {/* Status Indicator */}
-                  <div className="flex justify-between items-start mb-3">
-                    <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-full border ${
+                  <div className="flex justify-between items-center mb-2">
+                    <span className={`text-[8.5px] font-bold uppercase px-2 py-0.5 rounded-md border ${
                       isPaid 
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
-                        : 'bg-rose-50 text-rose-700 border-rose-100'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-150' 
+                        : 'bg-rose-50 text-rose-700 border-rose-150'
                     }`}>
                       {p.status}
                     </span>
                     <span className="text-[10px] text-slate-400 font-mono font-bold">INV-{p.id.slice(0, 5).toUpperCase()}</span>
                   </div>
 
-                  <h4 className="font-black text-slate-900 text-sm leading-tight mb-1 font-display">
+                  <h4 className="font-extrabold text-slate-800 text-[12.5px] leading-tight mb-1 font-sans break-words max-w-full">
                     {p.itemDescription}
                   </h4>
-                  <p className="text-3xs text-slate-400 font-sans font-semibold">Due Date: {p.dueDate}</p>
+                  <p className="text-[10px] text-slate-400 font-mono">Due Date: {p.dueDate}</p>
 
-                  <div className="flex justify-between items-center pt-3.5 border-t border-slate-100 mt-4">
-                    <span className="text-lg font-black text-slate-950 font-display">
+                  <div className="flex justify-between items-center pt-2.5 border-t border-slate-100 mt-2.5">
+                    <span className="text-[13.5px] font-black text-slate-900 font-mono">
                       RM {p.amount.toFixed(2)}
                     </span>
 
@@ -193,9 +193,9 @@ export default function InvoicesList({ traineeId }: InvoicesListProps) {
                             setSelectedInvoice(p);
                             setSelectedDocMode('receipt');
                           }}
-                          className="px-3 py-1.5 text-[10px] font-bold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 flex items-center gap-1 cursor-pointer transition border border-emerald-100"
+                          className="h-7 px-2.5 text-[10.5px] font-bold rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 flex items-center gap-1 cursor-pointer transition border border-emerald-100"
                         >
-                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                           <span>Receipt</span>
                         </button>
                       ) : (
@@ -204,9 +204,9 @@ export default function InvoicesList({ traineeId }: InvoicesListProps) {
                             setSelectedInvoice(p);
                             setSelectedDocMode('checkout');
                           }}
-                          className="px-3 py-1.5 text-[10px] font-bold rounded-xl bg-[#081F63] hover:bg-[#07194f] text-white flex items-center gap-1 cursor-pointer transition"
+                          className="h-7 px-2.5 text-[10.5px] font-bold rounded-lg bg-[#081F63] hover:bg-[#07194f] text-white flex items-center gap-1 cursor-pointer transition"
                         >
-                          <CreditCard className="w-3.5 h-3.5 text-teal-400" />
+                          <CreditCard className="w-3.5 h-3.5 text-teal-400 shrink-0" />
                           <span>Pay Now</span>
                         </button>
                       )}
@@ -216,9 +216,9 @@ export default function InvoicesList({ traineeId }: InvoicesListProps) {
                           setSelectedInvoice(p);
                           setSelectedDocMode('invoice');
                         }}
-                        className="px-3 py-1.5 text-[10px] font-bold rounded-xl bg-slate-50 hover:bg-slate-105 text-slate-700 flex items-center gap-1 cursor-pointer transition border border-slate-200"
+                        className="h-7 px-2.5 text-[10.5px] font-bold rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1 cursor-pointer transition border border-slate-200"
                       >
-                        <FileText className="w-3.5 h-3.5 text-slate-400" />
+                        <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span>Invoice</span>
                       </button>
                     </div>
@@ -232,8 +232,8 @@ export default function InvoicesList({ traineeId }: InvoicesListProps) {
 
       {/* Dynamic Slide-Up Modal Platform Sheet */}
       {selectedInvoice && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-sm w-full p-5 relative shadow-2xl overflow-hidden animate-slide-up sm:animate-zoom-in space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-[1050] flex items-end sm:items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5 pb-6 relative shadow-2xl overflow-hidden animate-slide-up sm:animate-zoom-in space-y-4 mb-[68px] sm:mb-0 max-h-[calc(100vh-84px)] sm:max-h-[90vh] overflow-y-auto">
             
             {/* Close */}
             <button 

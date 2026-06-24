@@ -772,17 +772,17 @@ export default function BodyMeasurementsRedesign({
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200/85 rounded-xl p-3.5 shadow-3xs flex items-center justify-between text-left">
-              <div>
-                <span className="text-[13px] font-medium text-slate-500 block">Current Weight</span>
-                <strong className="text-[28px] font-bold text-slate-900 block mt-0.5">
-                  {latestLog.weight} <span className="text-sm font-medium text-slate-500">kg</span>
+            <div className="bg-white border border-slate-200/85 rounded-xl p-3 shadow-3xs flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 text-left">
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-medium text-slate-500 block">Current Weight</span>
+                <strong className="text-xl sm:text-[24px] font-black text-slate-900 block mt-0.5">
+                  {latestLog.weight} <span className="text-xs font-medium text-slate-500">kg</span>
                 </strong>
-                <span className="text-[14px] font-medium text-[#18D2C3] mt-1 block whitespace-nowrap overflow-hidden text-ellipsis">
+                <span className="text-xs font-medium text-[#18D2C3] mt-0.5 block truncate">
                   {weightDiffTextDetail}
                 </span>
               </div>
-              <span className="bg-teal-50 text-teal-650 font-medium text-[14px] h-[38px] px-4 flex items-center justify-center rounded-full border border-teal-100 font-sans whitespace-nowrap shrink-0">
+              <span className="bg-teal-50 text-teal-600 font-bold text-xs h-[30px] px-2.5 flex items-center justify-center rounded-full border border-teal-100 font-sans whitespace-nowrap shrink-0">
                 ✓ On Track
               </span>
             </div>

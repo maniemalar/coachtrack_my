@@ -746,41 +746,49 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                     </div>
 
                     {/* Legends right/bottom compact vertical list layout */}
-                    <div className="flex-1 flex flex-col gap-2 font-sans text-[11px] justify-center pl-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#4F46E5] shrink-0" />
-                        <span className="text-slate-500 font-medium">Protein:</span>
-                        <span className="font-bold text-[#081F63]">{proteinPctVal}% ({totalDailyProtein}g)</span>
+                    <div className="flex-1 flex flex-col gap-2 font-mono text-[11px] justify-center pl-1">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#4F46E5] shrink-0" />
+                          <span className="text-slate-500 font-bold min-w-[50px]">Protein</span>
+                        </div>
+                        <span className="font-extrabold text-[#081F63]">{proteinPctVal}% ({totalDailyProtein}g)</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#18D4C5] shrink-0" />
-                        <span className="text-slate-500 font-medium">Carbs:</span>
-                        <span className="font-bold text-[#081F63]">{carbsPctVal}% ({totalDailyCarbs}g)</span>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#18D4C5] shrink-0" />
+                          <span className="text-slate-500 font-bold min-w-[50px]">Carbs</span>
+                        </div>
+                        <span className="font-extrabold text-[#081F63]">{carbsPctVal}% ({totalDailyCarbs}g)</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0" />
-                        <span className="text-slate-500 font-medium">Fat:</span>
-                        <span className="font-bold text-[#081F63]">{fatPctVal}% ({totalDailyFat}g)</span>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0" />
+                          <span className="text-slate-500 font-bold min-w-[50px]">Fat</span>
+                        </div>
+                        <span className="font-extrabold text-[#081F63]">{fatPctVal}% ({totalDailyFat}g)</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#0F172A] shrink-0" />
-                        <span className="text-slate-500 font-medium">Fiber:</span>
-                        <span className="font-bold text-[#081F63]">{fiberPctVal}% ({totalDailyFiber}g)</span>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#0F172A] shrink-0" />
+                          <span className="text-slate-500 font-bold min-w-[50px]">Fiber</span>
+                        </div>
+                        <span className="font-extrabold text-[#081F63]">{fiberPctVal}% ({totalDailyFiber}g)</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* NUTRITION ACTIVITY FEED */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center pb-1">
-                    <h4 className="text-xs font-black uppercase tracking-wider text-[#081F63]">
+                        {/* NUTRITION ACTIVITY FEED */}
+                <div className="space-y-2.5">
+                  <div className="flex justify-between items-center pb-0.5">
+                    <h4 className="text-[12px] font-extrabold uppercase tracking-wider text-[#081F63]">
                       Nutrition Activity Feed
                     </h4>
-                    <span className="text-2xs font-bold text-slate-400">{activeMealsList.length} Meals Logged</span>
+                    <span className="text-[10px] font-bold text-slate-400 shrink-0">{activeMealsList.length} Meals Logged</span>
                   </div>
 
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     {activeMealsList.map((meal) => {
                       const mealPhotoUrl = resolveMealPhoto(meal.foodName);
                       const isExpanded = expandedMealId === meal.id;
@@ -789,36 +797,36 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                       return (
                         <div 
                           key={meal.id} 
-                          className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-2xs transition-all duration-200"
+                          className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-3xs transition-all duration-200"
                         >
                           {/* Feed row */}
                           <button 
                             onClick={() => setExpandedMealId(isExpanded ? null : meal.id)}
-                            className={`w-full flex items-center justify-between p-3 text-left transition-colors duration-200 cursor-pointer ${
-                              isExpanded ? 'bg-slate-50 border-b border-slate-100' : 'hover:bg-slate-50/55'
+                            className={`w-full flex items-center justify-between p-2 px-3 text-left transition-colors duration-200 cursor-pointer ${
+                              isExpanded ? 'bg-slate-50/80 border-b border-slate-100' : 'hover:bg-slate-50/55'
                             }`}
                           >
-                            <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
                               {/* Left image thumbnail */}
-                              <div className="w-11 h-11 rounded-2xl overflow-hidden border border-slate-100 shrink-0 bg-slate-50">
+                              <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-100 shrink-0 bg-slate-50">
                                 <MealImage src={mealPhotoUrl} alt={meal.foodName} className="w-full h-full object-cover" />
                               </div>
 
                               {/* Center text details */}
                               <div className="min-w-0 flex-1">
-                                <h4 className="font-extrabold text-[#081F63] text-xs truncate">
+                                <h4 className="font-bold text-[#081F63] text-[11.5px] truncate">
                                   {meal.foodName}
                                 </h4>
-                                <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400 font-normal tracking-wide">
+                                <div className="flex items-center gap-1.5 text-[9.5px] text-slate-400 font-medium tracking-normal mt-0.2">
                                   <span>{meal.time}</span>
                                   <span>•</span>
-                                  <span className="text-slate-500 font-semibold">{meal.calories} kcal</span>
+                                  <span className="text-slate-500 font-bold">{meal.calories} kcal</span>
                                 </div>
                               </div>
                             </div>
 
                             {/* Right Arrow */}
-                            <div className="shrink-0 ml-2.5 text-slate-400">
+                            <div className="shrink-0 ml-2 text-slate-400">
                               <ChevronDown 
                                 className={`w-3.5 h-3.5 transition-transform duration-200 ${
                                   isExpanded ? 'rotate-180 text-[#18D4C5]' : ''
@@ -834,53 +842,53 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                                transition={{ duration: 0.2, ease: "easeInOut" }}
                                 className="overflow-hidden bg-[#FAFCFF] border-t border-slate-100"
                               >
-                                <div className="p-4 space-y-3">
+                                <div className="p-3 space-y-2.5">
                                   {/* Large interactive image with shadow */}
-                                  <div className="w-full h-36 rounded-2xl overflow-hidden border border-slate-100 relative shadow-2xs bg-slate-50">
+                                  <div className="w-full h-28 rounded-xl overflow-hidden border border-slate-100 relative shadow-3xs bg-slate-50">
                                     <MealImage src={mealPhotoUrl} alt={meal.foodName} className="w-full h-full object-cover" />
-                                    <div className="absolute top-2 right-2 bg-slate-900/90 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-white select-none border border-slate-700/50 shadow-sm">
+                                    <div className="absolute top-1.5 right-1.5 bg-slate-900/90 backdrop-blur-md px-1.5 py-0.2 rounded text-[9px] font-extrabold text-white select-none border border-slate-700/50 shadow-sm font-mono">
                                       ⚡ {meal.calories} kcal
                                     </div>
                                   </div>
 
                                   {/* Compact Macronutrients Breakdown */}
-                                  <div className="bg-white border border-slate-100 rounded-xl p-2 grid grid-cols-4 gap-1.5 text-center text-3xs shadow-3xs">
+                                  <div className="bg-white border border-slate-100 rounded-lg p-1.5 grid grid-cols-4 gap-1 text-center text-3xs shadow-3xs">
                                     <div className="border-r border-slate-50">
-                                      <span className="block text-[9px] font-bold text-slate-400">Protein</span>
-                                      <span className="block text-xs font-black text-[#081F63] mt-0.5">{meal.protein}g</span>
+                                      <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-tight">Protein</span>
+                                      <span className="block text-[11px] font-extrabold text-[#081F63] mt-0.5 font-mono">{meal.protein}g</span>
                                     </div>
                                     <div className="border-r border-slate-50">
-                                      <span className="block text-[9px] font-bold text-slate-400">Carbs</span>
-                                      <span className="block text-xs font-black text-[#081F63] mt-0.5">{meal.carbs}g</span>
+                                      <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-tight">Carbs</span>
+                                      <span className="block text-[11px] font-extrabold text-[#081F63] mt-0.5 font-mono">{meal.carbs}g</span>
                                     </div>
                                     <div className="border-r border-slate-50">
-                                      <span className="block text-[9px] font-bold text-slate-400">Fat</span>
-                                      <span className="block text-xs font-black text-[#081F63] mt-0.5">{meal.fat}g</span>
+                                      <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-tight">Fat</span>
+                                      <span className="block text-[11px] font-extrabold text-[#081F63] mt-0.5 font-mono">{meal.fat}g</span>
                                     </div>
                                     <div>
-                                      <span className="block text-[9px] font-bold text-slate-400">Fiber</span>
-                                      <span className="block text-xs font-black text-[#081F63] mt-0.5">{meal.fiber || 5}g</span>
+                                      <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-tight">Fiber</span>
+                                      <span className="block text-[11px] font-extrabold text-[#081F63] mt-0.5 font-mono">{meal.fiber || 5}g</span>
                                     </div>
                                   </div>
 
                                   {/* AI analysis banner: Dark Navy background, white text, CoachAI Sparkles */}
-                                  <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-3xs">
-                                    <div className="flex items-center gap-1 mb-1 text-teal-400 font-bold select-none">
+                                  <div className="bg-slate-900 border border-slate-800 rounded-xl p-2 text-3xs">
+                                    <div className="flex items-center gap-1 mb-0.5 text-teal-400 font-bold select-none">
                                       <Sparkles className="w-3 h-3 text-teal-400" />
-                                      <span className="uppercase tracking-wider text-[9px]">CoachAI Analysis</span>
+                                      <span className="uppercase tracking-wider text-[8.5px]">CoachAI Analysis</span>
                                     </div>
-                                    <p className="text-[10px] leading-relaxed text-slate-200">
+                                    <p className="text-[9.5px] leading-normal text-slate-200">
                                       {meal.aiInsight}
                                     </p>
                                   </div>
 
                                   {/* Active coach guidance */}
-                                  <div className="bg-teal-50/20 border border-teal-100/30 rounded-xl p-2.5 text-3xs">
-                                    <span className="font-extrabold text-teal-700 uppercase tracking-wider block mb-0.5 text-[9px]">Coach Sarah's Feedback</span>
-                                    <p className="text-[10px] leading-relaxed text-slate-600 italic">
+                                  <div className="bg-teal-50/20 border border-teal-100/30 rounded-xl p-2 text-3xs">
+                                    <span className="font-extrabold text-teal-700 uppercase tracking-wider block mb-0.5 text-[8.5px]">Coach Sarah's Feedback</span>
+                                    <p className="text-[9.5px] leading-normal text-slate-600 italic">
                                       "{meal.trainerFeedback || 'No special coaching instruction left yet.'}"
                                     </p>
                                   </div>
@@ -889,7 +897,7 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                                   <div className="pt-1.5 border-t border-slate-100 text-right">
                                     <button 
                                       onClick={() => setDetailedMeals(prev => ({ ...prev, [meal.id]: !isMealDetailed }))}
-                                      className="text-[9px] font-extrabold text-indigo-600 hover:text-indigo-850 uppercase tracking-wider inline-flex items-center gap-0.5 cursor-pointer"
+                                      className="text-[8.5px] font-extrabold text-indigo-600 hover:text-indigo-850 uppercase tracking-wider inline-flex items-center gap-0.5 cursor-pointer"
                                     >
                                       <span>{isMealDetailed ? 'Hide Raw Logs' : 'View Ingredient logs'}</span>
                                       <ChevronDown className={`w-2.5 h-2.5 transform transition-transform ${isMealDetailed ? 'rotate-180 text-indigo-600' : ''}`} />
@@ -904,7 +912,7 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                                           className="text-left overflow-hidden mt-1 bg-slate-50 border border-slate-150 rounded-lg p-2"
                                         >
                                           <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Trainee Ingredient notes:</span>
-                                          <p className="text-[10px] font-medium text-slate-500 leading-normal italic">
+                                          <p className="text-[9.5px] font-medium text-slate-500 leading-normal italic">
                                             "{meal.notes || 'No supplementary meal tags added.'}"
                                           </p>
                                         </motion.div>

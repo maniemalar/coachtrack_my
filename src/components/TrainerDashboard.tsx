@@ -1160,6 +1160,7 @@ export function TrainerDashboardInner({
   const [scheduleLocation, setScheduleLocation] = useState('SS15 Studio • Selangor');
   const [scheduleNotes, setScheduleNotes] = useState('');
   const [scheduleSuccess, setScheduleSuccess] = useState(false);
+  const [scheduleTraineeDropdownOpen, setScheduleTraineeDropdownOpen] = useState(false);
 
   // Session Action Sheet / Completion states
   const [selectedSessionForAction, setSelectedSessionForAction] = useState<any>(null);
@@ -4573,62 +4574,62 @@ export function TrainerDashboardInner({
         {/* Custom Invoice Generator Modal Form */}
         {showInvoiceForm && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-[18px] w-[90%] max-w-[360px] mx-auto p-5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[85vh] box-border break-words animate-zoom-in flex flex-col">
+            <div className="bg-white rounded-xl w-[90%] max-w-[340px] mx-auto p-4 shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[92vh] box-border break-words animate-zoom-in flex flex-col">
               <button 
                 type="button"
                 onClick={() => setShowInvoiceForm(false)}
-                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1 cursor-pointer font-bold transition z-10"
+                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1 cursor-pointer font-bold transition z-10"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
 
-              <div className="mb-3 pr-8">
-                <span className="inline-block px-1.5 py-0.2 text-[8.5px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded tracking-wider mb-1 uppercase select-none">BILLING HUB</span>
-                <h3 className="text-[20px] font-extrabold text-[#041F63] leading-tight mb-0.5">
+              <div className="mb-2.5 pr-8">
+                <span className="inline-block px-1.5 py-0.2 text-[8px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded tracking-wider mb-0.5 uppercase select-none">BILLING HUB</span>
+                <h3 className="text-sm font-extrabold text-[#041F63] leading-tight mb-0.5">
                   Issue Custom Invoice
                 </h3>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[10px] text-slate-500">
                   Generate and dispatch professional invoices.
                 </p>
               </div>
 
               {invoiceCreatedSuccess ? (
-                <div className="text-center py-2 space-y-3">
-                  <span className="text-3xl block">📋</span>
-                  <h3 className="font-bold text-[#041F63] text-[18px] leading-tight">Invoice Generated!</h3>
-                  <p className="text-[11px] text-slate-500 font-sans">Client billing registers have been updated.</p>
-                  <div className="pt-2">
+                <div className="text-center py-2 space-y-2.5">
+                  <span className="text-2xl block">📋</span>
+                  <h3 className="font-bold text-[#041F63] text-sm leading-tight">Invoice Generated!</h3>
+                  <p className="text-[10px] text-slate-500 font-sans">Client billing registers have been updated.</p>
+                  <div className="pt-1">
                     <button
                       type="button"
                       onClick={() => {
                         setShowInvoiceForm(false);
                       }}
-                      className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
+                      className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[36px] rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
                     >
                       Dismiss
                     </button>
                   </div>
                 </div>
               ) : (
-                <form onSubmit={handleInvoiceCreateSubmit} className="space-y-3.5">
+                <form onSubmit={handleInvoiceCreateSubmit} className="space-y-2.5">
                   {/* Billing Target Option */}
-                  <div className="bg-slate-50/50 border border-slate-100 p-3 rounded-[12px] space-y-2 text-left">
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <div className="bg-slate-50/50 border border-slate-100 p-2.5 rounded-lg space-y-1.5 text-left">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                       Billing Target Group
                     </label>
-                    <div className="flex flex-col gap-1.5 text-[12px] font-semibold">
-                      <label className="flex items-center gap-2 cursor-pointer font-bold font-sans text-slate-700 select-none">
+                    <div className="flex flex-row gap-3 text-[11px] font-semibold">
+                      <label className="flex items-center gap-1.5 cursor-pointer font-bold font-sans text-slate-700 select-none">
                         <input
                           type="radio"
                           name="invoiceTargetOption"
                           value="individual"
                           checked={invoiceBillingTarget === 'individual'}
                           onChange={() => setInvoiceBillingTarget('individual')}
-                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-3.5 w-3.5 bg-white border-slate-200 cursor-pointer"
+                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-3 w-3 bg-white border-slate-200 cursor-pointer"
                         />
-                        Single Client
+                        Single
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer font-bold font-sans text-slate-700 select-none">
+                      <label className="flex items-center gap-1.5 cursor-pointer font-bold font-sans text-slate-700 select-none">
                         <input
                           type="radio"
                           name="invoiceTargetOption"
@@ -4640,30 +4641,30 @@ export function TrainerDashboardInner({
                                 setInvoiceSelectedTraineeIds([selectedTraineeId]);
                             }
                           }}
-                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-3.5 w-3.5 bg-white border-slate-200 cursor-pointer"
+                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-3 w-3 bg-white border-slate-200 cursor-pointer"
                         />
-                        Multiple Clients
+                        Multiple
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer font-bold font-sans text-slate-700 select-none">
+                      <label className="flex items-center gap-1.5 cursor-pointer font-bold font-sans text-slate-700 select-none">
                         <input
                           type="radio"
                           name="invoiceTargetOption"
                           value="all"
                           checked={invoiceBillingTarget === 'all'}
                           onChange={() => setInvoiceBillingTarget('all')}
-                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-3.5 w-3.5 bg-white border-slate-200 cursor-pointer"
+                          className="text-[#4F46E5] focus:ring-[#4F46E5] h-3 w-3 bg-white border-slate-200 cursor-pointer"
                         />
-                        All Clients ({trainees.length})
+                        All ({trainees.length})
                       </label>
                     </div>
 
                     {/* Client lists to select from */}
                     {invoiceBillingTarget === 'selected' && (
                       <div className="pt-2 border-t border-slate-100 mt-1">
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                           Select Multiple Clients
                         </label>
-                        <div className="grid grid-cols-1 gap-2 max-h-36 overflow-y-auto p-0.5 scrollbar-thin">
+                        <div className="grid grid-cols-1 gap-1.5 max-h-24 overflow-y-auto p-0.5 scrollbar-thin">
                           {trainees.map((t) => {
                             const isChecked = invoiceSelectedTraineeIds.includes(t.id);
                             return (
@@ -4676,7 +4677,7 @@ export function TrainerDashboardInner({
                                     setInvoiceSelectedTraineeIds([...invoiceSelectedTraineeIds, t.id]);
                                   }
                                 }}
-                                className={`flex items-center gap-2 p-2 rounded-[10px] border cursor-pointer transition select-none ${
+                                className={`flex items-center gap-2 p-1.5 rounded-lg border cursor-pointer transition select-none ${
                                   isChecked
                                     ? 'border-[#4F46E5] bg-[#F5F7FF]'
                                     : 'border-[#D7DFEA] hover:bg-slate-50 bg-white'
@@ -4694,10 +4695,10 @@ export function TrainerDashboardInner({
                                   src={t.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150'}
                                   alt={t.name}
                                   referrerPolicy="no-referrer"
-                                  className="w-6 h-6 rounded-full object-cover shrink-0"
+                                  className="w-5 h-5 rounded-full object-cover shrink-0"
                                 />
                                 <div className="truncate text-left">
-                                  <div className="text-[12px] font-semibold text-slate-800 truncate">{t.name}</div>
+                                  <div className="text-xs font-semibold text-slate-800 truncate">{t.name}</div>
                                 </div>
                               </div>
                             );
@@ -4708,17 +4709,17 @@ export function TrainerDashboardInner({
 
                     {invoiceBillingTarget === 'individual' && (
                       <div className="pt-2 border-t border-slate-100 mt-1">
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                           Select Client Card
                         </label>
-                        <div className="grid grid-cols-1 gap-2 max-h-36 overflow-y-auto p-0.5 scrollbar-thin">
+                        <div className="grid grid-cols-1 gap-1.5 max-h-24 overflow-y-auto p-0.5 scrollbar-thin">
                           {trainees.map(t => {
                             const isSelected = selectedTraineeId === t.id;
                             return (
                               <div
                                 key={t.id}
                                 onClick={() => setSelectedTraineeId(t.id)}
-                                className={`flex items-center gap-2 p-2 rounded-[10px] border cursor-pointer transition select-none ${
+                                className={`flex items-center gap-2 p-1.5 rounded-lg border cursor-pointer transition select-none ${
                                   isSelected
                                     ? 'border-[#4F46E5] bg-[#F5F7FF]'
                                     : 'border-[#D7DFEA] hover:bg-slate-50 bg-white'
@@ -4728,11 +4729,11 @@ export function TrainerDashboardInner({
                                   src={t.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150'}
                                   alt={t.name}
                                   referrerPolicy="no-referrer"
-                                  className="w-6 h-6 rounded-full object-cover shrink-0"
+                                  className="w-5 h-5 rounded-full object-cover shrink-0"
                                 />
                                 <div className="truncate text-left flex-1 min-w-0">
-                                  <div className="text-[12px] font-semibold text-slate-800 truncate">{t.name}</div>
-                                  <div className="text-[10px] text-slate-400 truncate">{t.goals || 'Active Trainee'}</div>
+                                  <div className="text-xs font-semibold text-slate-800 truncate">{t.name}</div>
+                                  <div className="text-[9px] text-slate-400 truncate">{t.goals || 'Active Trainee'}</div>
                                 </div>
                               </div>
                             );
@@ -4743,9 +4744,9 @@ export function TrainerDashboardInner({
                   </div>
 
                   {/* Invoice details */}
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">
                         Invoice Title
                       </label>
                       <input 
@@ -4753,56 +4754,56 @@ export function TrainerDashboardInner({
                         value={invoiceTitle}
                         onChange={(e) => setInvoiceTitle(e.target.value)}
                         placeholder="Coaching Fee"
-                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
+                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2 h-8 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">
                         Invoice Type
                       </label>
                       <select
                         value={invoiceType}
                         onChange={(e) => setInvoiceType(e.target.value)}
-                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
+                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2 h-8 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                         required
                       >
                         <option value="Single Class">Single Class</option>
                         <option value="4 Classes">4 Classes</option>
-                        <option value="8 Classes font-sans">8 Classes</option>
+                        <option value="8 Classes">8 Classes</option>
                       </select>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">
                         Amount (RM)
                       </label>
                       <input 
                         type="number" 
                         value={invoiceAmount}
                         onChange={(e) => setInvoiceAmount(Number(e.target.value))}
-                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
+                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2 h-8 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">
                         Due Date
                       </label>
                       <input 
                         type="date" 
                         value={invoiceDueDate}
                         onChange={(e) => setInvoiceDueDate(e.target.value)}
-                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
+                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2 h-8 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">
                       Service Description
                     </label>
                     <input 
@@ -4810,34 +4811,34 @@ export function TrainerDashboardInner({
                       value={invoiceDescription}
                       onChange={(e) => setInvoiceDescription(e.target.value)}
                       placeholder="Monthly Pack (8x Slots)"
-                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
+                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2 h-8 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">
                       Notes (Optional Remarks)
                     </label>
                     <textarea 
                       value={invoiceNotes}
                       onChange={(e) => setInvoiceNotes(e.target.value)}
-                      placeholder="Please checkout via FPX or CoachTrack card..."
-                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none h-12 resize-none transition"
+                      placeholder="Please checkout via FPX..."
+                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2 py-1 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none h-10 resize-none transition"
                     />
                   </div>
 
-                  <div className="flex flex-col gap-2 pt-3 border-t border-slate-100">
+                  <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-100">
                     <button
                       type="submit"
-                      className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
+                      className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[36px] rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
                     >
                       ISSUE INVOICE
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowInvoiceForm(false)}
-                      className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
+                      className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-[36px] rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -4851,147 +4852,138 @@ export function TrainerDashboardInner({
         {/* Add Client Onboarding Modal */}
         {showAddClientForm && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-[18px] w-[90%] max-w-[360px] mx-auto p-5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[85vh] box-border break-words animate-zoom-in flex flex-col">
+            <div className="bg-white rounded-xl w-[90%] max-w-[340px] mx-auto p-4 shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[92vh] box-border break-words animate-zoom-in flex flex-col">
               <button 
                 type="button"
                 onClick={() => {
                   setShowAddClientForm(false);
                   setInviteError('');
                 }}
-                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1 cursor-pointer font-bold transition z-10"
+                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1 cursor-pointer font-bold transition z-10"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
 
-              <div className="mb-3 pr-8">
-                <span className="inline-block px-1.5 py-0.2 text-[8.5px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded tracking-wider mb-1 uppercase select-none">CLIENT ONBOARDING</span>
-                <h3 className="text-[20px] font-extrabold text-[#041F63] leading-tight mb-0.5">
+              <div className="mb-2.5 pr-8">
+                <span className="inline-block px-1.5 py-0.2 text-[8px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded tracking-wider mb-0.5 uppercase select-none">CLIENT ONBOARDING</span>
+                <h3 className="text-sm font-extrabold text-[#041F63] leading-tight mb-0.5">
                   Invite New Client
                 </h3>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[10px] text-slate-500">
                   Send invitation and assign coaching package.
                 </p>
               </div>
 
-              <form onSubmit={handleAddClientInviteSubmit} className="space-y-3.5">
+              <form onSubmit={handleAddClientInviteSubmit} className="space-y-2.5">
                 {inviteError && (
-                  <div className="bg-rose-50 border border-rose-100 text-rose-800 rounded-xl p-2.5 text-[11px] font-semibold">
+                  <div className="bg-rose-50 border border-rose-100 text-rose-800 rounded-xl p-2 text-[10px] font-semibold">
                     ⚠️ {inviteError}
                   </div>
                 )}
                 
                 {inviteSuccess && (
-                  <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-2.5 text-[11px] font-bold text-center">
+                  <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-2 text-[10px] font-bold text-center">
                     🎉 Invitation generated successfully!
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#041F63] font-sans mb-1 uppercase tracking-wider">
+                  <label className="block text-[10px] font-bold text-[#041F63] font-sans mb-1 uppercase tracking-wider">
                     Client Email
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#041F63]">
-                      <Mail className="w-4 h-4" />
+                    <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-[#041F63]">
+                      <Mail className="w-3.5 h-3.5" />
                     </div>
                     <input
                       type="email"
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
                       placeholder="eLearning, health, gym email..."
-                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] pl-9 pr-3 py-1.5 text-[13px] font-medium focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition text-slate-800"
+                      className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg pl-8 pr-3 h-8 text-xs font-medium focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition text-slate-800"
                       required
                     />
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1 font-sans">
+                  <p className="text-[9px] text-slate-400 mt-0.5 font-sans">
                     Only existing accounts can be onboarded.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#041F63] font-sans mb-1 uppercase tracking-wider">
+                  <label className="block text-[10px] font-bold text-[#041F63] font-sans mb-1 uppercase tracking-wider">
                     Choose Coaching Package
                   </label>
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                     {/* Package 1 */}
                     <div 
                       onClick={() => setInvitePkgOption('Single Class')}
-                      className={`relative border p-2.5 rounded-[12px] cursor-pointer transition select-none ${
+                      className={`relative border p-2 rounded-lg cursor-pointer transition select-none ${
                         invitePkgOption === 'Single Class' 
                           ? 'border-[#4F46E5] bg-[#F5F7FF]' 
                           : 'border-[#D7DFEA] hover:border-slate-350 hover:bg-slate-50 bg-white'
                       }`}
                     >
-                      <div className="flex justify-between items-start mb-1">
+                      <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-bold text-slate-900 text-[12px]">Single Session</h4>
-                          <p className="text-[10px] text-slate-500">Introductory lessons</p>
+                          <h4 className="font-bold text-slate-900 text-xs">Single Session</h4>
+                          <p className="text-[9px] text-slate-500">Introductory lessons</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-[14px] font-bold text-[#041F63]">RM80</span>
+                          <span className="text-xs font-bold text-[#041F63]">RM80</span>
                         </div>
-                      </div>
-                      <div className="space-y-0.5 text-[10px] text-slate-500 pl-1">
-                        <div>✓ One coaching session & Workout guidance</div>
                       </div>
                     </div>
 
                     {/* Package 2 */}
                     <div 
                       onClick={() => setInvitePkgOption('4-Class Package')}
-                      className={`relative border p-2.5 rounded-[12px] cursor-pointer transition select-none ${
+                      className={`relative border p-2 rounded-lg cursor-pointer transition select-none ${
                         invitePkgOption === '4-Class Package' 
                           ? 'border-[#4F46E5] bg-[#F5F7FF]' 
                           : 'border-[#D7DFEA] hover:border-slate-350 hover:bg-slate-50 bg-white'
                       }`}
                     >
-                      <div className="absolute top-2 right-2 bg-[#17D4C3] text-white text-[8px] font-bold tracking-wider uppercase px-1 py-0.1 rounded">
+                      <div className="absolute top-1 right-1 bg-[#17D4C3] text-white text-[7px] font-bold tracking-wider uppercase px-1 rounded">
                         POPULAR
                       </div>
-                      <div className="flex justify-between items-start mb-1">
+                      <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-bold text-slate-900 text-[12px]">4 Classes / Month</h4>
-                          <p className="text-[10px] text-slate-500">Weekly progression</p>
+                          <h4 className="font-bold text-slate-900 text-xs">4 Classes / Month</h4>
+                          <p className="text-[9px] text-slate-500">Weekly progression</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-[14px] font-bold text-[#041F63]">RM310</span>
+                          <span className="text-xs font-bold text-[#041F63]">RM310</span>
                         </div>
-                      </div>
-                      <div className="space-y-0.5 text-[10px] text-slate-500 pl-1">
-                        <div>✓ Weekly coaching & Progress tracking</div>
                       </div>
                     </div>
 
                     {/* Package 3 */}
                     <div 
                       onClick={() => setInvitePkgOption('8-Class Package')}
-                      className={`relative border p-2.5 rounded-[12px] cursor-pointer transition select-none ${
+                      className={`relative border p-2 rounded-lg cursor-pointer transition select-none ${
                         invitePkgOption === '8-Class Package' 
                           ? 'border-[#4F46E5] bg-[#F5F7FF]' 
                           : 'border-[#D7DFEA] hover:border-slate-350 hover:bg-slate-50 bg-white'
                       }`}
                     >
-                      <div className="flex justify-between items-start mb-1">
+                      <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-bold text-slate-900 text-[12px]">8 Classes / Month</h4>
-                          <p className="text-[10px] text-slate-500">Maximum frequency</p>
+                          <h4 className="font-bold text-slate-900 text-xs">8 Classes / Month</h4>
+                          <p className="text-[9px] text-slate-500">Maximum frequency</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-[14px] font-bold text-[#041F63]">RM600</span>
+                          <span className="text-xs font-bold text-[#041F63]">RM600</span>
                         </div>
-                      </div>
-                      <div className="space-y-0.5 text-[10px] text-slate-500 pl-1">
-                        <div>✓ Twice weekly coaching & full reviews</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 pt-3 border-t border-slate-100">
+                <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-100">
                   <button
                     type="submit"
                     disabled={inviteLoading}
-                    className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
+                    className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[36px] rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
                   >
                     {inviteLoading ? 'SENDING...' : 'SEND INVITATION'}
                   </button>
@@ -5001,7 +4993,7 @@ export function TrainerDashboardInner({
                       setShowAddClientForm(false);
                       setInviteError('');
                     }}
-                    className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
+                    className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-[36px] rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -5014,7 +5006,7 @@ export function TrainerDashboardInner({
         {/* Session Options Action Sheet Modal (Interactive Coaching Dashboard) */}
         {showSessionActionSheet && selectedSessionForAction && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-[18px] w-[90%] max-w-[360px] mx-auto p-5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[85vh] space-y-3.5 box-border break-words animate-zoom-in flex flex-col">
+            <div className="bg-white rounded-xl w-[90%] max-w-[340px] mx-auto p-4 shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative border border-slate-100 text-left overflow-y-auto max-h-[92vh] space-y-2.5 box-border break-words animate-zoom-in flex flex-col">
               
               {/* Close */}
               <button 
@@ -5023,24 +5015,24 @@ export function TrainerDashboardInner({
                   setIsReschedulingSession(false);
                   setShowLogWorkoutForm(false);
                 }}
-                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1 cursor-pointer font-bold transition z-10"
+                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 bg-slate-50 border border-slate-100 rounded-full p-1 cursor-pointer font-bold transition z-10"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
 
               {/* Title Header */}
-              <div className="mb-1 pr-8">
-                <span className="inline-block px-1.5 py-0.2 text-[8.5px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded tracking-wider mb-1 uppercase select-none">SESSION MANAGEMENT</span>
-                <h3 className="text-[20px] font-extrabold text-[#041F63] leading-tight mb-0.5">
+              <div className="mb-0.5 pr-8">
+                <span className="inline-block px-1.5 py-0.2 text-[8px] font-bold text-[#17D4C3] bg-[#17D4C3]/10 rounded tracking-wider mb-0.5 uppercase select-none">SESSION MANAGEMENT</span>
+                <h3 className="text-sm font-extrabold text-[#041F63] leading-tight mb-0.5">
                   Manage Session
                 </h3>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[10px] text-slate-500">
                   Adjust coaching date and available time.
                 </p>
               </div>
 
               {/* Active Trainee Details */}
-              <div className="bg-slate-50 p-3 rounded-[12px] border border-slate-100 text-[12px] text-slate-700 font-medium space-y-1 select-none">
+              <div className="bg-slate-50/60 p-2.5 rounded-lg border border-slate-100 text-[11px] text-slate-700 font-medium space-y-1 select-none">
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-normal">Trainee Name:</span> 
                   <span className="font-bold text-[#041F63]">{selectedSessionForAction.traineeName}</span>
@@ -5052,23 +5044,23 @@ export function TrainerDashboardInner({
               </div>
 
               {!isReschedulingSession && (
-                <div className="grid grid-cols-2 gap-3.5 pt-1">
+                <div className="grid grid-cols-2 gap-2.5 pt-1">
                   <button
                     onClick={() => {
                       setSessionToLog(selectedSessionForAction);
                       setShowSessionActionSheet(false);
                     }}
-                    className="h-14 bg-[#17D4C3] hover:bg-[#17D4C3]/90 text-white font-bold rounded-[12px] flex flex-col items-center justify-center gap-0.5 cursor-pointer shadow-md transition text-[13px]"
+                    className="h-10 bg-[#17D4C3] hover:bg-[#17D4C3]/90 text-white font-bold rounded-lg flex flex-row items-center justify-center gap-1.5 cursor-pointer shadow-sm transition text-xs"
                   >
-                    <span className="text-md">✅</span>
+                    <span>✅</span>
                     <span>Complete</span>
                   </button>
 
                   <button
                     onClick={() => setIsReschedulingSession(true)}
-                    className="h-14 bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold rounded-[12px] flex flex-col items-center justify-center gap-0.5 cursor-pointer shadow-md transition text-[13px]"
+                    className="h-10 bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold rounded-lg flex flex-row items-center justify-center gap-1.5 cursor-pointer shadow-sm transition text-xs"
                   >
-                    <span className="text-md">📅</span>
+                    <span>📅</span>
                     <span>Reschedule</span>
                   </button>
                 </div>
@@ -5076,11 +5068,11 @@ export function TrainerDashboardInner({
 
               {/* Reschedule View */}
               {isReschedulingSession && (
-                <div className="space-y-3 pt-2.5 border-t border-slate-100 text-left">
-                  <h4 className="font-bold text-[#041F63] text-[14px]">Reschedule Session Slot</h4>
-                  <div className="space-y-3">
+                <div className="space-y-2.5 pt-2 border-t border-slate-100 text-left">
+                  <h4 className="font-bold text-[#041F63] text-xs">Reschedule Session Slot</h4>
+                  <div className="space-y-2.5">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">New Date</label>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">New Date</label>
                       <input 
                         type="date" 
                         value={rescheduleNewDate}
@@ -5092,12 +5084,12 @@ export function TrainerDashboardInner({
                             setRescheduleNewDate(val);
                           }
                         }}
-                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-[10px] px-2.5 py-1.5 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition" 
+                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2 h-8 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition" 
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">New Time Slot</label>
-                      <div className="grid grid-cols-3 gap-1.5">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">New Time Slot</label>
+                      <div className="grid grid-cols-3 gap-1">
                         {['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM'].map(time => {
                           const isBooked = checkSlotIsBooked(rescheduleNewDate, time, selectedSessionForAction?.id);
                           const isSelected = rescheduleNewTimeSlot === time;
@@ -5108,10 +5100,10 @@ export function TrainerDashboardInner({
                                 key={time}
                                 type="button"
                                 disabled
-                                className="border border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed py-1.5 text-center text-[10px] text-slate-400 font-medium rounded-[10px] flex flex-col items-center justify-center h-10"
+                                className="border border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed py-1 text-center text-[9px] text-slate-400 font-medium rounded-lg flex flex-col items-center justify-center h-8"
                               >
                                 <span>{time}</span>
-                                <span className="text-[6.5px] font-bold uppercase text-rose-500 tracking-wider">Booked</span>
+                                <span className="text-[6px] font-bold uppercase text-rose-500 tracking-wider">Booked</span>
                               </button>
                             );
                           }
@@ -5123,9 +5115,9 @@ export function TrainerDashboardInner({
                               onClick={() => {
                                 setRescheduleNewTimeSlot(time);
                               }}
-                              className={`border py-1.5 text-center font-bold text-[11px] rounded-[10px] transition flex flex-col items-center justify-center cursor-pointer select-none h-10 ${
+                              className={`border py-1 text-center font-bold text-[10px] rounded-lg transition flex flex-col items-center justify-center cursor-pointer select-none h-8 ${
                                 isSelected
-                                  ? 'border-[#4F46E5] bg-[#F5F7FF] shadow-xs text-[#4F46E5]'
+                                  ? 'border-[#4F46E5] bg-[#F5F7FF] text-[#4F46E5]'
                                   : 'border-[#D7DFEA] hover:bg-slate-50 bg-white text-slate-700'
                               }`}
                             >
@@ -5136,7 +5128,7 @@ export function TrainerDashboardInner({
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-2 pt-2">
+                    <div className="flex flex-col gap-1.5 pt-1.5">
                       <button 
                         onClick={async () => {
                           const bookingId = selectedSessionForAction.id;
@@ -5162,13 +5154,13 @@ export function TrainerDashboardInner({
                             alert("Failed to reschedule.");
                           }
                         }}
-                        className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
+                        className="w-full bg-[#041F63] hover:bg-[#041F63]/90 text-white font-bold h-[36px] rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
                       >
                         CONFIRM RESCHEDULE
                       </button>
                       <button
                         onClick={() => setIsReschedulingSession(false)}
-                        className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-[44px] rounded-[10px] text-[13px] flex items-center justify-center transition cursor-pointer"
+                        className="w-full bg-white border border-[#D7DFEA] text-[#52607A] hover:bg-slate-50 font-bold h-[36px] rounded-lg text-xs flex items-center justify-center transition cursor-pointer"
                       >
                         Back
                       </button>
@@ -5225,34 +5217,49 @@ export function TrainerDashboardInner({
                 <form onSubmit={handleScheduleSubmit} className="space-y-3.5">
                   
                   {/* SECTION 1 — SELECT TRAINEE */}
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-bold text-[#041F63] font-sans uppercase tracking-wider">
+                  <div className="space-y-1 relative z-30">
+                    <label className="block text-[10px] font-bold text-[#041F63] font-sans uppercase tracking-wider">
                       Select Trainee
                     </label>
-                    <div className="grid grid-cols-2 gap-2 max-h-28 overflow-y-auto p-1 scrollbar-thin">
-                      {!trainees || trainees.length === 0 ? (
-                        <div className="col-span-2 text-center py-2 bg-slate-50 border border-dashed border-slate-200 rounded-lg text-slate-400 text-[10px] font-sans">
-                          No active trainees available.
-                        </div>
-                      ) : (
-                        trainees.map((t) => {
-                          if (!t) return null;
-                          const isSelected = scheduleTraineeId === t.id;
-                          return (
-                            <div
-                              key={t.id || Math.random().toString()}
-                              onClick={() => setScheduleTraineeId(t.id)}
-                              className={`p-2 rounded-[10px] border transition cursor-pointer select-none text-left ${
-                                isSelected
-                                  ? 'border-[#041F63] bg-[#041F63]/5'
-                                  : 'border-slate-200 hover:border-slate-350 bg-white hover:bg-slate-50'
-                              }`}
-                            >
-                              <span className="block text-[12px] font-bold text-slate-900 truncate">{t.name || 'Client'}</span>
-                              <span className="block text-[10px] text-slate-500 truncate mt-0.5">{t.goals || 'Personal Coaching'}</span>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setScheduleTraineeDropdownOpen(!scheduleTraineeDropdownOpen)}
+                        className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2.5 h-8 text-xs font-medium text-left text-slate-800 focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition flex items-center justify-between cursor-pointer"
+                      >
+                        <span>
+                          {(() => {
+                            const selected = trainees.find(t => t.id === scheduleTraineeId);
+                            return selected ? selected.name : "Select trainee";
+                          })()}
+                        </span>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      </button>
+
+                      {scheduleTraineeDropdownOpen && (
+                        <div className="absolute left-0 right-0 mt-1 bg-white border border-[#D7DFEA] rounded-lg shadow-lg max-h-36 overflow-y-auto z-[60] scrollbar-thin">
+                          {!trainees || trainees.length === 0 ? (
+                            <div className="text-center py-2 text-slate-400 text-xs font-sans">
+                              No active trainees available.
                             </div>
-                          );
-                        })
+                          ) : (
+                            trainees.map((t) => {
+                              if (!t) return null;
+                              return (
+                                <div
+                                  key={t.id}
+                                  onClick={() => {
+                                    setScheduleTraineeId(t.id);
+                                    setScheduleTraineeDropdownOpen(false);
+                                  }}
+                                  className="px-2.5 py-1.5 hover:bg-slate-50 cursor-pointer text-xs font-medium text-slate-800 text-left transition"
+                                >
+                                  {t.name}
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -8140,7 +8147,7 @@ export function TrainerDashboardInner({
       </div>
 
       {/* 4. FLOATING TRIGGER BUTTON FOOTER FOR COACH */}
-      <div className="fixed bottom-6 right-6 z-[80] flex flex-col items-end gap-3 text-left font-sans">
+      <div className="fixed bottom-[74px] right-[max(16px,calc(50%-195px))] z-[80] flex flex-col items-end gap-3 text-left font-sans">
         <button
           onClick={() => {
             setChatOpen(!chatOpen);
@@ -8148,7 +8155,7 @@ export function TrainerDashboardInner({
               fetchChatMessages(activeChatTrainee.userId);
             }
           }}
-          className="flex items-center justify-center rounded-full p-4 shadow-2xl transition duration-150 scale-110 active:scale-95 cursor-pointer bg-[#001F3F] hover:bg-slate-900 border border-teal-500/20 text-[#4FFBCC]"
+          className="w-14 h-14 rounded-full shadow-2xl transition duration-150 active:scale-95 cursor-pointer bg-[#001F3F] hover:bg-slate-900 border border-teal-500/20 text-[#4FFBCC] flex items-center justify-center shrink-0"
           title="Direct Client Messaging Workspace"
           id="btn-coach-floating-chat"
         >

@@ -254,23 +254,23 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
         )}
 
         {/* PROFILE BANNER / HEADER */}
-        <div id="trainer-profile-header-card" className="relative bg-[#081F5C] text-white rounded-[24px] p-6 md:p-8 shadow-md overflow-hidden mb-6 border border-slate-800">
+        <div id="trainer-profile-header-card" className="relative bg-[#081F5C] text-white rounded-xl p-4 sm:p-5 shadow-sm overflow-hidden mb-5 border border-slate-800">
           <div className="absolute right-0 top-0 w-80 h-80 bg-[#13D4C8]/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute left-1/3 bottom-0 w-60 h-60 bg-[#5B5FEF]/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start md:items-center justify-between gap-6">
+          <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start md:items-center justify-between gap-4">
             
-            <div className="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-5 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-4 text-center sm:text-left">
               {/* Profile image with upload hover trigger */}
               <div className="relative group cursor-pointer shrink-0">
                 <img 
                   referrerPolicy="no-referrer"
                   src={profile.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120'} 
-                  className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border-3 border-[#13D4C8]/40 shadow-md"
+                  className="w-14 h-14 rounded-xl object-cover border-2 border-[#13D4C8]/40 shadow-sm"
                   alt={profile.name}
                 />
-                <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 text-center text-[10px] font-black uppercase text-[#13D4C8]">
-                  <Upload className="w-4 h-4 mb-0.5 text-[#13D4C8]" />
+                <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 text-center text-[8px] font-black uppercase text-[#13D4C8]">
+                  <Upload className="w-3.5 h-3.5 mb-0.5 text-[#13D4C8]" />
                   Replace
                   <input 
                     type="file" 
@@ -288,24 +288,24 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
               </div>
 
               {/* Bio & Details Header */}
-              <div className="space-y-1.5 min-w-0">
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <h2 className="text-xl md:text-2xl font-black tracking-tight text-white">{profile.name}</h2>
-                  <span className="bg-[#13D4C8] text-[#081F5C] font-black text-[9px] sm:text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
-                    <ShieldCheck className="w-3.5 h-3.5" /> VERIFIED
+              <div className="space-y-1 min-w-0">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
+                  <h2 className="text-base sm:text-lg font-black tracking-tight text-white">{profile.name}</h2>
+                  <span className="bg-[#13D4C8] text-[#081F5C] font-black text-[8px] px-1.5 py-0.2 rounded-full uppercase tracking-wider flex items-center gap-0.5 shadow-sm">
+                    <ShieldCheck className="w-3 h-3" /> VERIFIED
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm font-semibold text-[#13D4C8]">
+                <p className="text-[11px] font-semibold text-[#13D4C8]">
                   {profile.discipline} • {profile.location}
                 </p>
 
                 {/* Rating & Experience */}
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-2xs md:text-xs text-slate-350">
-                  <span className="flex items-center gap-1 bg-slate-900/40 px-2.5 py-1 rounded-full border border-slate-700/30">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-0.5 text-[10px] text-slate-300">
+                  <span className="flex items-center gap-0.5 bg-slate-900/45 px-2 py-0.5 rounded-full border border-slate-700/30">
                     ⭐ <strong className="text-amber-400">{profile.rating || 4.8}</strong> / 5.0 Rating
                   </span>
-                  <span className="flex items-center gap-1 bg-slate-900/40 px-2.5 py-1 rounded-full border border-slate-700/30">
+                  <span className="flex items-center gap-0.5 bg-slate-900/45 px-2 py-0.5 rounded-full border border-slate-700/30">
                     Experience: <strong>{profile.experienceYears || 5} Years</strong>
                   </span>
                 </div>
@@ -313,14 +313,14 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
             </div>
 
             {/* Subscriptions info */}
-            <div className="bg-white/10 backdrop-blur-sm border border-white/10 p-3.5 rounded-2xl w-full sm:w-auto shrink-0 flex justify-around sm:flex-col gap-2.5 text-center sm:text-left">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/10 p-2.5 rounded-xl w-full sm:w-auto shrink-0 flex justify-around sm:flex-col gap-1.5 text-center sm:text-left">
               <div>
-                <span className="block text-[9px] font-black uppercase text-slate-300 tracking-wider">Plan Class Status</span>
-                <span className="text-sm font-extrabold text-[#13D4C8]">Coach Growth Tier</span>
+                <span className="block text-[8px] font-black uppercase text-slate-300 tracking-wider">Plan Class Status</span>
+                <span className="text-xs font-extrabold text-[#13D4C8]">Coach Growth Tier</span>
               </div>
-              <div className="border-l sm:border-l-0 sm:border-t border-white/10 pl-3 sm:pl-0 sm:pt-2">
-                <span className="block text-[9px] font-black uppercase text-slate-300 tracking-wider">Coach Area ID</span>
-                <span className="text-xs font-mono font-bold text-white">#MY_721_SARAH</span>
+              <div className="border-l sm:border-l-0 sm:border-t border-white/10 pl-2.5 sm:pl-0 sm:pt-1.5">
+                <span className="block text-[8px] font-black uppercase text-slate-300 tracking-wider">Coach Area ID</span>
+                <span className="text-[10px] font-mono font-bold text-white">#MY_721_SARAH</span>
               </div>
             </div>
 
@@ -1182,7 +1182,7 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
               </AnimatePresence>
 
               {/* Security - Collapsed by default */}
-              <div className="bg-white border border-slate-200/80 rounded-[24px] p-5.5 shadow-sm">
+              <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <button 
                   onClick={() => setSecurityExpanded(!securityExpanded)}
                   className="w-full flex items-center justify-between text-left cursor-pointer focus:outline-none"
@@ -1191,9 +1191,9 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                     <h3 className="font-sans font-black text-[#081F5C] text-xs uppercase tracking-wider">
                       🔐 Security Settings
                     </h3>
-                    <p className="text-[14px] font-medium text-[#7C8BA1] mt-0.5">Change password and manage 2-Factor logs.</p>
+                    <p className="text-xs font-medium text-slate-500 mt-0.5">Change password and manage 2-Factor logs.</p>
                   </div>
-                  <span className="text-[#081F5C] font-black text-sm select-none">
+                  <span className="text-[#081F5C] font-black text-xs select-none">
                     {securityExpanded ? '▲' : '▼'}
                   </span>
                 </button>
@@ -1204,55 +1204,55 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden pt-5 space-y-4 border-t border-slate-100 mt-4"
+                      className="overflow-hidden pt-3.5 space-y-3.5 border-t border-slate-100 mt-3"
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-[13px] font-bold tracking-[1px] uppercase text-[#8A99B3] mb-1.5">
+                          <label className="block text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">
                             Professional Email Address
                           </label>
                           <input 
                             type="email" 
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-[16px] font-semibold text-[#1F2A44]"
+                            className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2.5 h-8 text-xs font-semibold text-[#1F2A44] focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                           />
                         </div>
                         <div>
-                          <label className="block text-[13px] font-bold tracking-[1px] uppercase text-[#8A99B3] mb-1.5">
+                          <label className="block text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">
                             Phone Number Contact
                           </label>
                           <input 
                             type="text" 
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-[16px] font-semibold text-[#1F2A44] font-mono"
+                            className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2.5 h-8 text-xs font-semibold text-[#1F2A44] font-mono focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-[13px] font-bold tracking-[1px] uppercase text-[#8A99B3] mb-1.5">
+                          <label className="block text-[10px] font-bold tracking-wider uppercase text-slate-400 mb-1">
                             Account Secret Password
                           </label>
                           <input 
                             type="password" 
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-[16px] font-semibold text-[#1F2A44]"
+                            className="w-full bg-[#F8FAFC] border border-[#D7DFEA] rounded-lg px-2.5 h-8 text-xs font-semibold text-[#1F2A44] focus:ring-1 focus:ring-[#041F63]/10 focus:border-[#041F63] outline-none transition"
                           />
                         </div>
 
-                        <div className="flex items-center justify-between border border-dashed border-slate-200 bg-slate-50/50 rounded-xl p-3 select-none">
+                        <div className="flex items-center justify-between border border-dashed border-slate-200 bg-slate-50/50 rounded-lg p-2.5 select-none">
                           <div>
-                            <span className="block text-[13px] font-bold tracking-[1px] uppercase text-[#8A99B3] leading-none mb-1.5">2-Factor (2FA)</span>
-                            <span className="text-[11px] text-[#7C8BA1] font-medium block">Verify with OTP code SMS</span>
+                            <span className="block text-[10px] font-bold tracking-wider uppercase text-slate-400 leading-none mb-1">2-Factor (2FA)</span>
+                            <span className="text-[10px] text-slate-500 font-medium block">Verify with OTP code SMS</span>
                           </div>
                           <button
                             onClick={() => {
                               setTwoFactor(!twoFactor);
                               triggerToast(twoFactor ? "2FA authentication paused." : "2FA authentication active! ✓");
                             }}
-                            className={`h-[40px] px-5 flex items-center justify-center text-[14px] font-bold rounded-xl cursor-pointer transition select-none tracking-normal ${
+                            className={`h-7 px-3 flex items-center justify-center text-xs font-bold rounded-lg cursor-pointer transition select-none tracking-normal ${
                               twoFactor ? 'bg-[#13D4C8] text-[#081F5C]' : 'bg-slate-200 text-[#52607A]'
                             }`}
                           >
@@ -1264,7 +1264,7 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                       <div className="flex justify-end pt-2 border-t border-slate-100">
                         <button
                           onClick={() => triggerToast("Security setting profiles updated successfully! ✓")}
-                          className="bg-[#081F5C] text-[#13D4C8] hover:bg-[#081F5C]/90 border border-transparent rounded-[12px] h-12 px-6 flex items-center justify-center text-[15px] font-bold tracking-[0.5px] cursor-pointer transition shadow-3xs"
+                          className="bg-[#081F5C] text-[#13D4C8] hover:bg-[#081F5C]/90 border border-transparent rounded-lg h-9 px-4 flex items-center justify-center text-xs font-bold tracking-normal cursor-pointer transition shadow-3xs"
                         >
                           Update Security Details
                         </button>
