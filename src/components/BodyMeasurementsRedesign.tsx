@@ -778,12 +778,12 @@ export default function BodyMeasurementsRedesign({
                 <strong className="text-[28px] font-bold text-slate-900 block mt-0.5">
                   {latestLog.weight} <span className="text-sm font-medium text-slate-500">kg</span>
                 </strong>
-                <span className="text-[13px] font-medium text-[#18D2C3] mt-1 block">
+                <span className="text-[14px] font-medium text-[#18D2C3] mt-1 block whitespace-nowrap overflow-hidden text-ellipsis">
                   {weightDiffTextDetail}
                 </span>
               </div>
-              <span className="bg-teal-50 text-teal-600 font-bold text-[11px] px-3 py-1 rounded-full border border-teal-100 tracking-wider font-sans">
-                ON TRACK
+              <span className="bg-teal-50 text-teal-650 font-medium text-[14px] h-[38px] px-4 flex items-center justify-center rounded-full border border-teal-100 font-sans whitespace-nowrap shrink-0">
+                ✓ On Track
               </span>
             </div>
 
@@ -866,9 +866,11 @@ export default function BodyMeasurementsRedesign({
 
                   <div className="bg-[#F8FAFC] border border-slate-100 rounded-xl p-3.5 flex flex-col justify-between min-h-[90px]">
                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Trend</span>
-                    <strong className="text-[13px] font-black text-[#18D2C3] block mt-2 uppercase tracking-wide truncate leading-tight font-sans">
-                      Losing Weight
-                    </strong>
+                    <div className="flex-1 flex items-center mt-1">
+                      <strong className="text-[14px] font-semibold text-[#18D2C3] uppercase tracking-wide leading-snug font-sans">
+                        Losing Weight
+                      </strong>
+                    </div>
                   </div>
 
                   <div className="bg-[#F8FAFC] border border-slate-100 rounded-xl p-3.5 flex flex-col justify-between min-h-[90px] font-sans">
@@ -898,7 +900,7 @@ export default function BodyMeasurementsRedesign({
                 onSubmit={handleSaveWeightOnly} 
                 className="space-y-4"
               >
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[13px] font-medium text-slate-500 mb-1.5">Weight (kg)</label>
                     <input 

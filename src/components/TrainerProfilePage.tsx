@@ -994,7 +994,7 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                 <h3 className="font-sans font-black text-[#081F5C] text-xs uppercase tracking-wider mb-1 pb-1">
                   📅 Available Days
                 </h3>
-                <p className="text-2xs sm:text-[13px] font-normal text-slate-500 mb-3 sm:mb-4">Trainees can only book sessions during enabled days.</p>
+                <p className="text-[14px] font-medium text-slate-400 leading-[1.4] mb-3 sm:mb-4">Trainees can only book sessions during enabled days.</p>
 
                 <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {Object.keys(availableDays).map((day) => {
@@ -1028,7 +1028,7 @@ export default function TrainerProfilePage({ trainerProfile, onUpdateProfile }: 
                       <Clock className="w-3.5 h-3.5 text-[#13D4C8]" />
                       <span>⏰ Coaching Slots</span>
                     </h3>
-                    <p className="text-[10px] text-slate-400 font-bold">Configure standard daily timeslot availability intervals.</p>
+                    <p className="text-[14px] font-medium text-slate-400 leading-[1.4]">Configure standard daily timeslot availability intervals.</p>
                   </div>
 
                   <button

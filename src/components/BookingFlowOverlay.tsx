@@ -601,9 +601,9 @@ export default function BookingFlowOverlay({
         )}
 
         {bookingStep === 'booking' && (
-          <div className="p-4 bg-slate-50/50">
-            <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm text-left font-sans space-y-3.5 overflow-hidden relative">
-              <div className="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-100">
+          <div className="p-3 bg-slate-50/50">
+            <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm text-left font-sans space-y-2.5 overflow-hidden relative">
+              <div className="flex justify-between items-center bg-slate-50 p-1.5 rounded-lg border border-slate-100">
                 <div>
                   <h3 className="text-xs font-black text-slate-900 tracking-tight">
                     Select Schedule
@@ -618,9 +618,9 @@ export default function BookingFlowOverlay({
               </div>
 
               {selectedPackage === 'single' ? (
-                <div className="space-y-3 font-sans">
+                <div className="space-y-2.5 font-sans">
                   <div>
-                    <span className="text-[10px] font-bold text-slate-500 block mb-1">Available calendar days</span>
+                    <span className="text-[10px] font-bold text-slate-500 block mb-0.5">Available calendar days</span>
                     <div className="flex gap-1 overflow-x-auto pb-1.5 snap-x no-scrollbar">
                       {next7Days.map((day) => {
                         const isPicked = selectedDate === day.isoString;
@@ -629,14 +629,14 @@ export default function BookingFlowOverlay({
                             key={day.isoString}
                             type="button"
                             onClick={() => setSelectedDate(day.isoString)}
-                            className={`flex-shrink-0 w-[44px] h-[44px] text-center rounded-[10px] border flex flex-col items-center justify-center transition cursor-pointer p-1 leading-[1.1] ${
+                            className={`flex-shrink-0 w-[36px] h-[36px] text-center rounded-[8px] border flex flex-col items-center justify-center transition cursor-pointer p-0.5 leading-[1.0] ${
                               isPicked 
                                 ? 'bg-[#001F3F] border-[#001F3F] text-white shadow-xs'
                                 : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
                             }`}
                           >
-                            <span className="text-[8.5px] uppercase font-bold opacity-75">{day.dayName}</span>
-                            <span className="text-[13px] font-bold mt-0.5">{day.dateNum}</span>
+                            <span className="text-[7.5px] uppercase font-bold opacity-75">{day.dayName}</span>
+                            <span className="text-[11px] font-bold mt-0.5">{day.dateNum}</span>
                           </button>
                         );
                       })}
@@ -644,8 +644,8 @@ export default function BookingFlowOverlay({
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-bold text-slate-500 block mb-1">Available slots</span>
-                    <div className="grid grid-cols-2 gap-1.5 font-sans w-full">
+                    <span className="text-[10px] font-bold text-slate-500 block mb-0.5">Available slots</span>
+                    <div className="grid grid-cols-2 gap-1 font-sans w-full">
                       {['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM'].map((slot) => {
                         const isSlotPicked = selectedTimeSlot === slot;
                         const isReserved = trainerBookings.some(b => b.date === selectedDate && b.timeSlot === slot && b.status !== 'Cancelled');
@@ -656,7 +656,7 @@ export default function BookingFlowOverlay({
                             type="button"
                             disabled={isReserved}
                             onClick={() => setSelectedTimeSlot(slot)}
-                            className={`h-[44px] rounded-[10px] p-[8px_10px] border text-center transition flex flex-col justify-center items-center relative text-[13px] font-bold leading-[1.1] ${
+                            className={`h-[34px] rounded-[8px] p-1 border text-center transition flex flex-col justify-center items-center relative text-[11px] font-bold leading-[1.0] ${
                               isReserved
                                 ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
                                 : isSlotPicked
@@ -665,7 +665,7 @@ export default function BookingFlowOverlay({
                             }`}
                           >
                             <span>{slot}</span>
-                            {isReserved && <span className="text-[7.5px] text-rose-500 font-bold block leading-none mt-0.5">BOOKED</span>}
+                            {isReserved && <span className="text-[7px] text-rose-500 font-bold block leading-none mt-0.5">BOOKED</span>}
                           </button>
                         );
                       })}
@@ -673,9 +673,9 @@ export default function BookingFlowOverlay({
                   </div>
                 </div>
               ) : selectedPackage === 'bundle4' ? (
-                <div className="space-y-3 font-sans">
+                <div className="space-y-2.5 font-sans">
                   <div>
-                    <span className="text-[10px] font-bold text-slate-500 block mb-1">Select ONE Recurring Day</span>
+                    <span className="text-[10px] font-bold text-slate-500 block mb-0.5">Select ONE Recurring Day</span>
                     <div className="grid grid-cols-3 gap-1">
                       {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => {
                         const isDaySelected = selectedRecurringDay === day;
@@ -684,7 +684,7 @@ export default function BookingFlowOverlay({
                             key={day}
                             type="button"
                             onClick={() => setSelectedRecurringDay(day)}
-                            className={`h-[44px] text-[13px] text-center font-bold rounded-[10px] border transition cursor-pointer ${
+                            className={`h-[34px] text-[11px] text-center font-bold rounded-[8px] border transition cursor-pointer ${
                               isDaySelected 
                                 ? 'bg-[#001F3F] border-[#001F3F] text-white' 
                                 : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
@@ -698,8 +698,8 @@ export default function BookingFlowOverlay({
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-bold text-slate-500 block mb-1">Choose Recurring Time</span>
-                    <div className="grid grid-cols-2 gap-1.5 font-sans w-full">
+                    <span className="text-[10px] font-bold text-slate-500 block mb-0.5">Choose Recurring Time</span>
+                    <div className="grid grid-cols-2 gap-1 font-sans w-full">
                       {['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM'].map((slot) => {
                         const isTimeSelected = selectedRecurringTime === slot;
                         return (
@@ -707,7 +707,7 @@ export default function BookingFlowOverlay({
                             key={slot}
                             type="button"
                             onClick={() => setSelectedRecurringTime(slot)}
-                            className={`h-[44px] rounded-[10px] p-[8px_10px] border text-center transition flex flex-col justify-center items-center text-[13px] font-bold leading-[1.1] ${
+                            className={`h-[34px] rounded-[8px] p-1 border text-center transition flex flex-col justify-center items-center text-[11px] font-bold leading-[1.0] ${
                               isTimeSelected 
                                 ? 'bg-[#001F3F] border-[#001F3F] text-white' 
                                 : 'bg-white border-[#001F3F] text-[#001F3F] hover:bg-slate-50 cursor-pointer'
@@ -721,9 +721,9 @@ export default function BookingFlowOverlay({
                   </div>
                 </div>
               ) : (
-                <div className="space-y-3 font-sans">
+                <div className="space-y-2.5 font-sans">
                   <div>
-                    <div className="flex justify-between items-center mb-1">
+                    <div className="flex justify-between items-center mb-0.5">
                       <span className="text-[10px] font-bold text-slate-500 block">Select TWO Recurring Days</span>
                       <span className="text-[8px] bg-indigo-50 border border-indigo-100 text-indigo-700 px-1.5 py-0.2 rounded font-bold">
                         {selectedRecurringDays.length} / 2
@@ -737,7 +737,7 @@ export default function BookingFlowOverlay({
                             key={day}
                             type="button"
                             onClick={() => handleToggleRecurringDay(day)}
-                            className={`h-[44px] text-[13px] text-center font-bold rounded-[10px] border transition cursor-pointer ${
+                            className={`h-[34px] text-[11px] text-center font-bold rounded-[8px] border transition cursor-pointer ${
                               isDaySelected 
                                 ? 'bg-[#001F3F] border-[#001F3F] text-white' 
                                 : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
@@ -751,8 +751,8 @@ export default function BookingFlowOverlay({
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-bold text-slate-500 block mb-1">Choose Recurring Time</span>
-                    <div className="grid grid-cols-2 gap-1.5 font-sans w-full">
+                    <span className="text-[10px] font-bold text-slate-500 block mb-0.5">Choose Recurring Time</span>
+                    <div className="grid grid-cols-2 gap-1 font-sans w-full">
                       {['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM'].map((slot) => {
                         const isTimeSelected = selectedRecurringTime === slot;
                         return (
@@ -760,7 +760,7 @@ export default function BookingFlowOverlay({
                             key={slot}
                             type="button"
                             onClick={() => setSelectedRecurringTime(slot)}
-                            className={`h-[44px] rounded-[10px] p-[8px_10px] border text-center transition flex flex-col justify-center items-center text-[13px] font-bold leading-[1.1] ${
+                            className={`h-[34px] rounded-[8px] p-1 border text-center transition flex flex-col justify-center items-center text-[11px] font-bold leading-[1.0] ${
                               isTimeSelected 
                                 ? 'bg-[#001F3F] border-[#001F3F] text-white' 
                                 : 'bg-white border-[#001F3F] text-[#001F3F] hover:bg-slate-50 cursor-pointer'
@@ -797,37 +797,39 @@ export default function BookingFlowOverlay({
               )}
 
               {/* Booking Summary Card */}
-              <div className="bg-slate-50 border border-slate-150 rounded-xl p-3.5 space-y-1.5 font-sans">
+              <div className="bg-slate-50 border border-slate-150 rounded-xl p-2.5 space-y-1 font-sans">
                 <div className="flex justify-between items-center">
                   <span className="text-[13px] font-bold text-slate-500">Package:</span>
-                  <span className="text-[14px] font-bold text-slate-900 truncate max-w-[150px]">
+                  <span className="text-[13px] font-bold text-slate-900">
                     {selectedPackage === 'single' ? 'Single Session' : selectedPackage === 'bundle4' ? '4 Classes' : '8 Classes'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[13px] font-bold text-slate-500">Coach:</span>
-                  <span className="text-[14px] font-bold text-slate-900">{trainer.name}</span>
+                  <span className="text-[13px] font-bold text-slate-900">{trainer.name}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[13px] font-bold text-slate-500">Date:</span>
-                  <span className="text-[14px] font-bold text-slate-900 leading-tight text-right truncate max-w-[150px]">
+                  <span className="text-[13px] font-bold text-slate-500">
+                    {selectedPackage === 'single' ? 'Date:' : 'Days:'}
+                  </span>
+                  <span className="text-[13px] font-bold text-slate-900 leading-tight text-right">
                     {selectedPackage === 'single' ? formatSummaryDate(selectedDate) : selectedPackage === 'bundle4' ? `Every ${selectedRecurringDay}` : `Weekly: ${selectedRecurringDays.join(', ')}`}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[13px] font-bold text-slate-500">Time:</span>
-                  <span className="text-[14px] font-bold text-indigo-950">
+                  <span className="text-[13px] font-bold text-indigo-950">
                     {selectedPackage === 'single' ? selectedTimeSlot : selectedRecurringTime}
                   </span>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-2 border-t border-slate-150 pt-3 font-sans">
+              <div className="flex gap-2 border-t border-slate-150 pt-2 font-sans">
                 <button 
                   type="button"
                   onClick={() => setBookingStep('details')}
-                  className="flex-1 h-[44px] bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold rounded-[10px] transition cursor-pointer text-center text-[13px]"
+                  className="flex-1 h-[38px] bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold rounded-[8px] transition cursor-pointer text-center text-[13px]"
                 >
                   Back
                 </button>
@@ -835,7 +837,7 @@ export default function BookingFlowOverlay({
                   type="button"
                   onClick={() => setBookingStep('payment')}
                   disabled={hasConflicts || (selectedPackage === 'monthly' && selectedRecurringDays.length !== 2)}
-                  className="flex-1 h-[44px] bg-[#001F3F] hover:bg-slate-900 border border-indigo-950 text-white font-bold rounded-[10px] transition text-center text-[13px] cursor-pointer shadow-xs disabled:opacity-45 disabled:cursor-not-allowed font-sans"
+                  className="flex-1 h-[38px] bg-[#001F3F] hover:bg-slate-900 border border-indigo-950 text-white font-bold rounded-[8px] transition text-center text-[13px] cursor-pointer shadow-xs disabled:opacity-45 disabled:cursor-not-allowed font-sans"
                 >
                   Confirm Booking
                 </button>
@@ -845,13 +847,13 @@ export default function BookingFlowOverlay({
         )}
 
         {bookingStep === 'payment' && (
-          <div className="p-4 bg-slate-50/50">
-            <div className="bg-white border rounded-xl p-4 shadow-sm space-y-4">
-              <span className="text-[9px] font-black text-teal-600 uppercase bg-teal-50 px-2 py-0.5 rounded">
+          <div className="p-3 bg-slate-50/50">
+            <div className="bg-white border border-slate-150 rounded-xl p-3 shadow-sm space-y-3">
+              <span className="text-[11px] font-bold text-teal-600 uppercase bg-teal-50 px-2 py-0.5 rounded inline-block">
                 STEP 3: SECURE CHECKOUT
               </span>
               
-              <h3 className="font-sans font-black text-slate-900 text-xs">
+              <h3 className="font-sans font-black text-slate-900 text-base sm:text-lg leading-tight">
                 Malaysian FPX Direct Escrow
               </h3>
 
@@ -860,83 +862,77 @@ export default function BookingFlowOverlay({
                 if (selectedPackage === 'bundle4') baseAmt = isSarah ? 310 : Math.round(trainer.pricePerHour * 4 * 0.9);
                 if (selectedPackage === 'monthly') baseAmt = isSarah ? 600 : Math.round(trainer.pricePerHour * 8 * 0.8);
                 
-                const commission = Number((baseAmt * 0.05).toFixed(2));
-                const netPayout = Number((baseAmt - commission).toFixed(2));
                 return (
-                  <div className="bg-slate-50 border p-3 rounded-lg text-2xs space-y-2 text-slate-600 font-medium">
-                    <div className="flex justify-between border-b pb-1.5 border-slate-200">
-                      <span className="font-bold text-slate-800">Lesson Price:</span>
-                      <span className="font-bold text-slate-800">RM {baseAmt}</span>
+                  <div className="bg-slate-50 border border-slate-150 p-2.5 rounded-lg text-xs space-y-2 text-slate-600 font-medium">
+                    <div className="flex justify-between items-center border-b pb-1.5 border-slate-200">
+                      <span className="text-[13px] text-slate-500 font-medium">Lesson Price:</span>
+                      <span className="font-black text-slate-900 text-[18px]">RM {baseAmt}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Coach Net:</span>
-                      <span>RM {netPayout}</span>
+                    <div className="flex justify-between items-center border-b pb-1.5 border-slate-200">
+                      <span className="text-[13px] text-slate-500 font-medium">Coach Receives:</span>
+                      <span className="font-black text-slate-900 text-[18px]">RM {baseAmt}</span>
                     </div>
-                    <div className="flex justify-between text-[#18D4C5] bg-[#001F3F] px-1.5 py-0.5 rounded text-[10px]">
-                      <span>Platform Fee (5%):</span>
-                      <span className="font-mono">RM {commission}</span>
-                    </div>
-                    <div className="flex justify-between text-slate-900 font-black text-xs pt-1 border-t">
-                      <span>Total ESCROW:</span>
-                      <span>RM {baseAmt}</span>
+                    <div className="flex justify-between items-center text-slate-900 font-black pt-1">
+                      <span className="text-[14px] text-slate-800 font-bold">Total Payment:</span>
+                      <span className="text-[#081F63] text-[19px] font-black">RM {baseAmt}</span>
                     </div>
                   </div>
                 );
               })()}
 
-              <div className="space-y-2 text-2xs">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Choose banking gateway</span>
+              <div className="space-y-1.5 text-[12px]">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Choose banking gateway</span>
                 
-                <div className="space-y-1.5">
-                  <label className={`border rounded-xl p-2.5 flex items-center gap-2.5 cursor-pointer transition ${paymentOption === 'fpx_maybank' ? 'border-[#001F3F] bg-[#001F3F]/5' : 'border-slate-200 hover:bg-slate-50'}`}>
+                <div className="space-y-1">
+                  <label className={`border rounded-lg p-1.5 px-2 flex items-center gap-2 cursor-pointer transition ${paymentOption === 'fpx_maybank' ? 'border-[#001F3F] bg-[#001F3F]/5' : 'border-slate-200 hover:bg-slate-50'}`}>
                     <input 
                       type="radio" 
                       name="pay" 
                       checked={paymentOption === 'fpx_maybank'} 
                       onChange={() => setPaymentOption('fpx_maybank')} 
-                      className="accent-[#001F3F]"
+                      className="w-3 h-3 accent-[#001F3F]"
                     />
-                    <div className="text-left leading-none">
-                      <strong className="text-slate-800 block text-xs">Maybank2u FPX Bank</strong>
-                      <span className="text-[8px] text-teal-600 uppercase font-black font-mono block mt-0.5">Clears instantly</span>
+                    <div className="text-left leading-tight">
+                      <strong className="text-slate-800 block text-[11.5px] font-bold">Maybank2u FPX Bank</strong>
+                      <span className="text-[8.5px] text-teal-600 uppercase font-bold font-mono block">Clears instantly</span>
                     </div>
                   </label>
 
-                  <label className={`border rounded-xl p-2.5 flex items-center gap-2.5 cursor-pointer transition ${paymentOption === 'fpx_cimb' ? 'border-[#001F3F] bg-[#001F3F]/5' : 'border-slate-200 hover:bg-slate-50'}`}>
+                  <label className={`border rounded-lg p-1.5 px-2 flex items-center gap-2 cursor-pointer transition ${paymentOption === 'fpx_cimb' ? 'border-[#001F3F] bg-[#001F3F]/5' : 'border-slate-200 hover:bg-slate-50'}`}>
                     <input 
                       type="radio" 
                       name="pay" 
                       checked={paymentOption === 'fpx_cimb'} 
                       onChange={() => setPaymentOption('fpx_cimb')} 
-                      className="accent-[#001F3F]"
+                      className="w-3 h-3 accent-[#001F3F]"
                     />
-                    <div className="text-left leading-none">
-                      <strong className="text-slate-800 block text-xs">CIMB Clicks Instant</strong>
-                      <span className="text-[8px] text-slate-400 block mt-0.5">SST Exempt Platform</span>
+                    <div className="text-left leading-tight">
+                      <strong className="text-slate-800 block text-[11.5px] font-bold">CIMB Clicks Instant</strong>
+                      <span className="text-[8.5px] text-slate-400 block">SST Exempt Platform</span>
                     </div>
                   </label>
 
-                  <label className={`border rounded-xl p-2.5 flex items-center gap-2.5 cursor-pointer transition ${paymentOption === 'fpx_rhb' ? 'border-[#001F3F] bg-[#001F3F]/5' : 'border-slate-200 hover:bg-slate-50'}`}>
+                  <label className={`border rounded-lg p-1.5 px-2 flex items-center gap-2 cursor-pointer transition ${paymentOption === 'fpx_rhb' ? 'border-[#001F3F] bg-[#001F3F]/5' : 'border-slate-200 hover:bg-slate-50'}`}>
                     <input 
                       type="radio" 
                       name="pay" 
                       checked={paymentOption === 'fpx_rhb'} 
                       onChange={() => setPaymentOption('fpx_rhb')} 
-                      className="accent-[#001F3F]"
+                      className="w-3 h-3 accent-[#001F3F]"
                     />
-                    <div className="text-left leading-none">
-                      <strong className="text-slate-800 block text-xs">RHB Now Direct fpx</strong>
-                      <span className="text-[8px] text-slate-400 block mt-0.5">Full Encrypted Escrow</span>
+                    <div className="text-left leading-tight">
+                      <strong className="text-slate-800 block text-[11.5px] font-bold">RHB Now Direct fpx</strong>
+                      <span className="text-[8.5px] text-slate-400 block">Full Encrypted Escrow</span>
                     </div>
                   </label>
                 </div>
               </div>
 
               {/* CTAs */}
-              <div className="flex gap-2 border-t border-slate-100 pt-3">
+              <div className="flex gap-2 border-t border-slate-100 pt-2 flex-wrap sm:flex-nowrap">
                 <button 
                   onClick={() => setBookingStep('booking')}
-                  className="flex-1 h-[44px] bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold rounded-[10px] transition cursor-pointer text-[13px]"
+                  className="flex-[0.8] h-[36px] bg-white border border-slate-250 text-slate-700 hover:bg-slate-50 font-bold rounded-[8px] transition cursor-pointer text-[12px] uppercase"
                 >
                   Back
                 </button>
@@ -944,15 +940,15 @@ export default function BookingFlowOverlay({
                 <button 
                   onClick={handleConfirmSecureBooking}
                   disabled={isProcessingPayment}
-                  className="flex-1 h-[44px] bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-[10px] uppercase tracking-wider text-center flex items-center justify-center gap-1.5 cursor-pointer text-[13px]"
+                  className="flex-[1.2] h-[36px] bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-[8px] uppercase tracking-wider cursor-pointer text-[12px] flex items-center justify-center"
                 >
                   {isProcessingPayment ? (
                     <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
                   ) : (
-                    <>
-                      <CreditCard className="w-4 h-4" />
+                    <div className="flex items-center justify-center gap-1.5">
+                      <CreditCard className="w-3.5 h-3.5" />
                       <span>Authorize Escrow</span>
-                    </>
+                    </div>
                   )}
                 </button>
               </div>
@@ -975,20 +971,32 @@ export default function BookingFlowOverlay({
                 Your payment has cleared. Coach <strong className="text-[#001F3F]">{trainer.name}</strong> has been booked and notified instantly via chat.
               </p>
 
-              <div className="bg-slate-50 border rounded-lg p-3 text-left text-2xs space-y-1 text-slate-600">
-                <span className="text-[8.5px] uppercase font-bold text-slate-400 block mb-1">Receipt Invoice Details</span>
-                <div className="flex justify-between">
-                  <span>Tax Invoice:</span>
-                  <strong className="text-slate-900 font-mono text-[9px]">{bookingSuccessInvoice}</strong>
+              <div className="bg-slate-50/80 border border-dashed border-slate-300 rounded-lg p-3 text-left text-xs space-y-2.5 text-slate-600 font-sans shadow-3xs">
+                <span className="text-[11px] uppercase font-bold text-slate-400 block mb-1 tracking-wider border-b border-slate-200/60 pb-1">Receipt Invoice</span>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-[12px] text-slate-500">Tax Invoice:</span>
+                  <strong className="text-slate-900 font-mono text-[13px]">{bookingSuccessInvoice}</strong>
                 </div>
-                <div className="flex justify-between">
-                  <span>Booking Code:</span>
-                  <strong className="text-slate-950 font-mono text-[9px] uppercase">{bookingSuccessId}</strong>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-[12px] text-slate-500">Booking Code:</span>
+                  <strong className="text-slate-950 font-mono text-[13px] uppercase">{bookingSuccessId}</strong>
                 </div>
-                <div className="flex justify-between">
-                  <span>Reserved Starts:</span>
-                  <strong className="text-slate-900 truncate max-w-[150px]">
-                    {selectedPackage === 'single' ? `${selectedDate} (${selectedTimeSlot})` : `Every ${selectedPackage === 'bundle4' ? selectedRecurringDay : selectedRecurringDays.join('/')}`}
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-[12px] text-slate-500">Reserved:</span>
+                  <strong className="text-slate-900 text-[13px]">
+                    {selectedPackage === 'single' ? 'Single Session' : selectedPackage === 'bundle4' ? '4 Classes' : '8 Classes'}
+                  </strong>
+                </div>
+                
+                <div className="flex justify-between items-start">
+                  <span className="text-[12px] text-slate-500">Starts:</span>
+                  <strong className="text-slate-900 text-[13px] text-right max-w-[180px] leading-tight">
+                    {selectedPackage === 'single' 
+                      ? `${selectedDate} (${selectedTimeSlot})` 
+                      : `${selectedRecurringTime} (Every ${selectedPackage === 'bundle4' ? selectedRecurringDay : selectedRecurringDays.join(', ')})`}
                   </strong>
                 </div>
               </div>

@@ -993,56 +993,56 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
 
           <div className="grid grid-cols-2 gap-3.5 font-sans">
             {/* Weight Tile */}
-            <div className="bg-slate-50/75 p-3 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[90px]">
+            <div className="bg-slate-50/75 p-2 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[85px]">
               <div>
-                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono font-bold">Weight Trend</span>
-                <span className="text-xs font-black text-slate-800 block mt-1">Weight ↓</span>
+                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono">Weight Trend</span>
+                <span className="text-xs font-black text-slate-800 block mt-0.5">Weight ↓</span>
               </div>
-              <div className="mt-2 flex items-center justify-between font-sans">
-                <span className="text-[9px] font-mono font-bold text-slate-400 font-bold">Steady</span>
-                <span className="text-[8.5px] font-extrabold text-[#10B981] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 font-sans font-bold">
+              <div className="mt-2 flex flex-col items-start font-sans">
+                <span className="text-[9px] font-mono font-bold text-slate-400">Steady</span>
+                <span className="text-[7.5px] font-extrabold text-[#10B981] bg-emerald-50 px-1 py-0.5 mt-1 rounded border border-emerald-100 font-sans">
                   ↓ 0.5 kg
                 </span>
               </div>
             </div>
 
             {/* Calories Tile */}
-            <div className="bg-slate-50/75 p-3 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[90px]">
+            <div className="bg-slate-50/75 p-2 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[85px]">
               <div>
-                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono font-bold">Calorie Intake</span>
-                <span className="text-xs font-black text-slate-800 block mt-1">Calories ↓</span>
+                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono">Calorie Intake</span>
+                <span className="text-xs font-black text-slate-800 block mt-0.5">Calories ↓</span>
               </div>
-              <div className="mt-2 flex items-center justify-between font-sans">
-                <span className="text-[9px] font-mono font-bold text-slate-400 font-bold">Deficit</span>
-                <span className="text-[8.5px] font-extrabold text-[#10B981] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 font-sans font-bold">
+              <div className="mt-2 flex flex-col items-start font-sans">
+                <span className="text-[9px] font-mono font-bold text-slate-400">Deficit</span>
+                <span className="text-[7.5px] font-extrabold text-[#10B981] bg-emerald-50 px-1 py-0.5 mt-1 rounded border border-emerald-100 font-sans">
                   ↓ 120 kcal
                 </span>
               </div>
             </div>
 
             {/* Workout Attendance Tile */}
-            <div className="bg-slate-50/75 p-3 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[90px]">
+            <div className="bg-slate-50/75 p-2 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[85px]">
               <div>
-                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono font-bold">Workouts Logs</span>
-                <span className="text-xs font-black text-slate-800 block mt-1 font-bold">Attendance ↑</span>
+                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono">Workouts Logs</span>
+                <span className="text-xs font-black text-slate-800 block mt-0.5 font-bold">Attendance ↑</span>
               </div>
-              <div className="mt-2 flex items-center justify-between font-sans">
-                <span className="text-[9px] font-mono font-bold text-slate-400 font-bold">3 of 3 days</span>
-                <span className="text-[8.5px] font-extrabold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 font-sans font-bold">
+              <div className="mt-2 flex flex-col items-start font-sans">
+                <span className="text-[9px] font-mono font-bold text-slate-400">3 of 3 days</span>
+                <span className="text-[7.5px] font-extrabold text-indigo-700 bg-indigo-50 px-1 py-0.5 mt-1 rounded border border-indigo-100 font-sans">
                   100% ↑
                 </span>
               </div>
             </div>
 
             {/* Nutrition Compliance Tile */}
-            <div className="bg-slate-50/75 p-3 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[90px]">
+            <div className="bg-slate-50/75 p-2 rounded-2xl border border-slate-100 flex flex-col justify-between min-h-[85px]">
               <div>
-                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono font-bold">Nutri Tracker</span>
-                <span className="text-xs font-black text-slate-800 block mt-1 font-bold">Compliance ↑</span>
+                <span className="text-[8px] uppercase font-bold text-slate-400 block font-mono">Nutri Tracker</span>
+                <span className="text-xs font-black text-slate-800 block mt-0.5 font-bold">Compliance ↑</span>
               </div>
-              <div className="mt-2 flex items-center justify-between font-sans">
-                <span className="text-[9px] font-mono font-bold text-slate-400 font-bold">Fiber Rate</span>
-                <span className="text-[8.5px] font-extrabold text-[#10B981] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 font-sans font-bold">
+              <div className="mt-2 flex flex-col items-start font-sans">
+                <span className="text-[9px] font-mono font-bold text-slate-400">Fiber Rate</span>
+                <span className="text-[7.5px] font-extrabold text-[#10B981] bg-emerald-50 px-1 py-0.5 mt-1 rounded border border-emerald-100 font-sans">
                   92% ↑
                 </span>
               </div>
@@ -1212,7 +1212,7 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
                         setNewDate(val);
                       }
                     }}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-xs text-slate-800 font-medium font-mono focus:outline-[#041F63] focus:ring-1 focus:ring-[#041F63]"
+                    className="w-full max-w-full box-border bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-medium font-mono focus:outline-[#041F63] focus:ring-1 focus:ring-[#041F63]"
                   />
                 </div>
 
@@ -1358,6 +1358,20 @@ export default function TraineeDashboard({ traineeUserId, onNavigateToTab }: Tra
           </div>
         </div>
       )}
+
+      {/* FLOATING TRIGGER BUTTON FOR TRAINEE TO MESSAGE COACH */}
+      <div className="fixed bottom-6 right-6 z-[80] flex flex-col items-end gap-3 text-left font-sans">
+        <button
+          onClick={() => {
+            onNavigateToTab('chats');
+          }}
+          className="flex items-center justify-center rounded-full p-4 shadow-2xl transition duration-150 scale-110 active:scale-95 cursor-pointer bg-[#001F3F] hover:bg-slate-900 border border-teal-500/20 text-[#4FFBCC]"
+          title="Message Coach"
+          id="btn-trainee-floating-chat"
+        >
+          <MessageSquare className="w-5 h-5 text-teal-400" />
+        </button>
+      </div>
 
     </div>
   );

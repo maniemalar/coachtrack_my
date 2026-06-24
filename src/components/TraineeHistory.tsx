@@ -745,35 +745,27 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                       <div className="absolute text-center text-sm font-black">🍽</div>
                     </div>
 
-                    {/* Legends right */}
-                    <div className="flex-1 space-y-1.5 font-sans">
-                      <div className="flex items-center justify-between text-3xs border-b border-slate-50 pb-0.5">
-                        <div className="flex items-center gap-1.5 font-bold">
-                          <span className="w-2 h-2 rounded-full bg-[#4F46E5]" />
-                          <span className="text-slate-650">Protein</span>
-                        </div>
-                        <span className="font-extrabold text-[#081F63]">{proteinPctVal}% ({totalDailyProtein}g)</span>
+                    {/* Legends right/bottom compact vertical list layout */}
+                    <div className="flex-1 flex flex-col gap-2 font-sans text-[11px] justify-center pl-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#4F46E5] shrink-0" />
+                        <span className="text-slate-500 font-medium">Protein:</span>
+                        <span className="font-bold text-[#081F63]">{proteinPctVal}% ({totalDailyProtein}g)</span>
                       </div>
-                      <div className="flex items-center justify-between text-3xs border-b border-slate-50 pb-0.5">
-                        <div className="flex items-center gap-1.5 font-bold">
-                          <span className="w-2 h-2 rounded-full bg-[#18D4C5]" />
-                          <span className="text-slate-650">Carbs</span>
-                        </div>
-                        <span className="font-extrabold text-[#081F63]">{carbsPctVal}% ({totalDailyCarbs}g)</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#18D4C5] shrink-0" />
+                        <span className="text-slate-500 font-medium">Carbs:</span>
+                        <span className="font-bold text-[#081F63]">{carbsPctVal}% ({totalDailyCarbs}g)</span>
                       </div>
-                      <div className="flex items-center justify-between text-3xs border-b border-slate-50 pb-0.5">
-                        <div className="flex items-center gap-1.5 font-bold">
-                          <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
-                          <span className="text-slate-650">Fat</span>
-                        </div>
-                        <span className="font-extrabold text-[#081F63]">{fatPctVal}% ({totalDailyFat}g)</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0" />
+                        <span className="text-slate-500 font-medium">Fat:</span>
+                        <span className="font-bold text-[#081F63]">{fatPctVal}% ({totalDailyFat}g)</span>
                       </div>
-                      <div className="flex items-center justify-between text-3xs">
-                        <div className="flex items-center gap-1.5 font-bold">
-                          <span className="w-2 h-2 rounded-full bg-[#0F172A]" />
-                          <span className="text-slate-650">Fiber</span>
-                        </div>
-                        <span className="font-extrabold text-[#081F63]">{fiberPctVal}% ({totalDailyFiber}g)</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#0F172A] shrink-0" />
+                        <span className="text-slate-500 font-medium">Fiber:</span>
+                        <span className="font-bold text-[#081F63]">{fiberPctVal}% ({totalDailyFiber}g)</span>
                       </div>
                     </div>
                   </div>
@@ -817,10 +809,10 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                                 <h4 className="font-extrabold text-[#081F63] text-xs truncate">
                                   {meal.foodName}
                                 </h4>
-                                <div className="flex items-center gap-1.5 mt-0.5 text-3xs text-slate-400 font-bold tracking-wide">
+                                <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400 font-normal tracking-wide">
                                   <span>{meal.time}</span>
                                   <span>•</span>
-                                  <span className="text-[#18D4C5] font-black">{meal.calories} kcal</span>
+                                  <span className="text-slate-500 font-semibold">{meal.calories} kcal</span>
                                 </div>
                               </div>
                             </div>
@@ -847,15 +839,15 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                               >
                                 <div className="p-4 space-y-3">
                                   {/* Large interactive image with shadow */}
-                                  <div className="w-full h-40 rounded-2xl overflow-hidden border border-slate-100 relative shadow-2xs bg-slate-50">
+                                  <div className="w-full h-36 rounded-2xl overflow-hidden border border-slate-100 relative shadow-2xs bg-slate-50">
                                     <MealImage src={mealPhotoUrl} alt={meal.foodName} className="w-full h-full object-cover" />
-                                    <div className="absolute top-2.5 right-2.5 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-3xs font-black text-[#081F63] border border-slate-100 select-none shadow-2xs">
+                                    <div className="absolute top-2 right-2 bg-slate-900/90 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-white select-none border border-slate-700/50 shadow-sm">
                                       ⚡ {meal.calories} kcal
                                     </div>
                                   </div>
 
                                   {/* Compact Macronutrients Breakdown */}
-                                  <div className="bg-white border border-slate-100 rounded-2xl p-2.5 grid grid-cols-4 gap-2 text-center text-3xs shadow-3xs">
+                                  <div className="bg-white border border-slate-100 rounded-xl p-2 grid grid-cols-4 gap-1.5 text-center text-3xs shadow-3xs">
                                     <div className="border-r border-slate-50">
                                       <span className="block text-[9px] font-bold text-slate-400">Protein</span>
                                       <span className="block text-xs font-black text-[#081F63] mt-0.5">{meal.protein}g</span>
@@ -874,33 +866,33 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                                     </div>
                                   </div>
 
-                                  {/* AI analysis banner */}
-                                  <div className="bg-indigo-50/50 border border-indigo-100/30 rounded-2xl p-3 text-3xs">
-                                    <div className="flex items-center gap-1.5 mb-1 text-indigo-700 font-bold select-none">
-                                      <Sparkles className="w-3.5 h-3.5 font-bold" />
-                                      <span className="uppercase tracking-wider">AI Nutrition Analysis</span>
+                                  {/* AI analysis banner: Dark Navy background, white text, CoachAI Sparkles */}
+                                  <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-3xs">
+                                    <div className="flex items-center gap-1 mb-1 text-teal-400 font-bold select-none">
+                                      <Sparkles className="w-3 h-3 text-teal-400" />
+                                      <span className="uppercase tracking-wider text-[9px]">CoachAI Analysis</span>
                                     </div>
-                                    <p className="text-[11px] leading-relaxed text-slate-600 font-medium">
+                                    <p className="text-[10px] leading-relaxed text-slate-200">
                                       {meal.aiInsight}
                                     </p>
                                   </div>
 
                                   {/* Active coach guidance */}
-                                  <div className="bg-teal-50/30 border border-teal-100/30 rounded-2xl p-3 text-3xs">
-                                    <span className="font-extrabold text-teal-700 uppercase tracking-wider block mb-1">Coach Sarah's Feedback</span>
-                                    <p className="text-[11px] leading-relaxed text-slate-650 italic">
+                                  <div className="bg-teal-50/20 border border-teal-100/30 rounded-xl p-2.5 text-3xs">
+                                    <span className="font-extrabold text-teal-700 uppercase tracking-wider block mb-0.5 text-[9px]">Coach Sarah's Feedback</span>
+                                    <p className="text-[10px] leading-relaxed text-slate-600 italic">
                                       "{meal.trainerFeedback || 'No special coaching instruction left yet.'}"
                                     </p>
                                   </div>
 
                                   {/* Toggle Raw notes */}
-                                  <div className="pt-2 border-t border-slate-100 text-right">
+                                  <div className="pt-1.5 border-t border-slate-100 text-right">
                                     <button 
                                       onClick={() => setDetailedMeals(prev => ({ ...prev, [meal.id]: !isMealDetailed }))}
-                                      className="text-3xs font-extrabold text-indigo-600 hover:text-indigo-800 uppercase tracking-widest inline-flex items-center gap-1 cursor-pointer"
+                                      className="text-[9px] font-extrabold text-indigo-600 hover:text-indigo-850 uppercase tracking-wider inline-flex items-center gap-0.5 cursor-pointer"
                                     >
                                       <span>{isMealDetailed ? 'Hide Raw Logs' : 'View Ingredient logs'}</span>
-                                      <ChevronDown className={`w-3 h-3 transform transition-transform ${isMealDetailed ? 'rotate-180 text-indigo-600' : ''}`} />
+                                      <ChevronDown className={`w-2.5 h-2.5 transform transition-transform ${isMealDetailed ? 'rotate-180 text-indigo-600' : ''}`} />
                                     </button>
 
                                     <AnimatePresence initial={false}>
@@ -909,10 +901,10 @@ export default function TraineeHistory({ traineeUserId, onNavigateToTab }: Train
                                           initial={{ opacity: 0, height: 0 }}
                                           animate={{ opacity: 1, height: 'auto' }}
                                           exit={{ opacity: 0, height: 0 }}
-                                          className="text-left overflow-hidden mt-1.5 bg-slate-50 border border-slate-150 rounded-xl p-2.5"
+                                          className="text-left overflow-hidden mt-1 bg-slate-50 border border-slate-150 rounded-lg p-2"
                                         >
                                           <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Trainee Ingredient notes:</span>
-                                          <p className="text-3xs font-medium text-slate-500 leading-normal italic">
+                                          <p className="text-[10px] font-medium text-slate-500 leading-normal italic">
                                             "{meal.notes || 'No supplementary meal tags added.'}"
                                           </p>
                                         </motion.div>

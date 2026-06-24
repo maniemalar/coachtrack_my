@@ -245,7 +245,7 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                     setSelectedFilterDate(prev => prev === cell.dateStr ? null : cell.dateStr);
                   }
                 }}
-                className={`h-9 flex flex-col items-center justify-between py-1 rounded-lg transition-all relative border select-none ${
+                className={`h-10 sm:h-11 flex flex-col items-center justify-between py-1.5 rounded-lg transition-all relative border select-none ${
                   isSelectedFilter
                     ? 'bg-teal-500 text-white border-teal-500 font-extrabold ring-2 ring-teal-400 cursor-pointer scale-105 shadow-sm'
                     : isToday 
@@ -264,18 +264,6 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
               </div>
             );
           })}
-        </div>
-
-        {/* Legend */}
-        <div className="flex items-center justify-around text-3xs text-slate-400 font-semibold border-t border-slate-100/70 pt-2.5">
-          <div className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 bg-[#081F63] rounded-sm inline-block"></span>
-            <span>Ahmad Target (20th)</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 bg-teal-50 border border-teal-100 rounded-sm inline-block"></span>
-            <span>Classes Scheduled</span>
-          </div>
         </div>
       </div>
 
@@ -344,7 +332,7 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                         <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block font-sans">
                           {session.packageType || 'Private Session'}
                         </span>
-                        <h4 className="text-base font-black text-slate-900 leading-tight font-display group-hover:text-teal-600 transition">
+                        <h4 className="text-[14px] font-black text-slate-900 leading-tight font-display group-hover:text-teal-600 transition">
                           {session.title || 'HIIT Private Coaching'}
                         </h4>
                       </div>
@@ -379,13 +367,9 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                     </div>
 
                     {/* Coach Certification Info */}
-                    <div className="bg-slate-100/40 rounded-2xl p-3 border border-slate-100 text-xs flex justify-between items-center">
-                      <div className="space-y-1">
+                    <div className="bg-slate-100/40 rounded-2xl p-2.5 border border-slate-100 text-xs flex justify-between items-center">
+                      <div>
                         <p className="font-black text-slate-800">Coach Sarah Tan</p>
-                        <p className="text-[10px] text-[#081F63] font-semibold flex items-center gap-0.5">
-                          <Award className="w-3 h-3 text-[#18D4C5]" />
-                          <span>Yoga & Pilates Certified Coach</span>
-                        </p>
                       </div>
                       <div className="flex items-center gap-0.5 text-[9px] font-black bg-white border border-slate-200 text-emerald-700 px-2 py-0.5 rounded-full uppercase tracking-wider select-none">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -394,19 +378,19 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex gap-2 pt-1 border-t border-slate-100/70" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex gap-2 pt-1.5 border-t border-slate-100/70" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => handleOpenReschedule(session)}
-                        className="flex-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+                        className="flex-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold py-1.5 rounded-lg text-[11px] flex items-center justify-center gap-1 transition cursor-pointer"
                       >
-                        <RefreshCw className="w-3.5 h-3.5" />
+                        <RefreshCw className="w-3 h-3" />
                         <span>Reschedule</span>
                       </button>
                       <button
                         onClick={() => onNavigateToTab('chats')}
-                        className="flex-1 bg-[#081F63] hover:bg-[#07194f] text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+                        className="flex-1 bg-[#081F63] hover:bg-[#07194f] text-white font-bold py-1.5 rounded-lg text-[11px] flex items-center justify-center gap-1 transition cursor-pointer"
                       >
-                        <MessageSquare className="w-3.5 h-3.5 text-[#18D4C5]" />
+                        <MessageSquare className="w-3 h-3 text-[#18D4C5]" />
                         <span>Message Coach</span>
                       </button>
                     </div>
@@ -550,7 +534,7 @@ export default function TraineeSchedule({ traineeId, onNavigateToTab }: TraineeS
                         setNewDate(val);
                       }
                     }}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-xs text-slate-800 font-medium font-mono focus:outline-[#041F63] focus:ring-1 focus:ring-[#041F63]"
+                    className="w-full max-w-full box-border bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-medium font-mono focus:outline-[#041F63] focus:ring-1 focus:ring-[#041F63]"
                   />
                 </div>
 

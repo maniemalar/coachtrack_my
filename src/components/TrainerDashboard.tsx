@@ -4081,33 +4081,33 @@ export function TrainerDashboardInner({
 
                       {/* Stacked legends */}
                       <div className="flex-1 space-y-1 font-sans">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
+                        <div className="flex items-center justify-between text-[15px]">
+                          <div className="flex items-center gap-1.5 font-medium">
                             <span className="w-2 h-2 rounded-full bg-[#4F46E5] shrink-0" />
-                            <span className="text-[13px] font-medium text-slate-500">Protein</span>
+                            <span className="text-slate-500 whitespace-nowrap">Protein</span>
                           </div>
-                          <span className="text-[14px] font-semibold text-slate-800">{proteinPctVal}% ({totalDailyProtein}g)</span>
+                          <span className="font-semibold text-slate-800 whitespace-nowrap">{proteinPctVal}% ({totalDailyProtein}g)</span>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
+                        <div className="flex items-center justify-between text-[15px]">
+                          <div className="flex items-center gap-1.5 font-medium">
                             <span className="w-2 h-2 rounded-full bg-[#18D4C5] shrink-0" />
-                            <span className="text-[13px] font-medium text-slate-500">Carbs</span>
+                            <span className="text-slate-500 whitespace-nowrap">Carbs</span>
                           </div>
-                          <span className="text-[14px] font-semibold text-slate-800">{carbsPctVal}% ({totalDailyCarbs}g)</span>
+                          <span className="font-semibold text-slate-800 whitespace-nowrap">{carbsPctVal}% ({totalDailyCarbs}g)</span>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
+                        <div className="flex items-center justify-between text-[15px]">
+                          <div className="flex items-center gap-1.5 font-medium">
                             <span className="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0" />
-                            <span className="text-[13px] font-medium text-slate-500">Fat</span>
+                            <span className="text-slate-500 whitespace-nowrap">Fat</span>
                           </div>
-                          <span className="text-[14px] font-semibold text-slate-800">{fatPctVal}% ({totalDailyFat}g)</span>
+                          <span className="font-semibold text-slate-800 whitespace-nowrap">{fatPctVal}% ({totalDailyFat}g)</span>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
+                        <div className="flex items-center justify-between text-[15px]">
+                          <div className="flex items-center gap-1.5 font-medium">
                             <span className="w-2 h-2 rounded-full bg-[#0F172A] shrink-0" />
-                            <span className="text-[13px] font-medium text-slate-500">Fiber</span>
+                            <span className="text-slate-500 whitespace-nowrap">Fiber</span>
                           </div>
-                          <span className="text-[14px] font-semibold text-slate-800">{fiberPctVal}% ({totalDailyFiber}g)</span>
+                          <span className="font-semibold text-slate-800 whitespace-nowrap">{fiberPctVal}% ({totalDailyFiber}g)</span>
                         </div>
                       </div>
 

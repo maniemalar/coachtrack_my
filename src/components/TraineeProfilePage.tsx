@@ -1101,31 +1101,41 @@ export default function TraineeProfilePage({
                       <div>
                         <h3 className="text-xs font-bold text-slate-900 mb-4 font-sans">Weekly Circumference Review</h3>
 
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-3">
-                            <span className="text-2xs text-slate-400 font-bold block">Chest Circumference</span>
-                            <strong className="text-base text-slate-900 font-black mt-1 block">{latestLog.chest} cm</strong>
-                            <span className={`text-[10px] mt-1.5 block ${chestDiff.color}`}>{chestDiff.text}</span>
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-2.5 sm:p-3 flex flex-col justify-between h-[82px]">
+                            <span className="text-[10px] text-slate-400 font-bold leading-tight block">Chest Girth</span>
+                            <div>
+                              <strong className="text-sm text-slate-900 font-black block">{latestLog.chest} cm</strong>
+                              <span className={`text-[9px] block mt-0.5 ${chestDiff.color}`}>{chestDiff.text}</span>
+                            </div>
                           </div>
-                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-3">
-                            <span className="text-2xs text-slate-400 font-bold block">Waist Circumference</span>
-                            <strong className="text-base text-slate-900 font-black mt-1 block">{latestLog.waist} cm</strong>
-                            <span className={`text-[10px] mt-1.5 block ${waistDiff.color}`}>{waistDiff.text}</span>
+                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-2.5 sm:p-3 flex flex-col justify-between h-[82px]">
+                            <span className="text-[10px] text-slate-400 font-bold leading-tight block">Waist Girth</span>
+                            <div>
+                              <strong className="text-sm text-slate-900 font-black block">{latestLog.waist} cm</strong>
+                              <span className={`text-[9px] block mt-0.5 ${waistDiff.color}`}>{waistDiff.text}</span>
+                            </div>
                           </div>
-                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-3">
-                            <span className="text-2xs text-slate-400 font-bold block">Hip Circumference</span>
-                            <strong className="text-base text-slate-900 font-black mt-1 block">{latestLog.hip} cm</strong>
-                            <span className={`text-[10px] mt-1.5 block ${hipDiff.color}`}>{hipDiff.text}</span>
+                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-2.5 sm:p-3 flex flex-col justify-between h-[82px]">
+                            <span className="text-[10px] text-slate-400 font-bold leading-tight block">Hip Girth</span>
+                            <div>
+                              <strong className="text-sm text-slate-900 font-black block">{latestLog.hip} cm</strong>
+                              <span className={`text-[9px] block mt-0.5 ${hipDiff.color}`}>{hipDiff.text}</span>
+                            </div>
                           </div>
-                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-3">
-                            <span className="text-2xs text-slate-400 font-bold block">Arm Circumference</span>
-                            <strong className="text-base text-slate-900 font-black mt-1 block">{latestLog.arm} cm</strong>
-                            <span className={`text-[10px] mt-1.5 block ${armDiff.color}`}>{armDiff.text}</span>
+                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-2.5 sm:p-3 flex flex-col justify-between h-[82px]">
+                            <span className="text-[10px] text-slate-400 font-bold leading-tight block">Arm Girth</span>
+                            <div>
+                              <strong className="text-sm text-slate-900 font-black block">{latestLog.arm} cm</strong>
+                              <span className={`text-[9px] block mt-0.5 ${armDiff.color}`}>{armDiff.text}</span>
+                            </div>
                           </div>
-                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-3 col-span-2 sm:col-span-1">
-                            <span className="text-2xs text-slate-400 font-bold block">Thigh Circumference</span>
-                            <strong className="text-base text-slate-900 font-black mt-1 block">{latestLog.thigh} cm</strong>
-                            <span className={`text-[10px] mt-1.5 block ${thighDiff.color}`}>{thighDiff.text}</span>
+                          <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-2.5 sm:p-3 flex flex-col justify-between h-[82px]">
+                            <span className="text-[10px] text-slate-400 font-bold leading-tight block">Thigh Girth</span>
+                            <div>
+                              <strong className="text-sm text-slate-900 font-black block">{latestLog.thigh} cm</strong>
+                              <span className={`text-[9px] block mt-0.5 ${thighDiff.color}`}>{thighDiff.text}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
